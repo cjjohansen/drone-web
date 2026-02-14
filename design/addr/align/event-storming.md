@@ -29,50 +29,9 @@ The canvas contains all 40 domain events, commands, aggregates, actors, read mod
 
 ---
 
-## Visual Timeline (text summary)
+## Visual Timeline
 
-```mermaid
-timeline
-    title Catalog Storefront — Event Storming Timeline
-
-    section Catalog Management (upstream)
-        Product Added to Catalog 🔶⭐ : Product Specifications Updated
-        Product Price Changed : Product Availability Changed
-        Product Discontinued 🔶⭐ : Technical Document Uploaded
-        Category Created : Category Hierarchy Updated
-        Product Categorized
-
-    section Product Discovery (JS1)
-        Catalog Searched : Search Filters Applied
-        Search Results Sorted : Search Page Retrieved
-        Suggestions Retrieved
-
-    section Product Evaluation (JS2)
-        Product Details Viewed : Technical Document Downloaded
-        Product Pricing Viewed : Product Availability Checked
-        Product Reviews Viewed : Compatible Products Retrieved
-        Similar Products Retrieved : Frequently Bought Together Retrieved
-
-    section Product Comparison (JS3)
-        Product Added to Comparison : Product Removed from Comparison
-        Comparison Matrix Generated 🔶
-
-    section Compatibility Verification (JS4)
-        Compatibility Check Requested : Voltage Compatibility Evaluated
-        Current Rating Evaluated : Physical Fit Evaluated
-        Protocol Evaluated : Weight/Thrust Evaluated
-        Compatibility Check Completed 🔶⭐ : Compatible Replacements Retrieved
-
-    section Catalog Browsing (JS5)
-        Category Tree Retrieved : Category Browsed
-        Category Facets Retrieved : Category Products Filtered
-
-    section Partner Catalog Access (JS6)
-        Catalog Feed Generated 🔶⭐ : Batch Availability Retrieved
-        Batch Pricing Retrieved
-```
-
-> **Legend:** 🔶 = Domain Event | ⭐ = Pivotal Event (marks phase transition or boundary shift)
+![Event Storming — Big Picture](event-storming.svg)
 
 ---
 
