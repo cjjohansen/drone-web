@@ -13,9 +13,9 @@
 
 ## Current Phase
 
-**Phase:** ADDR Define — artifacts complete, awaiting commit
-**Status:** Align validated and all findings resolved. Define artifacts generated. Event Storming drawio diagram refined and cleaned up. Ready for git commit.
-**Blockers:** None — ready to commit Align + Define
+**Phase:** ADDR Define — validated, ready to commit
+**Status:** Define validated (4 findings: 2 applied, 1 dropped, 1 deferred). Ready for git commit + push on addr-define-phase branch.
+**Blockers:** None
 
 ## What Was Just Completed
 
@@ -32,7 +32,7 @@
   - D-011: Removed pagination as activity step
   - Enriched filter and availability descriptions
 
-### Define Phase (DRAFT — awaiting review)
+### Define Phase (VALIDATED)
 - [x] 3 API boundaries identified using DDD principles
 - [x] 14 resources modeled with properties and relationships
 - [x] 19 API operations profiled with participants, events, characteristics
@@ -41,7 +41,7 @@
 
 ## What Comes Next
 
-1. **Git commit + push** Align and Define phases
+1. **Git commit + push** Define phase (addr-define-phase branch)
 3. **Design phase** — HTTP methods, resource paths, style guidelines, high-level API design tables
 4. **Refine phase** — OpenAPI 3.1 specs, AsyncAPI 3.0 specs (for Event Catalog), README examples, Mermaid diagrams, Postman collections
 

@@ -85,6 +85,8 @@
 | sortBy | Applied sort field |
 | products | List of matching product summaries |
 
+**Relationships:** Computed resource — references Products
+
 ### Suggestion
 
 | Property | Description |
@@ -94,6 +96,8 @@
 | suggestedCategories | List of matching category references |
 | suggestedProducts | List of matching product references |
 
+**Relationships:** Computed resource — references Products, Categories
+
 ### ComparisonMatrix
 
 | Property | Description |
@@ -101,6 +105,8 @@
 | products | List of products being compared |
 | sharedSpecifications | Specs present in all compared products with their values |
 | differingSpecifications | Specs that differ between compared products |
+
+**Relationships:** Computed resource — references Products
 
 ---
 

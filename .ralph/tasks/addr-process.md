@@ -16,12 +16,12 @@
 - [x] Event Storming drawio refined and cleaned up (consolidated to event-storming.drawio)
 - [ ] Git commit + push Align phase
 
-### Define Phase (DRAFT)
+### Define Phase (VALIDATED)
 - [x] Identify candidate API boundaries (DDD principles)
 - [x] Assess boundary consolidation
 - [x] Identify API resources per boundary
 - [x] Generate API profiles per boundary
-- [ ] Validate API profiles — gaps and improvements
+- [x] Validate API profiles — 4 findings (2 applied, 1 dropped, 1 deferred)
 - [x] Generate sequence diagrams for each job story
 - [x] Package Define deliverable
 - [ ] Git commit + push Define phase

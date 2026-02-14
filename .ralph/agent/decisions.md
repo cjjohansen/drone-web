@@ -85,6 +85,20 @@
 
 ---
 
+## Define Phase Validation Decisions
+
+### D-014: Query events are analytics, not domain events
+**Date:** 2026-02-15
+**Decision:** Read/query operations in the Catalog API do not emit domain events. Tracking query patterns (Catalog Searched, Product Details Viewed) is an analytics/telemetry concern belonging to a separate domain.
+**Rationale:** Domain events represent state changes that other bounded contexts need to react to. Read operations don't change state. The event storming already classified these as "Query Events (observational)" vs "Command Events (state-changing)."
+
+### D-015: Partners use only the Partner Catalog API
+**Date:** 2026-02-15
+**Decision:** Removed "Partner" from Catalog API participant lists. Partners access data exclusively through the Partner Catalog Syndication API.
+**Rationale:** The Partner Catalog API (D-007) exists specifically for different consumption patterns (bulk/batch), different SLAs, and data projections. Listing Partner on both APIs contradicted the boundary separation.
+
+---
+
 ## Open Questions
 
 | ID | Phase | Question | Status |
@@ -95,3 +109,4 @@
 | OQ-004 | Define | Should compatibility rules be managed via admin API or config files? | Open |
 | OQ-005 | Define | Should Partner Catalog API support webhooks for catalog changes? | Open |
 | OQ-006 | Define | Should product reviews support helpfulness voting in this scope? | Open |
+| OQ-007 | Refine | Standardize event naming: prose (event storming) vs dot notation (API profiles/AsyncAPI) | Open |

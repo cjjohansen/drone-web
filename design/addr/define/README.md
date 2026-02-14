@@ -2,7 +2,7 @@
 
 **Domain:** Mechatronic Product Ecommerce (Drones & Components)
 **Subdomain:** Catalog Storefront
-**Status:** Draft — awaiting review
+**Status:** Validated
 
 ## Summary
 
@@ -29,6 +29,7 @@
 - [API Resources](resources.md) — 14 resources with properties and relationships
 - [API Profiles](api-profiles.md) — 19 operations with participants, events, characteristics
 - [Sequence Diagrams](sequence-diagrams.md) — Mermaid diagrams for all 6 job stories
+- [Validation](validation.md) — Cross-reference validation against ADDR prompts and Higginbotham methodology
 
 ## Open Questions
 

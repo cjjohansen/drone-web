@@ -12,11 +12,11 @@
 
 | Operation Name | Description | Participants | Resource(s) | Emitted Events | Operation Characteristics | Operation Details |
 |----------------|-------------|--------------|-------------|----------------|--------------------------|-------------------|
-| searchProducts() | Search the catalog using keywords and parametric filters | Customer, Partner | SearchResult, Product | — | safe, sync | Request: query text, filters (category, specs, price range), sort field, sort direction, offset, limit. Response: search results with product summaries, total count |
+| searchProducts() | Search the catalog using keywords and parametric filters | Customer | SearchResult, Product | — | safe, sync | Request: query text, filters (category, specs, price range), sort field, sort direction, offset, limit. Response: search results with product summaries, total count |
 | getAutocompleteSuggestions() | Get search suggestions as query is typed | Customer | Suggestion | — | safe, sync | Request: partial query text, limit. Response: suggested terms, categories, products |
-| getProduct() | Retrieve full product details | Customer, Partner | Product | — | safe, sync | Request: productId. Response: full product representation including specs, descriptions, images |
-| getProductPricing() | Retrieve current pricing for a product | Customer, Partner | Product | — | safe, sync | Request: productId. Response: base price, volume discounts, active promotions |
-| getProductAvailability() | Check product stock status | Customer, Partner | Product | — | safe, sync | Request: productId. Response: availability status, quantity, estimated restock |
+| getProduct() | Retrieve full product details | Customer | Product | — | safe, sync | Request: productId. Response: full product representation including specs, descriptions, images |
+| getProductPricing() | Retrieve current pricing for a product | Customer | Product | — | safe, sync | Request: productId. Response: base price, volume discounts, active promotions |
+| getProductAvailability() | Check product stock status | Customer | Product | — | safe, sync | Request: productId. Response: availability status, quantity, estimated restock |
 | getProductReviews() | Retrieve reviews for a product | Customer | Review | — | safe, sync | Request: productId, offset, limit, sort. Response: list of reviews, average rating, total count |
 | getProductDocuments() | Retrieve technical documents for a product | Customer | TechnicalDocument | — | safe, sync | Request: productId, document type filter. Response: list of technical documents |
 | getCompatibleProducts() | Retrieve products compatible with a given product | Customer | Product | — | safe, sync | Request: productId, offset, limit. Response: list of compatible products |
