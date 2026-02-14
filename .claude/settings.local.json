@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh repo view:*)",
+      "mcp__github__get_file_contents",
+      "mcp__sequential-thinking__sequentialthinking",
+      "Skill(ralph-loop:ralph-loop)",
+      "Bash(git config:*)",
+      "Bash(git branch:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "mcp__plugin_github_github__get_file_contents",
+      "WebFetch(domain:galaxi.tech)"
+    ]
+  }
+}

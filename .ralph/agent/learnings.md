@@ -1,0 +1,79 @@
+# Learnings Log
+
+> Persistent memory across sessions. The agent MUST read this file at session start
+> and MUST record new learnings when mistakes are made or better approaches are discovered.
+>
+> Format: LRN-XXX with category, context, and actionable takeaway.
+> These get "injected" into every session to prevent repeating mistakes.
+
+## LRN-001 (2026-02-14)
+- **Category:** Git / Auth
+- **Context:** Attempted to push to GitHub using HTTPS URL. Failed with "could not read Username." SSH also failed (no key configured). The user has a fine-grained personal access token set as `GITHUB_PERSONAL_ACCESS_TOKEN` env var.
+- **Learning:** On this WSL2 environment, git push requires token-based auth embedded in the remote URL. Set remote as `https://cjjohansen:${GITHUB_PERSONAL_ACCESS_TOKEN}@github.com/cjjohansen/drone-web.git`.
+- **Action:** Always use token-embedded HTTPS URL for git push. Check env var is set before pushing.
+
+## LRN-002 (2026-02-14)
+- **Category:** GitHub / Permissions
+- **Context:** Tried to create a repo via the GitHub MCP plugin (`create_repository`). Got 403 "Resource not accessible by personal access token." The token has Contents permission but not Administration.
+- **Learning:** Fine-grained GitHub tokens need Administration (write) permission to create repos. Contents permission only covers file/commit operations. Fine-grained tokens cannot be edited after creation — a new token must be created to add permissions.
+- **Action:** For repo creation, either add Administration permission to a new token or create repos manually on GitHub.
+
+## LRN-003 (2026-02-14)
+- **Category:** ADDR / Process
+- **Context:** Started driving ADDR phases without referencing the official ADDR prompts. User pointed to launchany/addr-ai-prompts repo with comprehensive phase-by-phase prompts.
+- **Learning:** Always check for and follow the ADDR prompt guide at `design/addr/addr-ai-prompts.md`. These prompts encode the methodology correctly and ensure consistent, high-quality artifacts.
+- **Action:** Read `design/addr/addr-ai-prompts.md` before starting any ADDR phase. Follow the prompts sequentially.
+
+## LRN-004 (2026-02-14)
+- **Category:** Workspace / Documentation
+- **Context:** Initially placed decision log in `design/addr/decision-log.md` mixed with design artifacts. User wanted operational/agent files separate from deliverables.
+- **Learning:** Agent operational files (state, decisions, learnings, tasks) belong in `.ralph/`. Design deliverables belong in `design/addr/`. Keep them separate — `.ralph/` is the agent's workspace, `design/` is the deliverable.
+- **Action:** Never put agent operational files in the design directory. Use `.ralph/` structure: STATE.md, agent/, tasks/, specs/.
+
+## LRN-005 (2026-02-14)
+- **Category:** ADDR / Methodology
+- **Context:** Read all 9 chapters of user's Principles of Web API Design series. Event Storming was initially placed as a supplementary artifact but it's actually a core Align phase activity per Higginbotham Ch. 4-5.
+- **Learning:** The ADDR Align phase flow is: Job Stories → Event Storming → Activities & Steps. Event Storming is the bridge between job stories and API boundaries. Pivotal events on the canvas directly indicate bounded context boundaries (Define phase input). The API Profile (Define phase) is implementation-agnostic — REST/GraphQL/gRPC choices come in Design phase only.
+- **Action:** Always run Event Storming as part of Align, before Define. Use pivotal events to validate boundary decisions.
+
+## LRN-006 (2026-02-14)
+- **Category:** ADDR / Async APIs
+- **Context:** Higginbotham Ch. 9 covers async APIs with explicit EventCatalog + AsyncAPI integration. Our D-008 decision to produce AsyncAPI specs aligns directly with the book's guidance.
+- **Learning:** Domain events should be classified as fact events (full state snapshot) or delta events (changes only). Fact events enable Event-Carried State Transfer (ECST), where consumers materialize events into local datastores — eliminating synchronous cross-boundary API calls. This directly supports our integration model (Compatibility and Partner APIs consume Catalog events).
+- **Action:** When designing AsyncAPI specs in Refine phase, classify each event as fact or delta. Default to fact events for cross-boundary integration (ECST pattern).
+
+## LRN-007 (2026-02-14)
+- **Category:** ADDR / Validation
+- **Context:** Performed cross-reference validation of Align phase against both ADDR prompts and Higginbotham book. Found 6 issues: persona matrix gaps, pagination as activity step, missing filter/availability details, and an over-promoted pivotal event.
+- **Learning:** Always validate each ADDR phase before committing. Check: (1) persona-job story matrix completeness — every realistic usage should be mapped, (2) activity steps should represent user goals, not API mechanics like pagination, (3) pivotal events must pass Brandolini's heuristics — cascading cross-boundary impact, not just "feels important." Document validation as a formal artifact.
+- **Action:** After completing each ADDR phase, create a `validation.md` in the phase folder before committing.
+
+## LRN-008 (2026-02-14)
+- **Category:** Workflow / Cursor Collaboration
+- **Context:** User works on drawio diagrams in Cursor while Claude Code works on markdown artifacts. Drawio files should not be modified by Claude Code.
+- **Learning:** The user manages `.drawio` files in Cursor IDE with custom skills. Claude Code should never modify drawio files. When event storming changes affect drawio (e.g., pivotal event downgrade), note the change in markdown and let the user update drawio separately.
+- **Action:** Never edit `.drawio` files. Document changes that affect diagrams in markdown so the user can sync drawio in Cursor.
+
+## LRN-009 (2026-02-14)
+- **Category:** Tooling / draw.io Generation
+- **Context:** Generating draw.io diagrams required multiple iterations. Initially wrote disposable Node.js scripts each time, rewriting ~200 lines of boilerplate for styles, helpers, and XML wrapping. User pointed out the inefficiency.
+- **Learning:** For programmatic diagram generation, create a **reusable engine module** that encapsulates constants, styles, element-drawing functions, and XML output. Then write thin data-only scripts that `require()` the engine. The engine lives in `.cursor/skills/event-storming-drawio/_drawio-engine.js`. Delete temporary generation scripts (`_gen_*.js`) after use.
+- **Action:** Always use the engine for draw.io generation. Only create temporary `_gen_*.js` scripts for layout data, then delete them.
+
+## LRN-010 (2026-02-14)
+- **Category:** Event Storming / Visual Layout
+- **Context:** Multiple iterations to get Brandolini-style layout right. Initial attempts used full-width swimlane dividers, stacked horizontal rows, and explicit async arrows — all non-Brandolini.
+- **Learning:** Brandolini's Big Picture layout is **organic**, not grid-based. Key principles: (1) **Spatial proximity** communicates dependency — place dependent subdomains directly below their trigger. (2) **Red separator lines are local** — only span the split area, not the full canvas. (3) **No arrows** — positioning alone conveys causality. (4) Subdomain ellipses can sit at varied Y-positions. (5) Pivotal events sit in the **gap between** subdomains, never inside.
+- **Action:** When generating Event Storming layouts, follow organic Brandolini principles. Use the reference file `design/addr/align/big-picture-event-storming.drawio` for visual guidance.
+
+## LRN-011 (2026-02-14)
+- **Category:** Event Storming / Split Patterns
+- **Context:** Pivotal events with multiple subscribing subdomains needed a clear visual fan-out pattern. Initial attempts were ad-hoc.
+- **Learning:** Split layout generalizes into **even** and **odd** subscriber counts. Even: 1 red line, n/2 above, n/2 below. Odd: 1 center subdomain at pivotal level; if n>1, 2 red lines with (n-1)/2 above and below. This is documented in both the `event-storming` and `event-storming-drawio` skills.
+- **Action:** Apply the even/odd generalization for any split pivotal. Reference the skills for exact layout constants.
+
+## LRN-012 (2026-02-14)
+- **Category:** Tooling / VS Code draw.io Caching
+- **Context:** After regenerating a `.drawio` file, user reported not seeing updates in VS Code's draw.io editor. The file had been updated on disk but the editor showed stale content.
+- **Learning:** VS Code's draw.io extension (`hediet.vscode-drawio`) can cache diagram state. After regenerating a `.drawio` file, the user must **"Revert File"** (Ctrl+Shift+P → "Revert File") or close and reopen the tab to see changes.
+- **Action:** After generating/updating `.drawio` files, remind the user to revert or reopen the tab.

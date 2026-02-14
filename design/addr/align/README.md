@@ -19,8 +19,17 @@
 
 ## Artifacts
 
+- [Personas](personas.md) — 4 personas with goals, context, and job story mapping
 - [Job Stories](job-stories.md) — 6 unifying job stories in WHEN/I WANT TO/SO I CAN format
-- [Activity Steps](activity-steps.md) — 24 activity steps grouped into activities
+- [Activity Steps](activity-steps.md) — 23 activity steps grouped into activities
+- [Event Storming](event-storming.md) — 40 domain events, 4 pivotal events, swimlanes, hotspots
+- [Validation](validation.md) — Cross-reference validation against ADDR prompts and Higginbotham methodology
+
+## Requirements Input
+
+Business requirements, scope, and context are documented in the product spec:
+
+- [Catalog Storefront Product Spec](../../../.ralph/specs/catalog-storefront.md)
 
 ## Open Questions
 

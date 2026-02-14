@@ -3,14 +3,13 @@
 | Job Story | Activity | Activity Step | Description |
 |-----------|----------|---------------|-------------|
 | **JS1** | **Search Catalog** | Submit search query | Submit a keyword or parametric search against the catalog |
-| JS1 | Search Catalog | Apply filters | Narrow results by category, specs (voltage, KV, weight, thrust), format, price range |
+| JS1 | Search Catalog | Apply filters | Narrow results by category, specs (voltage, KV, weight, thrust), format, price range, compliance/certification type |
 | JS1 | Search Catalog | Sort results | Order results by relevance, price, rating, or a specific spec value |
-| JS1 | Search Catalog | Page through results | Retrieve additional pages of search results |
 | JS1 | **Retrieve Suggestions** | Request autocomplete suggestions | Get suggested search terms, categories, or products as the query is typed |
 | **JS2** | **View Product Detail** | Request product details | Retrieve full product information including specs, descriptions, and images |
 | JS2 | View Product Detail | Request technical documents | Retrieve associated datasheets, CAD files, or compliance certificates |
 | JS2 | View Product Detail | Request product pricing | Retrieve current pricing, volume discounts, and any active promotions |
-| JS2 | View Product Detail | Request product availability | Check if the product is in stock, on backorder, or discontinued |
+| JS2 | View Product Detail | Request product availability | Check if the product is in stock, on backorder, or discontinued; includes estimated lead times and restock dates |
 | JS2 | View Product Detail | Request product reviews | Retrieve ratings and reviews submitted by other buyers |
 | JS2 | **Explore Related Products** | Request compatible products | Retrieve products known to be compatible with the viewed product |
 | JS2 | Explore Related Products | Request similar alternatives | Retrieve products in the same category with similar specifications |
