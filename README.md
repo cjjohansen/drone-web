@@ -38,8 +38,8 @@ Drones and mechatronic components: motors, ESCs, flight controllers, sensors, fr
 |-------|--------|--------------|
 | **Align** | Validated | Personas, job stories, 23 activity steps, Big Picture Event Storming (40 domain events, 4 pivotal events), validation report |
 | **Define** | Validated | 3 API boundaries, 14 resources, 19 API operation profiles, sequence diagrams for all 6 job stories, validation report |
-| **Design** | Up Next | HTTP methods, resource paths, style guidelines, high-level API design tables |
-| **Refine** | Planned | OpenAPI 3.1 specs, AsyncAPI 3.0 specs, Postman collections |
+| **Design** | Validated | Style guide, high-level API design tables (19 operations across 3 APIs), validation report |
+| **Refine** | Validated | OpenAPI 3.1 specs (3 APIs), AsyncAPI 3.0 spec (7 integration events), Postman collections, request/response examples, sequence diagrams |
 
 ## Event Storming
 
@@ -73,7 +73,7 @@ Three bounded contexts identified using DDD principles. No synchronous cross-bou
 The **[Ralph Loop](https://github.com/anthropics/claude-code/blob/main/plugins/ralph-wiggum/README.md)** is an AI-assisted development workflow that drives this project through ADDR phases. Based on Geoff Huntley's iterative autonomous agent pattern — keep feeding an AI agent a task until the job is done, persisting learnings between iterations. It maintains persistent state across sessions:
 
 - **`.ralph/STATE.md`** — Current phase, what's done, what's next
-- **`.ralph/agent/decisions.md`** — Decision log with rationale (D-001 through D-015)
+- **`.ralph/agent/decisions.md`** — Decision log with rationale (D-001 through D-018)
 - **`.ralph/agent/learnings.md`** — Mistakes and patterns learned across sessions
 - **`.ralph/tasks/addr-process.md`** — Task tracking and progress
 
@@ -86,39 +86,65 @@ drone-web/
 ├── design/addr/
 │   ├── addr-ai-prompts.md              # ADDR prompt guide (from launchany)
 │   ├── align/                          # Align phase deliverables
+│   │   ├── README.md                   # Align phase overview
 │   │   ├── personas.md                 # 4 personas with job story mapping
 │   │   ├── job-stories.md              # 6 unifying job stories
 │   │   ├── activity-steps.md           # 23 activity steps
 │   │   ├── event-storming.md           # Big Picture Event Storming (40 events)
 │   │   ├── event-storming.drawio       # Interactive diagram (draw.io)
 │   │   ├── event-storming.svg          # SVG export of the diagram
+│   │   ├── big-picture-event-storming.drawio  # Reference layout (hand-crafted)
 │   │   └── validation.md              # Align phase validation report
-│   └── define/                         # Define phase deliverables
-│       ├── boundaries.md               # 3 API boundaries with DDD rationale
-│       ├── resources.md                # 14 resources with properties
-│       ├── api-profiles.md             # 19 operations with events/characteristics
-│       ├── sequence-diagrams.md        # Mermaid diagrams for all 6 job stories
-│       └── validation.md              # Define phase validation report
+│   ├── define/                         # Define phase deliverables
+│   │   ├── README.md                   # Define phase overview
+│   │   ├── boundaries.md               # 3 API boundaries with DDD rationale
+│   │   ├── resources.md                # 14 resources with properties
+│   │   ├── api-profiles.md             # 19 operations with events/characteristics
+│   │   ├── sequence-diagrams.md        # Mermaid diagrams for all 6 job stories
+│   │   └── validation.md              # Define phase validation report
+│   ├── design/                         # Design phase deliverables
+│   │   ├── README.md                   # Design phase overview
+│   │   ├── style-guide.md              # API design style guide
+│   │   ├── api-design.md               # High-level API design tables (3 APIs, 19 ops)
+│   │   └── validation.md              # Design phase validation report
+│   └── refine/                         # Refine phase deliverables
+│       ├── README.md                   # Refine phase overview
+│       ├── catalog-storefront-api.yaml # OpenAPI 3.1 — Catalog Storefront API
+│       ├── component-compatibility-api.yaml  # OpenAPI 3.1 — Compatibility API
+│       ├── partner-catalog-api.yaml    # OpenAPI 3.1 — Partner Catalog API
+│       ├── integration-events.yaml     # AsyncAPI 3.0 — 7 integration events
+│       ├── api-examples.md             # Request/response examples for all 6 job stories
+│       ├── sequence-diagrams.md        # Mermaid diagrams with HTTP methods/status codes
+│       ├── validation.md              # Refine phase validation report
+│       └── postman/                    # Postman collections
+│           ├── catalog-storefront-api.postman_collection.json
+│           ├── component-compatibility-api.postman_collection.json
+│           └── partner-catalog-api.postman_collection.json
+├── Documentation/                      # Reference materials
+│   └── AI_Assisted_API_Design_Dec_2025_LaunchAny.01 1.pdf
 ├── .ralph/                             # Ralph Loop workspace
 │   ├── STATE.md                        # Session handoff state
-│   ├── agent/decisions.md              # Decision log (D-001 – D-015)
+│   ├── agent/decisions.md              # Decision log (D-001 – D-018)
 │   ├── agent/learnings.md              # Persistent learnings
 │   ├── specs/catalog-storefront.md     # Product spec
 │   └── tasks/addr-process.md           # Task tracking
+├── .cursor/skills/                     # Cursor agent skills
+│   ├── event-storming/SKILL.md         # Event Storming domain knowledge
+│   └── event-storming-drawio/          # draw.io generation skill
+│       ├── SKILL.md
+│       └── _drawio-engine.js           # Reusable Node.js engine
 └── CLAUDE.md                           # Project instructions for Claude Code
 ```
 
 ## Current Status
 
-**Phase:** Define validated, Design phase up next.
+**Phase:** All 4 ADDR phases complete (Align, Define, Design, Refine).
 
 **Completed:**
 - Align: Personas, job stories, activity steps, event storming, validation
 - Define: API boundaries, resources, operation profiles, sequence diagrams, validation
-
-**Next:**
-- Design phase: HTTP methods, resource paths, style guidelines, high-level API design tables
-- Refine phase: OpenAPI 3.1, AsyncAPI 3.0, Postman collections
+- Design: Style guide, high-level API design tables, validation
+- Refine: OpenAPI 3.1 specs, AsyncAPI 3.0 spec, Postman collections, examples, validation
 
 ## Tools Used
 
