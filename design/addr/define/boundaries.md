@@ -88,7 +88,7 @@ Applying DDD principles (Bounded Contexts, Aggregate design, autonomy, domain ev
 | **Linguistic differences** | Catalog speaks "search, browse, compare, review." Compatibility speaks "validate, mismatch, replacement." Partner speaks "feed, export, batch." |
 | **Consistency requirements** | Catalog maintains product data consistency. Compatibility maintains rule consistency. Neither requires synchronous calls to the other during operations. |
 | **Autonomy** | Each boundary owns its data and can evolve independently. |
-| **Event-driven integration** | Catalog publishes product change events; Compatibility and Partner consume them to stay current. |
+| **Event-driven integration** | Catalog publishes integration events (a curated subset of its internal domain events); Compatibility and Partner consume them to stay current. |
 | **Aggregate independence** | Product, CompatibilityCheck, and CatalogFeed are independent aggregates with their own transactional boundaries. |
 
 ---
@@ -114,10 +114,10 @@ Applying DDD principles (Bounded Contexts, Aggregate design, autonomy, domain ev
 └──────────────────────┘
 ```
 
-- **Domain events published by Catalog API:** Product.Created, Product.Updated, Product.Discontinued, Product.PriceChanged, Product.AvailabilityChanged, Category.Created, Category.Updated
-- **Domain events consumed by Compatibility API:** Product.Created, Product.Updated, Product.Discontinued (to keep component data current for validation)
-- **Domain events consumed by Partner Catalog API:** Product.Created, Product.Updated, Product.PriceChanged, Product.AvailabilityChanged (to keep feed data current)
-- **Pattern:** Asynchronous, event-driven integration. No synchronous cross-boundary calls during domain operations.
+- **Integration events published by Catalog API:** Product.Created, Product.Updated, Product.Discontinued, Product.PriceChanged, Product.AvailabilityChanged, Category.Created, Category.Updated
+- **Integration events consumed by Compatibility API:** Product.Created, Product.Updated, Product.Discontinued (to keep component data current for validation)
+- **Integration events consumed by Partner Catalog API:** Product.Created, Product.Updated, Product.PriceChanged, Product.AvailabilityChanged (to keep feed data current)
+- **Pattern:** Asynchronous, event-driven integration. No synchronous cross-boundary calls. Internal domain events (e.g., Catalog Searched, Product Details Viewed) stay within their bounded context and are not published.
 - **ACL:** Partner Catalog API translates Catalog product representations into partner-friendly projections
 
 ---

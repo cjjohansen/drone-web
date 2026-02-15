@@ -309,7 +309,7 @@ Pivotal events mark significant transitions — where the domain shifts context,
 │  Added       Catalog     Viewed     Generated       (out of scope)  │
 └──────────────────────────────┬──────────────────────────────────────┘
                                │
-                               │ events (async)
+                               │ integration events (async)
                                ▼
 ┌──────────────────────────────────────┐
 │ COMPONENT COMPATIBILITY API          │
@@ -401,8 +401,8 @@ Events 1–9, 23–24, 30–36 — These change domain state
 ### Query Events (observational)
 Events 10–22, 25–29, 37–40 — These read state but may be tracked for analytics
 
-### Integration Events (cross-boundary)
-Events 1–6 published by Catalog, consumed by Compatibility and Partner contexts
+### Integration Events (published cross-boundary)
+A curated subset of Catalog domain events projected and published for consumption by other bounded contexts. Not all domain events become integration events — only state-changing events with cross-boundary relevance are published (events 1–6). Internal events like searches, views, and retrievals stay within their originating context.
 
 ### Pivotal Events (phase transitions)
 Events 1, 4, 36, 38 — Mark significant domain transitions
