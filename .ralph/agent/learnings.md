@@ -77,3 +77,9 @@
 - **Context:** After regenerating a `.drawio` file, user reported not seeing updates in VS Code's draw.io editor. The file had been updated on disk but the editor showed stale content.
 - **Learning:** VS Code's draw.io extension (`hediet.vscode-drawio`) can cache diagram state. After regenerating a `.drawio` file, the user must **"Revert File"** (Ctrl+Shift+P → "Revert File") or close and reopen the tab to see changes.
 - **Action:** After generating/updating `.drawio` files, remind the user to revert or reopen the tab.
+
+## LRN-013 (2026-02-15)
+- **Category:** Tooling / API Spec Validation
+- **Context:** Initially used `@redocly/cli` for OpenAPI validation — it works but is a third-party opinionated linter, not the official tool. Then used `swagger-cli` which validated correctly but is deprecated and abandoned. User wanted the official tools from the OpenAPI and AsyncAPI organizations.
+- **Learning:** For OpenAPI validation, `swagger-cli` works but is deprecated (it says so itself). The Swagger/OpenAPI ecosystem doesn't have a single blessed CLI — `@redocly/cli` is the most actively maintained option. For AsyncAPI, `@asyncapi/cli` is the official tool from the AsyncAPI Initiative. Both are available via `npx`. Future projects should consider installing these as devDependencies for repeatable validation.
+- **Action:** Use `swagger-cli validate` or `@redocly/cli lint` for OpenAPI specs, `@asyncapi/cli validate` for AsyncAPI specs. Note that `swagger-cli` is deprecated — track the ecosystem for an official replacement. Always validate specs with CLI tools before committing.
