@@ -1,0 +1,333 @@
+openapi: 3.1.0
+info:
+  title: Partner Catalog Syndication API
+  description: |
+    Provides partner systems with bulk access to catalog data, availability, and pricing
+    for syndication and integration. Covers job story JS6 (Partner Catalog Access).
+  version: 1.0.0
+  contact:
+    name: Drone Web API Team
+
+servers:
+  - url: https://api.droneparts.com/partner-catalog/v1
+    description: Production
+
+security:
+  - apiKey: []
+
+tags:
+  - name: Catalog Feed
+    description: Bulk catalog data retrieval (JS6)
+  - name: Batch Operations
+    description: Batch availability and pricing lookups (JS6)
+
+paths:
+  /feed:
+    get:
+      operationId: getCatalogFeed
+      summary: Get catalog feed
+      description: |
+        Retrieve bulk catalog data. Use lastUpdatedSince for incremental updates.
+        Returns a simplified product projection for partner consumption.
+      tags: [Catalog Feed]
+      parameters:
+        - name: lastUpdatedSince
+          in: query
+          description: Only return products updated after this date (RFC 3339). Omit for full feed.
+          schema:
+            type: string
+            format: date-time
+            example: "2026-02-01T00:00:00Z"
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 100
+      responses:
+        '200':
+          description: Catalog feed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogFeed'
+              example:
+                feedId: "feed-20260215-001"
+                generatedDate: "2026-02-15T15:00:00Z"
+                productCount: 2
+                products:
+                  - productId: "prod-001"
+                    name: "EMAX ECO II 2207 1900KV"
+                    brand: "EMAX"
+                    sku: "EMAX-ECO2-2207-1900"
+                    description: "High-efficiency brushless motor for 5\" freestyle builds"
+                    specifications:
+                      motorSize: "2207"
+                      kvRating: 1900
+                      weight: "31.6g"
+                    categories: ["Brushless Motors"]
+                    pricing: { basePrice: 18.99, currency: "USD" }
+                    availability: { status: "in-stock", quantityAvailable: 342 }
+                    images: ["https://cdn.droneparts.com/img/prod-001-main.jpg"]
+                    updatedDate: "2026-01-20T14:30:00Z"
+                  - productId: "prod-010"
+                    name: "T-Motor F45A 4-in-1 ESC"
+                    brand: "T-Motor"
+                    sku: "TMOT-F45A-4IN1"
+                    description: "45A BLHeli_32 ESC for 4S-6S builds"
+                    specifications:
+                      maxVoltage: "6S"
+                      continuousCurrent: "45A"
+                    categories: ["4-in-1 ESCs"]
+                    pricing: { basePrice: 42.99, currency: "USD" }
+                    availability: { status: "in-stock", quantityAvailable: 89 }
+                    images: ["https://cdn.droneparts.com/img/prod-010-main.jpg"]
+                    updatedDate: "2026-02-10T09:00:00Z"
+                offset: 0
+                limit: 100
+        '400':
+          description: Invalid date format
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /availability:
+    post:
+      operationId: getBatchAvailability
+      summary: Check batch availability
+      description: Check availability for multiple products in a single request.
+      tags: [Batch Operations]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [productIds]
+              properties:
+                productIds:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  minItems: 1
+                  maxItems: 500
+            example:
+              productIds: ["prod-001", "prod-010", "prod-020"]
+      responses:
+        '200':
+          description: Batch availability results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BatchAvailability'
+              example:
+                - productId: "prod-001"
+                  status: "in-stock"
+                  quantityAvailable: 342
+                  estimatedRestockDate: null
+                - productId: "prod-010"
+                  status: "in-stock"
+                  quantityAvailable: 89
+                  estimatedRestockDate: null
+                - productId: "prod-020"
+                  status: "backorder"
+                  quantityAvailable: 0
+                  estimatedRestockDate: "2026-03-01T00:00:00Z"
+        '400':
+          description: Empty product list
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /pricing:
+    post:
+      operationId: getBatchPricing
+      summary: Get batch pricing
+      description: Retrieve pricing for multiple products in a single request.
+      tags: [Batch Operations]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [productIds]
+              properties:
+                productIds:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  minItems: 1
+                  maxItems: 500
+            example:
+              productIds: ["prod-001", "prod-010"]
+      responses:
+        '200':
+          description: Batch pricing results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BatchPricing'
+              example:
+                - productId: "prod-001"
+                  basePrice: 18.99
+                  volumeDiscounts:
+                    - minQuantity: 10
+                      price: 16.99
+                    - minQuantity: 50
+                      price: 14.99
+                  activePromotions: []
+                  currency: "USD"
+                - productId: "prod-010"
+                  basePrice: 42.99
+                  volumeDiscounts:
+                    - minQuantity: 5
+                      price: 39.99
+                  activePromotions: []
+                  currency: "USD"
+        '400':
+          description: Empty product list
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+components:
+  schemas:
+    CatalogFeed:
+      type: object
+      required: [feedId, generatedDate, productCount, products]
+      properties:
+        feedId:
+          type: string
+        generatedDate:
+          type: string
+          format: date-time
+        productCount:
+          type: integer
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/PartnerProduct'
+        offset:
+          type: integer
+        limit:
+          type: integer
+
+    PartnerProduct:
+      type: object
+      required: [productId, name, brand, sku, specifications, categories, pricing, availability]
+      properties:
+        productId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        brand:
+          type: string
+        sku:
+          type: string
+        description:
+          type: string
+        specifications:
+          type: object
+          additionalProperties: true
+        categories:
+          type: array
+          items: { type: string }
+        pricing:
+          type: object
+          properties:
+            basePrice: { type: number }
+            currency: { type: string }
+        availability:
+          type: object
+          properties:
+            status: { type: string, enum: [in-stock, backorder, discontinued] }
+            quantityAvailable: { type: integer }
+        images:
+          type: array
+          items: { type: string, format: uri }
+        updatedDate:
+          type: string
+          format: date-time
+
+    BatchAvailability:
+      type: object
+      required: [productId, status]
+      properties:
+        productId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [in-stock, backorder, discontinued]
+        quantityAvailable:
+          type: integer
+        estimatedRestockDate:
+          type: ["string", "null"]
+          format: date-time
+
+    BatchPricing:
+      type: object
+      required: [productId, basePrice, currency]
+      properties:
+        productId:
+          type: string
+          format: uuid
+        basePrice:
+          type: number
+        volumeDiscounts:
+          type: array
+          items:
+            type: object
+            properties:
+              minQuantity: { type: integer }
+              price: { type: number }
+        activePromotions:
+          type: array
+          items:
+            type: object
+            properties:
+              name: { type: string }
+              discountPrice: { type: number }
+              validUntil: { type: string, format: date-time }
+        currency:
+          type: string
+
+    ProblemDetails:
+      type: object
+      required: [type, title, status]
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      name: X-API-Key
+      in: header

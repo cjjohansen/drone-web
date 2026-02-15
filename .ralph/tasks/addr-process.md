@@ -36,14 +36,14 @@
 - [x] Package Design deliverable (README + api-design.md + style-guide.md + validation.md)
 - [ ] Git commit + push Design phase
 
-### Refine Phase (PENDING)
-- [ ] Generate OpenAPI 3.1 spec — Catalog Storefront API
-- [ ] Generate OpenAPI 3.1 spec — Component Compatibility API
-- [ ] Generate OpenAPI 3.1 spec — Partner Catalog Syndication API
-- [ ] Generate AsyncAPI 3.0 specs for integration events
-- [ ] Generate README request/response examples for each job story
-- [ ] Generate Mermaid sequence diagrams (with HTTP semantics)
-- [ ] Generate Postman collections
-- [ ] Validate Refine artifacts
-- [ ] Package Refine deliverable
+### Refine Phase (VALIDATED)
+- [x] Generate OpenAPI 3.1 spec — Catalog Storefront API (14 ops, validated with swagger-cli)
+- [x] Generate OpenAPI 3.1 spec — Component Compatibility API (2 ops, validated)
+- [x] Generate OpenAPI 3.1 spec — Partner Catalog Syndication API (3 ops, validated)
+- [x] Generate AsyncAPI 3.0 spec — 7 integration events (validated with @asyncapi/cli)
+- [x] Generate README request/response examples for each job story (api-examples.md)
+- [x] Generate Mermaid sequence diagrams with HTTP semantics (sequence-diagrams.md)
+- [x] Generate Postman collections for all 3 APIs
+- [x] Validate Refine artifacts — all specs pass CLI validation
+- [x] Package Refine deliverable (README + validation.md)
 - [ ] Git commit + push Refine phase
