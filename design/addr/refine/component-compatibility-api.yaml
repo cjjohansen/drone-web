@@ -1,0 +1,254 @@
+openapi: 3.1.0
+info:
+  title: Component Compatibility API
+  description: |
+    Validates mechatronic component compatibility and suggests replacements for incompatible parts.
+    Covers job story JS4 (Compatibility Verification).
+  version: 1.0.0
+  contact:
+    name: Drone Web API Team
+
+servers:
+  - url: https://api.droneparts.com/compatibility/v1
+    description: Production
+
+security:
+  - apiKey: []
+  - oauth2: []
+
+tags:
+  - name: Compatibility Checks
+    description: Component compatibility validation and replacement suggestions (JS4)
+
+paths:
+  /checks:
+    post:
+      operationId: checkCompatibility
+      summary: Check component compatibility
+      description: |
+        Submit a set of components (2+) for compatibility validation. Evaluates voltage,
+        current rating, physical fit, protocol, and weight/thrust compatibility.
+        Creates a persistent check result for subsequent replacement lookups.
+      tags: [Compatibility Checks]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [productIds]
+              properties:
+                productIds:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  minItems: 2
+                  description: Product IDs of components to check
+            example:
+              productIds: ["prod-001", "prod-010", "prod-020", "prod-030"]
+      responses:
+        '201':
+          description: Compatibility check created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompatibilityCheck'
+              example:
+                checkId: "chk-001"
+                components: ["prod-001", "prod-010", "prod-020", "prod-030"]
+                status: "fail"
+                incompatibilities:
+                  - componentA: "prod-001"
+                    componentB: "prod-020"
+                    rule: "Motor voltage range (4S-6S) exceeds ESC maximum (4S)"
+                    type: "voltage-mismatch"
+                    severity: "error"
+                checkedDate: "2026-02-15T14:30:00Z"
+        '400':
+          description: Invalid request (fewer than 2 components)
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: "https://api.droneparts.com/problems/bad-request"
+                title: "Bad Request"
+                status: 400
+                detail: "At least 2 component IDs are required"
+        '404':
+          description: One or more products not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '422':
+          description: Unrecognized component type
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: "https://api.droneparts.com/problems/unprocessable-entity"
+                title: "Unprocessable Entity"
+                status: 422
+                detail: "Product 'prod-099' is not a recognized component type for compatibility checking"
+
+  /checks/{checkId}/replacements/{productId}:
+    get:
+      operationId: getCompatibleReplacements
+      summary: Get compatible replacements
+      description: |
+        For an incompatible component in a previous check, retrieve alternative
+        products that would resolve the incompatibility.
+      tags: [Compatibility Checks]
+      parameters:
+        - name: checkId
+          in: path
+          required: true
+          description: Compatibility check UUID
+          schema:
+            type: string
+            format: uuid
+            example: "chk-001"
+        - name: productId
+          in: path
+          required: true
+          description: Product UUID of the incompatible component to replace
+          schema:
+            type: string
+            format: uuid
+            example: "prod-020"
+      responses:
+        '200':
+          description: Compatible replacement products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReplacementProduct'
+              example:
+                - productId: "prod-021"
+                  name: "T-Motor F45A 4-in-1 ESC (6S)"
+                  brand: "T-Motor"
+                  specifications:
+                    maxVoltage: "6S"
+                    continuousCurrent: "45A"
+                    burstCurrent: "55A"
+                  pricing:
+                    basePrice: 42.99
+                    currency: "USD"
+                - productId: "prod-022"
+                  name: "Holybro Tekko32 F4 50A (6S)"
+                  brand: "Holybro"
+                  specifications:
+                    maxVoltage: "6S"
+                    continuousCurrent: "50A"
+                    burstCurrent: "65A"
+                  pricing:
+                    basePrice: 49.99
+                    currency: "USD"
+        '404':
+          description: Check or product not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+components:
+  schemas:
+    CompatibilityCheck:
+      type: object
+      required: [checkId, components, status, checkedDate]
+      properties:
+        checkId:
+          type: string
+          format: uuid
+        components:
+          type: array
+          items:
+            type: string
+            format: uuid
+        status:
+          type: string
+          enum: [pass, fail, partial]
+        incompatibilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Incompatibility'
+        checkedDate:
+          type: string
+          format: date-time
+
+    Incompatibility:
+      type: object
+      required: [componentA, componentB, rule, type, severity]
+      properties:
+        componentA:
+          type: string
+          format: uuid
+        componentB:
+          type: string
+          format: uuid
+        rule:
+          type: string
+          description: Human-readable description of the violated rule
+        type:
+          type: string
+          enum: [voltage-mismatch, current-exceeded, physical-fit, protocol-mismatch, weight-thrust]
+        severity:
+          type: string
+          enum: [error, warning]
+
+    ReplacementProduct:
+      type: object
+      required: [productId, name, brand, specifications, pricing]
+      properties:
+        productId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        brand:
+          type: string
+        specifications:
+          type: object
+          additionalProperties: true
+        pricing:
+          type: object
+          properties:
+            basePrice:
+              type: number
+            currency:
+              type: string
+
+    ProblemDetails:
+      type: object
+      required: [type, title, status]
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      name: X-API-Key
+      in: header
+    oauth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.droneparts.com/oauth/token
+          scopes:
+            compatibility:read: Check compatibility
+            compatibility:write: Create compatibility checks

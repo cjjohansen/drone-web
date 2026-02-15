@@ -10,7 +10,15 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "mcp__plugin_github_github__get_file_contents",
-      "WebFetch(domain:galaxi.tech)"
+      "WebFetch(domain:galaxi.tech)",
+      "Bash(git checkout:*)",
+      "Bash(git pull:*)",
+      "Bash(git push:*)",
+      "Bash(node --version:*)",
+      "Bash(npx --yes @redocly/cli lint:*)",
+      "Bash(npx --yes swagger-cli validate:*)",
+      "mcp__plugin_github_github__search_repositories",
+      "mcp__plugin_context7_context7__resolve-library-id"
     ]
   }
 }

@@ -99,6 +99,25 @@
 
 ---
 
+## Design Phase Decisions
+
+### D-016: Search and compare as functional POST endpoints
+**Date:** 2026-02-15
+**Decision:** `searchProducts()`, `getAutocompleteSuggestions()`, `compareProducts()`, `getBatchAvailability()`, and `getBatchPricing()` use `POST` despite being read operations.
+**Rationale:** Per style guide rule 3 — functional endpoints that accept complex filter objects or lists of identifiers in the body must use `POST`. Search queries may contain PII (per security rule 9). Batch operations send arrays of UUIDs that exceed practical URL length limits.
+
+### D-017: Compatibility check returns 201 Created
+**Date:** 2026-02-15
+**Decision:** `checkCompatibility()` returns `201 Created` with the full CompatibilityCheck resource.
+**Rationale:** A compatibility check creates a new resource (the check result with a `checkId`). The check is unsafe (it creates state) and the result is addressable for subsequent replacement lookups.
+
+### D-018: Sub-resource paths for product relationships
+**Date:** 2026-02-15
+**Decision:** Pricing, availability, reviews, documents, compatible products, similar products, and frequently-bought-together are sub-resources under `/products/{productId}/`.
+**Rationale:** These are naturally subordinate to a product. Sub-resource paths make the hierarchy explicit and allow independent caching, pagination, and access control per concern.
+
+---
+
 ## Open Questions
 
 | ID | Phase | Question | Status |

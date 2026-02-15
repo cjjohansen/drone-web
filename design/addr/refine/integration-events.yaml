@@ -1,0 +1,433 @@
+asyncapi: 3.0.0
+info:
+  title: Catalog Storefront Integration Events
+  description: |
+    Integration events published by the Catalog Storefront domain for cross-boundary consumption.
+    These are a curated subset of internal domain events — only state-changing events with
+    cross-boundary relevance are published. Internal events (searches, views, retrievals)
+    stay within their originating bounded context.
+  version: 1.0.0
+
+defaultContentType: application/json
+
+channels:
+  catalogProductCreated:
+    address: catalog.product.created
+    description: Published when a new product is added to the catalog.
+    messages:
+      ProductCreated:
+        $ref: '#/components/messages/ProductCreated'
+
+  catalogProductUpdated:
+    address: catalog.product.updated
+    description: Published when product specifications or metadata are updated.
+    messages:
+      ProductUpdated:
+        $ref: '#/components/messages/ProductUpdated'
+
+  catalogProductDiscontinued:
+    address: catalog.product.discontinued
+    description: Published when a product is discontinued.
+    messages:
+      ProductDiscontinued:
+        $ref: '#/components/messages/ProductDiscontinued'
+
+  catalogProductPriceChanged:
+    address: catalog.product.price-changed
+    description: Published when product pricing changes.
+    messages:
+      ProductPriceChanged:
+        $ref: '#/components/messages/ProductPriceChanged'
+
+  catalogProductAvailabilityChanged:
+    address: catalog.product.availability-changed
+    description: Published when product availability status changes.
+    messages:
+      ProductAvailabilityChanged:
+        $ref: '#/components/messages/ProductAvailabilityChanged'
+
+  catalogCategoryCreated:
+    address: catalog.category.created
+    description: Published when a new category is created.
+    messages:
+      CategoryCreated:
+        $ref: '#/components/messages/CategoryCreated'
+
+  catalogCategoryUpdated:
+    address: catalog.category.updated
+    description: Published when a category is updated (name, hierarchy, facets).
+    messages:
+      CategoryUpdated:
+        $ref: '#/components/messages/CategoryUpdated'
+
+operations:
+  publishProductCreated:
+    action: send
+    channel:
+      $ref: '#/channels/catalogProductCreated'
+    summary: Catalog API publishes when a product is added
+    description: |
+      Consumed by: Compatibility API (update component data cache), Partner Catalog API (update feed cache).
+      Triggering operation: Catalog admin adds a product.
+
+  publishProductUpdated:
+    action: send
+    channel:
+      $ref: '#/channels/catalogProductUpdated'
+    summary: Catalog API publishes when product specs/metadata change
+    description: |
+      Consumed by: Compatibility API (update component data cache), Partner Catalog API (update feed cache).
+      Triggering operation: Catalog admin updates product specifications.
+
+  publishProductDiscontinued:
+    action: send
+    channel:
+      $ref: '#/channels/catalogProductDiscontinued'
+    summary: Catalog API publishes when a product is discontinued
+    description: |
+      Consumed by: Compatibility API (flag in rules, remove from active checks), Partner Catalog API (update feed).
+      Triggering operation: Catalog admin discontinues a product.
+
+  publishProductPriceChanged:
+    action: send
+    channel:
+      $ref: '#/channels/catalogProductPriceChanged'
+    summary: Catalog API publishes when product pricing changes
+    description: |
+      Consumed by: Partner Catalog API (update feed cache).
+      Not consumed by Compatibility API (pricing not relevant to compatibility).
+      Triggering operation: Catalog admin updates product pricing.
+
+  publishProductAvailabilityChanged:
+    action: send
+    channel:
+      $ref: '#/channels/catalogProductAvailabilityChanged'
+    summary: Catalog API publishes when availability status changes
+    description: |
+      Consumed by: Partner Catalog API (update feed cache).
+      Not consumed by Compatibility API (availability not relevant to compatibility).
+      Triggering operation: Inventory system updates stock levels.
+
+  publishCategoryCreated:
+    action: send
+    channel:
+      $ref: '#/channels/catalogCategoryCreated'
+    summary: Catalog API publishes when a category is created
+    description: |
+      Currently not consumed by other boundaries. Published for future extensibility.
+
+  publishCategoryUpdated:
+    action: send
+    channel:
+      $ref: '#/channels/catalogCategoryUpdated'
+    summary: Catalog API publishes when a category is updated
+    description: |
+      Currently not consumed by other boundaries. Published for future extensibility.
+
+components:
+  messages:
+    ProductCreated:
+      name: ProductCreated
+      title: Product Created
+      summary: A new product has been added to the catalog
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ProductEvent'
+      examples:
+        - name: BrushlessMotorCreated
+          summary: New brushless motor added
+          payload:
+            eventId: "evt-001"
+            eventType: "catalog.product.created"
+            timestamp: "2026-02-15T10:00:00Z"
+            source: "catalog-api"
+            data:
+              productId: "prod-001"
+              name: "EMAX ECO II 2207 1900KV"
+              brand: "EMAX"
+              sku: "EMAX-ECO2-2207-1900"
+              status: "active"
+              specifications:
+                motorSize: "2207"
+                kvRating: 1900
+                weight: "31.6g"
+                shaftDiameter: "5mm"
+                voltage: "4S-6S"
+              categories: ["cat-motors-brushless"]
+              pricing:
+                basePrice: 18.99
+                currency: "USD"
+              availability:
+                status: "in-stock"
+                quantityAvailable: 342
+
+    ProductUpdated:
+      name: ProductUpdated
+      title: Product Updated
+      summary: Product specifications or metadata have been updated
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ProductEvent'
+      examples:
+        - name: MotorSpecsUpdated
+          summary: Motor specifications updated
+          payload:
+            eventId: "evt-002"
+            eventType: "catalog.product.updated"
+            timestamp: "2026-02-15T14:30:00Z"
+            source: "catalog-api"
+            data:
+              productId: "prod-001"
+              name: "EMAX ECO II 2207 1900KV"
+              brand: "EMAX"
+              sku: "EMAX-ECO2-2207-1900"
+              status: "active"
+              specifications:
+                motorSize: "2207"
+                kvRating: 1900
+                weight: "31.2g"
+                shaftDiameter: "5mm"
+                voltage: "4S-6S"
+                maxThrust: "1600g"
+              categories: ["cat-motors-brushless"]
+              pricing:
+                basePrice: 18.99
+                currency: "USD"
+              availability:
+                status: "in-stock"
+                quantityAvailable: 342
+
+    ProductDiscontinued:
+      name: ProductDiscontinued
+      title: Product Discontinued
+      summary: A product has been discontinued
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ProductLifecycleEvent'
+      examples:
+        - name: MotorDiscontinued
+          summary: Motor discontinued
+          payload:
+            eventId: "evt-003"
+            eventType: "catalog.product.discontinued"
+            timestamp: "2026-02-15T16:00:00Z"
+            source: "catalog-api"
+            data:
+              productId: "prod-099"
+              reason: "End of life — replaced by ECO III series"
+
+    ProductPriceChanged:
+      name: ProductPriceChanged
+      title: Product Price Changed
+      summary: Product pricing has been updated
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ProductPriceEvent'
+      examples:
+        - name: MotorPriceReduced
+          summary: Motor price reduced
+          payload:
+            eventId: "evt-004"
+            eventType: "catalog.product.price-changed"
+            timestamp: "2026-02-15T11:00:00Z"
+            source: "catalog-api"
+            data:
+              productId: "prod-001"
+              previousPrice: 19.99
+              newPrice: 18.99
+              currency: "USD"
+
+    ProductAvailabilityChanged:
+      name: ProductAvailabilityChanged
+      title: Product Availability Changed
+      summary: Product availability status has changed
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ProductAvailabilityEvent'
+      examples:
+        - name: MotorBackordered
+          summary: Motor goes to backorder
+          payload:
+            eventId: "evt-005"
+            eventType: "catalog.product.availability-changed"
+            timestamp: "2026-02-15T12:00:00Z"
+            source: "catalog-api"
+            data:
+              productId: "prod-020"
+              previousStatus: "in-stock"
+              newStatus: "backorder"
+              quantityAvailable: 0
+              estimatedRestockDate: "2026-03-01T00:00:00Z"
+
+    CategoryCreated:
+      name: CategoryCreated
+      title: Category Created
+      summary: A new category has been created
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/CategoryEvent'
+      examples:
+        - name: NewSubcategory
+          summary: New subcategory for GPS modules
+          payload:
+            eventId: "evt-006"
+            eventType: "catalog.category.created"
+            timestamp: "2026-02-15T09:00:00Z"
+            source: "catalog-api"
+            data:
+              categoryId: "cat-sensors-gps"
+              name: "GPS Modules"
+              parentCategory: "cat-sensors"
+
+    CategoryUpdated:
+      name: CategoryUpdated
+      title: Category Updated
+      summary: A category has been updated
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/CategoryEvent'
+      examples:
+        - name: CategoryRenamed
+          summary: Category renamed
+          payload:
+            eventId: "evt-007"
+            eventType: "catalog.category.updated"
+            timestamp: "2026-02-15T09:30:00Z"
+            source: "catalog-api"
+            data:
+              categoryId: "cat-sensors-gps"
+              name: "GPS & GNSS Modules"
+              parentCategory: "cat-sensors"
+
+  schemas:
+    EventEnvelope:
+      type: object
+      required: [eventId, eventType, timestamp, source, data]
+      properties:
+        eventId:
+          type: string
+          format: uuid
+          description: Unique event identifier
+        eventType:
+          type: string
+          description: "Event type in dot notation: {boundary}.{resource}.{action}"
+        timestamp:
+          type: string
+          format: date-time
+          description: When the event occurred (RFC 3339)
+        source:
+          type: string
+          description: Source boundary that published the event
+
+    ProductEvent:
+      allOf:
+        - $ref: '#/components/schemas/EventEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [productId, name, brand, sku, status, specifications, categories, pricing, availability]
+              properties:
+                productId:
+                  type: string
+                  format: uuid
+                name:
+                  type: string
+                brand:
+                  type: string
+                sku:
+                  type: string
+                status:
+                  type: string
+                  enum: [active, discontinued, backorder]
+                specifications:
+                  type: object
+                  additionalProperties: true
+                categories:
+                  type: array
+                  items: { type: string }
+                pricing:
+                  type: object
+                  properties:
+                    basePrice: { type: number }
+                    currency: { type: string }
+                availability:
+                  type: object
+                  properties:
+                    status: { type: string }
+                    quantityAvailable: { type: integer }
+              description: Full product state snapshot (fact event)
+
+    ProductLifecycleEvent:
+      allOf:
+        - $ref: '#/components/schemas/EventEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [productId]
+              properties:
+                productId:
+                  type: string
+                  format: uuid
+                reason:
+                  type: string
+
+    ProductPriceEvent:
+      allOf:
+        - $ref: '#/components/schemas/EventEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [productId, previousPrice, newPrice, currency]
+              properties:
+                productId:
+                  type: string
+                  format: uuid
+                previousPrice:
+                  type: number
+                newPrice:
+                  type: number
+                currency:
+                  type: string
+
+    ProductAvailabilityEvent:
+      allOf:
+        - $ref: '#/components/schemas/EventEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [productId, previousStatus, newStatus, quantityAvailable]
+              properties:
+                productId:
+                  type: string
+                  format: uuid
+                previousStatus:
+                  type: string
+                  enum: [in-stock, backorder, discontinued]
+                newStatus:
+                  type: string
+                  enum: [in-stock, backorder, discontinued]
+                quantityAvailable:
+                  type: integer
+                estimatedRestockDate:
+                  type: ["string", "null"]
+                  format: date-time
+
+    CategoryEvent:
+      allOf:
+        - $ref: '#/components/schemas/EventEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [categoryId, name]
+              properties:
+                categoryId:
+                  type: string
+                name:
+                  type: string
+                parentCategory:
+                  type: ["string", "null"]
