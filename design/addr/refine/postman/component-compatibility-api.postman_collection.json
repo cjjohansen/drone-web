@@ -1,0 +1,47 @@
+{
+  "info": {
+    "name": "Component Compatibility API",
+    "description": "Component compatibility validation and replacement suggestions. Covers JS4 (Compatibility Verification).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      { "key": "key", "value": "X-API-Key" },
+      { "key": "value", "value": "{{apiKey}}" },
+      { "key": "in", "value": "header" }
+    ]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "https://api.droneparts.com/compatibility/v1" },
+    { "key": "apiKey", "value": "your-api-key" },
+    { "key": "checkId", "value": "chk-001" },
+    { "key": "productId", "value": "prod-020" }
+  ],
+  "item": [
+    {
+      "name": "JS4 — Compatibility Verification",
+      "item": [
+        {
+          "name": "Check compatibility",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/checks",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"productIds\": [\"prod-001\", \"prod-010\", \"prod-020\", \"prod-030\"] }"
+            }
+          }
+        },
+        {
+          "name": "Get compatible replacements",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/checks/{{checkId}}/replacements/{{productId}}"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -13,8 +13,8 @@
 
 ## Current Phase
 
-**Phase:** ADDR Design — in progress (Ralph Loop autonomous run)
-**Status:** Style guide created. API design tables for all 3 boundaries drafted. Validating now.
+**Phase:** ADDR Refine — validated, ready to commit (Ralph Loop autonomous run)
+**Status:** All 4 ADDR phases complete. Refine artifacts validated with official CLI tools.
 **Blockers:** None
 
 ## What Was Just Completed
@@ -42,20 +42,30 @@
 - [x] Distinguished integration events from internal domain events
 - [x] Git committed and pushed
 
-### Design Phase (IN PROGRESS)
+### Design Phase (VALIDATED + COMMITTED)
 - [x] Style guide created (`design/addr/design/style-guide.md`)
 - [x] High-level API design table — Catalog API (14 operations)
 - [x] High-level API design table — Compatibility API (2 operations)
 - [x] High-level API design table — Partner Catalog API (3 operations)
 - [x] Design decisions recorded (D-016, D-017, D-018)
-- [ ] Validate Design artifacts
-- [ ] Package Design deliverable (README) + commit + push
+- [x] Validate Design artifacts — all 19 ops covered, style guide compliant
+- [x] Package Design deliverable + commit + push
+
+### Refine Phase (VALIDATED)
+- [x] OpenAPI 3.1 spec — Catalog Storefront API (14 operations, validated)
+- [x] OpenAPI 3.1 spec — Component Compatibility API (2 operations, validated)
+- [x] OpenAPI 3.1 spec — Partner Catalog Syndication API (3 operations, validated)
+- [x] AsyncAPI 3.0 spec — 7 integration events (validated)
+- [x] README request/response examples for all 6 job stories
+- [x] Mermaid sequence diagrams with HTTP methods and status codes
+- [x] Postman collections for all 3 APIs
+- [x] Validation report — all specs pass CLI validation
+- [ ] Git commit + push Refine phase
 
 ## What Comes Next
 
-1. **Validate Design phase** — cross-reference against Define profiles + style guide
-2. **Commit + push Design phase** on `addr-design-phase-2` branch
-3. **Refine phase** — OpenAPI 3.1 specs, AsyncAPI 3.0 specs (for integration events), README examples, Mermaid diagrams, Postman collections
+1. **Commit + push Refine phase** on `addr-design-phase-2` branch
+2. **ADDR process complete** — all 4 phases done
 
 ## Key Decisions
 
@@ -94,7 +104,8 @@
 | `design/addr/design/api-design.md` | High-level API design tables (all 3 boundaries) |
 | `design/addr/align/` | Align phase deliverables |
 | `design/addr/define/` | Define phase deliverables |
-| `design/addr/design/` | Design phase deliverables (in progress) |
+| `design/addr/design/` | Design phase deliverables |
+| `design/addr/refine/` | Refine phase deliverables (OpenAPI, AsyncAPI, Postman, examples) |
 | `design/addr/align/event-storming.drawio` | Big Picture Event Storming diagram (organic Brandolini layout with split patterns) |
 | `.cursor/skills/event-storming/SKILL.md` | Event Storming domain knowledge skill |
 | `.cursor/skills/event-storming-drawio/SKILL.md` | Event Storming draw.io generation skill |
