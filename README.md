@@ -146,6 +146,15 @@ drone-web/
 - Design: Style guide, high-level API design tables, validation
 - Refine: OpenAPI 3.1 specs, AsyncAPI 3.0 spec, Postman collections, examples, validation
 
+## Retrospective
+
+This was our first full ADDR pass with AI-assisted design. Some things we'd do differently:
+
+- **Event Storming produced too many observational events.** Roughly half of the 40 domain events are query observations ("Catalog Searched", "Product Details Viewed", "Category Browsed") rather than genuine state changes. In Brandolini's event storming, domain events should represent things that happened that changed state — not "someone read data." These observational events belong in analytics instrumentation, not on the event storming canvas, unless auditing or behavior tracking is a core domain concern (it isn't here).
+- **API profiles reflect this.** The Catalog API is entirely read-only, so every operation correctly shows no emitted events. The observational events from event storming don't add design value in the profiles — they'd just pad the column.
+
+**Next step:** Repeat the ADDR process on a domain like Catalog Management, where there are plenty of state-changing events (product creation, updates, discontinuation, pricing changes, category management). That will give the event storming and API profiles more substance to work with and better test the ADDR workflow. See what improves, whether we can move faster, and where the AI-assisted workflow still needs calibration. We're still learning.
+
 ## Tools Used
 
 - **ADDR** — Align-Define-Design-Refine methodology by James Higginbotham
