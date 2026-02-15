@@ -83,3 +83,30 @@
 - **Context:** Initially used `@redocly/cli` for OpenAPI validation — it works but is a third-party opinionated linter, not the official tool. Then used `swagger-cli` which validated correctly but is deprecated and abandoned. User wanted the official tools from the OpenAPI and AsyncAPI organizations.
 - **Learning:** For OpenAPI validation, `swagger-cli` works but is deprecated (it says so itself). The Swagger/OpenAPI ecosystem doesn't have a single blessed CLI — `@redocly/cli` is the most actively maintained option. For AsyncAPI, `@asyncapi/cli` is the official tool from the AsyncAPI Initiative. Both are available via `npx`. Future projects should consider installing these as devDependencies for repeatable validation.
 - **Action:** Use `swagger-cli validate` or `@redocly/cli lint` for OpenAPI specs, `@asyncapi/cli validate` for AsyncAPI specs. Note that `swagger-cli` is deprecated — track the ecosystem for an official replacement. Always validate specs with CLI tools before committing.
+
+## LRN-014 (2026-02-15)
+- **Category:** Tooling / Spec Authoring with Context7
+- **Context:** Searched for OpenAPI and AsyncAPI MCP servers to help author better specs. Found tools for *consuming* specs but none purpose-built for *authoring*. Context7 already indexes the official specs with high-quality snippets.
+- **Learning:** When authoring OpenAPI or AsyncAPI specs, query Context7 for correct syntax, patterns, and examples. Available libraries:
+  - **OpenAPI 3.1.0:** `/websites/spec_openapis_oas_v3_1_0` (287 snippets, score 83.2)
+  - **OpenAPI 3.2.0:** `/websites/spec_openapis_oas_v3_2_0` (1056 snippets)
+  - **OpenAPI best practices:** `/websites/learn_openapis` (311 snippets)
+  - **AsyncAPI spec:** `/asyncapi/spec` (72 snippets)
+  - **AsyncAPI CLI:** `/asyncapi/cli` (120 snippets)
+  All have High source reputation. No extra MCP servers needed — Context7 is the authoring reference.
+- **Action:** Before writing or revising any OpenAPI/AsyncAPI spec, query the relevant Context7 library for the specific construct (e.g., "webhook callback object", "channel bindings for Kafka"). This ensures specs follow the latest official patterns rather than relying on stale training data.
+
+## LRN-015 (2026-02-15)
+- **Category:** Tooling / Context7 Quality & Trust
+- **Context:** Investigated how Context7 calculates its Benchmark Score and Source Reputation metrics.
+- **Learning:** Context7 scores are **empirically tested**, not self-reported. Process: (1) 80+ real coding questions run through Claude Haiku simulating actual developer sessions, (2) Claude Sonnet evaluates helpfulness/relevance on a 1-10 scale, (3) aggregate becomes the 0-100 benchmark score. Source Reputation (High/Medium/Low) reflects authority of the source. Premium jury models (Claude Opus, Gemini Pro) periodically re-score and adjust weights. This means Context7 is a reliable, tested reference — prefer it over web searches for library documentation when a high-scoring library is available.
+- **Action:** When choosing between Context7 libraries for the same topic, prioritize by: (1) Source Reputation = High, (2) higher Benchmark Score, (3) higher snippet count for broader coverage. Trust scores >= 75 as strong references.
+
+## LRN-016 (2026-02-15)
+- **Category:** Tooling / Context7 Libraries for Implementation
+- **Context:** Checked Context7 availability for EventCatalog, Astro, and React Flow — all key technologies for the drone-web project's implementation phase.
+- **Learning:** Context7 has excellent coverage for our implementation stack:
+  - **EventCatalog:** `/websites/eventcatalog_dev` (2,271 snippets, High rep, score 74.5) — event-driven architecture documentation tool. EventCatalog is Astro-based, supports domains, services, messages, schemas, diagrams, and AI integration. Aligns with our ADDR async API documentation needs (D-008 decision).
+  - **Astro:** `/websites/astro_build_en` (17,075 snippets, High rep, score 84.4) — modern web framework with islands architecture. Massive snippet coverage. Also available: v6-specific at `/websites/v6_astro_build_en` (5,423 snippets, score 82.8).
+  - **React Flow:** `/websites/reactflow_dev` (1,113 snippets, High rep, score 79.2) — customizable React component for node-based editors and diagrams. Could power interactive architecture visualizations, event flow diagrams, or pipeline editors.
+- **Action:** Query these Context7 libraries when building with EventCatalog, Astro, or React Flow. Use the docs-site libraries (higher snippet count) over source-code libraries for implementation guidance.
