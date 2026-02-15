@@ -1,0 +1,953 @@
+openapi: 3.1.0
+info:
+  title: Catalog Storefront API
+  description: |
+    Product discovery, browsing, evaluation, and comparison for a mechatronic/drone ecommerce platform.
+    Covers job stories JS1 (Discovery), JS2 (Evaluation), JS3 (Comparison), and JS5 (Browsing).
+  version: 1.0.0
+  contact:
+    name: Drone Web API Team
+
+servers:
+  - url: https://api.droneparts.com/catalog/v1
+    description: Production
+
+security:
+  - apiKey: []
+  - oauth2: []
+
+tags:
+  - name: Search
+    description: Product discovery and search operations (JS1)
+  - name: Products
+    description: Product details, pricing, availability, documents, and relationships (JS2)
+  - name: Comparison
+    description: Side-by-side product comparison (JS3)
+  - name: Categories
+    description: Category browsing, products, and facets (JS5)
+
+paths:
+  /products/search:
+    post:
+      operationId: searchProducts
+      summary: Search the catalog
+      description: Search using keywords and parametric filters on technical specifications.
+      tags: [Search]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchRequest'
+            example:
+              query: "brushless motor 2207"
+              filters:
+                categoryId: "cat-motors-brushless"
+                specifications:
+                  kvRating: { min: 1700, max: 2500 }
+                  shaftDiameter: "5mm"
+                priceRange: { min: 15, max: 50 }
+              sort: "price"
+              offset: 0
+              limit: 20
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResult'
+              example:
+                totalResults: 47
+                products:
+                  - productId: "prod-001"
+                    name: "EMAX ECO II 2207 1900KV"
+                    shortDescription: "High-efficiency brushless motor for 5\" freestyle builds"
+                    brand: "EMAX"
+                    pricing: { basePrice: 18.99, currency: "USD" }
+                    availability: { status: "in-stock", quantityAvailable: 342 }
+                    images: ["https://cdn.droneparts.com/img/prod-001-thumb.jpg"]
+                offset: 0
+                limit: 20
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /products/autocomplete:
+    post:
+      operationId: getAutocompleteSuggestions
+      summary: Get search suggestions
+      description: Returns suggested terms, categories, and products as the query is typed.
+      tags: [Search]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [query]
+              properties:
+                query:
+                  type: string
+                  minLength: 2
+                  example: "brus"
+                limit:
+                  type: integer
+                  default: 5
+                  example: 5
+      responses:
+        '200':
+          description: Autocomplete suggestions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Suggestion'
+              example:
+                suggestedTerms: ["brushless motor", "brushless ESC", "brushed motor"]
+                suggestedCategories:
+                  - categoryId: "cat-motors-brushless"
+                    name: "Brushless Motors"
+                suggestedProducts:
+                  - productId: "prod-001"
+                    name: "EMAX ECO II 2207 1900KV"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /products/{productId}:
+    get:
+      operationId: getProduct
+      summary: Get product details
+      description: Retrieve full product representation including specs, descriptions, and images.
+      tags: [Products]
+      parameters:
+        - $ref: '#/components/parameters/productId'
+      responses:
+        '200':
+          description: Full product details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+              example:
+                productId: "prod-001"
+                name: "EMAX ECO II 2207 1900KV"
+                description: "The EMAX ECO II series delivers high efficiency and smooth power delivery for 5-inch freestyle and racing quads. Features N52H arc magnets and 0.15mm lamination for minimal iron loss."
+                shortDescription: "High-efficiency brushless motor for 5\" freestyle builds"
+                brand: "EMAX"
+                sku: "EMAX-ECO2-2207-1900"
+                status: "active"
+                images:
+                  - "https://cdn.droneparts.com/img/prod-001-main.jpg"
+                  - "https://cdn.droneparts.com/img/prod-001-side.jpg"
+                specifications:
+                  motorSize: "2207"
+                  kvRating: 1900
+                  weight: "31.6g"
+                  shaftDiameter: "5mm"
+                  voltage: "4S-6S"
+                  maxThrust: "1580g"
+                  motorType: "brushless"
+                categories: ["cat-motors-brushless"]
+                pricing:
+                  basePrice: 18.99
+                  currency: "USD"
+                  volumeDiscounts:
+                    - minQuantity: 10
+                      price: 16.99
+                    - minQuantity: 50
+                      price: 14.99
+                availability:
+                  status: "in-stock"
+                  quantityAvailable: 342
+                createdDate: "2025-06-15T10:00:00Z"
+                updatedDate: "2026-01-20T14:30:00Z"
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /products/{productId}/pricing:
+    get:
+      operationId: getProductPricing
+      summary: Get product pricing
+      description: Retrieve current pricing including volume discounts and active promotions.
+      tags: [Products]
+      parameters:
+        - $ref: '#/components/parameters/productId'
+      responses:
+        '200':
+          description: Product pricing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductPricing'
+              example:
+                productId: "prod-001"
+                basePrice: 18.99
+                currency: "USD"
+                volumeDiscounts:
+                  - minQuantity: 10
+                    price: 16.99
+                  - minQuantity: 50
+                    price: 14.99
+                activePromotions: []
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /products/{productId}/availability:
+    get:
+      operationId: getProductAvailability
+      summary: Check product availability
+      description: Check stock status, quantity available, and estimated restock dates.
+      tags: [Products]
+      parameters:
+        - $ref: '#/components/parameters/productId'
+      responses:
+        '200':
+          description: Product availability
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductAvailability'
+              example:
+                productId: "prod-001"
+                status: "in-stock"
+                quantityAvailable: 342
+                estimatedRestockDate: null
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /products/{productId}/reviews:
+    get:
+      operationId: getProductReviews
+      summary: Get product reviews
+      description: Retrieve ratings and reviews with pagination and sorting.
+      tags: [Products]
+      parameters:
+        - $ref: '#/components/parameters/productId'
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [createdDate, rating]
+            default: createdDate
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Product reviews
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewList'
+              example:
+                totalResults: 23
+                averageRating: 4.6
+                reviews:
+                  - reviewId: "rev-001"
+                    rating: 5
+                    title: "Excellent motor for freestyle"
+                    body: "Smooth power delivery, great build quality. Running on 6S with Gemfan 51466."
+                    author: "FPV_Builder_Pro"
+                    verifiedPurchase: true
+                    createdDate: "2026-01-15T09:30:00Z"
+                offset: 0
+                limit: 10
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /products/{productId}/documents:
+    get:
+      operationId: getProductDocuments
+      summary: Get technical documents
+      description: Retrieve datasheets, CAD files, and compliance certificates.
+      tags: [Products]
+      parameters:
+        - $ref: '#/components/parameters/productId'
+        - name: type
+          in: query
+          description: Filter by document type
+          schema:
+            type: string
+            enum: [datasheet, cad-file, compliance-certificate, manual]
+      responses:
+        '200':
+          description: List of technical documents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TechnicalDocument'
+              example:
+                - documentId: "doc-001"
+                  title: "EMAX ECO II 2207 Datasheet"
+                  type: "datasheet"
+                  format: "PDF"
+                  url: "https://cdn.droneparts.com/docs/emax-eco2-2207-datasheet.pdf"
+                  fileSize: 245760
+                - documentId: "doc-002"
+                  title: "EMAX ECO II 2207 STEP Model"
+                  type: "cad-file"
+                  format: "STEP"
+                  url: "https://cdn.droneparts.com/docs/emax-eco2-2207.step"
+                  fileSize: 1048576
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /products/{productId}/compatible:
+    get:
+      operationId: getCompatibleProducts
+      summary: Get compatible products
+      description: Retrieve products known to be compatible with the given product.
+      tags: [Products]
+      parameters:
+        - $ref: '#/components/parameters/productId'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Compatible products
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductList'
+              example:
+                totalResults: 12
+                products:
+                  - productId: "prod-010"
+                    name: "T-Motor F45A 4-in-1 ESC"
+                    shortDescription: "45A BLHeli_32 ESC, supports 4S-6S"
+                    brand: "T-Motor"
+                    pricing: { basePrice: 42.99, currency: "USD" }
+                    availability: { status: "in-stock", quantityAvailable: 89 }
+                offset: 0
+                limit: 10
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /products/{productId}/similar:
+    get:
+      operationId: getSimilarProducts
+      summary: Get similar products
+      description: Retrieve similar alternatives in the same category with comparable specifications.
+      tags: [Products]
+      parameters:
+        - $ref: '#/components/parameters/productId'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Similar products
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductList'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /products/{productId}/frequently-bought-together:
+    get:
+      operationId: getFrequentlyBoughtTogether
+      summary: Get frequently bought together
+      description: Retrieve products commonly purchased alongside the given product.
+      tags: [Products]
+      parameters:
+        - $ref: '#/components/parameters/productId'
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 5
+      responses:
+        '200':
+          description: Frequently bought together products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductSummary'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /products/compare:
+    post:
+      operationId: compareProducts
+      summary: Compare products
+      description: Compare specifications of 2–5 products side by side.
+      tags: [Comparison]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [productIds]
+              properties:
+                productIds:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  minItems: 2
+                  maxItems: 5
+            example:
+              productIds: ["prod-001", "prod-002", "prod-003"]
+      responses:
+        '200':
+          description: Comparison matrix
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComparisonMatrix'
+              example:
+                products:
+                  - productId: "prod-001"
+                    name: "EMAX ECO II 2207 1900KV"
+                  - productId: "prod-002"
+                    name: "T-Motor Velox V2 2207 1950KV"
+                  - productId: "prod-003"
+                    name: "iFlight XING2 2207 1855KV"
+                sharedSpecifications:
+                  motorSize: { "prod-001": "2207", "prod-002": "2207", "prod-003": "2207" }
+                  motorType: { "prod-001": "brushless", "prod-002": "brushless", "prod-003": "brushless" }
+                differingSpecifications:
+                  kvRating: { "prod-001": 1900, "prod-002": 1950, "prod-003": 1855 }
+                  weight: { "prod-001": "31.6g", "prod-002": "30.2g", "prod-003": "32.1g" }
+                  maxThrust: { "prod-001": "1580g", "prod-002": "1620g", "prod-003": "1550g" }
+                  basePrice: { "prod-001": 18.99, "prod-002": 24.99, "prod-003": 21.99 }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /categories:
+    get:
+      operationId: getCategoryTree
+      summary: Get category tree
+      description: Retrieve the category hierarchy. Pass parentCategoryId to get a subtree.
+      tags: [Categories]
+      parameters:
+        - name: parentCategoryId
+          in: query
+          description: Parent category ID (null/omit for root categories)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Category tree
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+              example:
+                - categoryId: "cat-motors"
+                  name: "Motors"
+                  description: "Drone motors — brushless and brushed"
+                  childCategories:
+                    - categoryId: "cat-motors-brushless"
+                      name: "Brushless Motors"
+                    - categoryId: "cat-motors-brushed"
+                      name: "Brushed Motors"
+                  productCount: 156
+                  sortOrder: 1
+                - categoryId: "cat-escs"
+                  name: "ESCs"
+                  description: "Electronic speed controllers"
+                  childCategories:
+                    - categoryId: "cat-escs-4in1"
+                      name: "4-in-1 ESCs"
+                    - categoryId: "cat-escs-single"
+                      name: "Single ESCs"
+                  productCount: 89
+                  sortOrder: 2
+
+  /categories/{categoryId}/products:
+    get:
+      operationId: getCategoryProducts
+      summary: Get products in a category
+      description: Retrieve products belonging to a category with filtering, sorting, and pagination.
+      tags: [Categories]
+      parameters:
+        - $ref: '#/components/parameters/categoryId'
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [price, rating, name, createdDate]
+            default: name
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Products in category
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductList'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /categories/{categoryId}/facets:
+    get:
+      operationId: getCategoryFacets
+      summary: Get category facets
+      description: Retrieve available filter facets for a category (e.g., KV range, shaft diameter for motors).
+      tags: [Categories]
+      parameters:
+        - $ref: '#/components/parameters/categoryId'
+      responses:
+        '200':
+          description: Category facets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Facet'
+              example:
+                - name: "kvRating"
+                  type: "range"
+                  range: { min: 1400, max: 2700 }
+                - name: "shaftDiameter"
+                  type: "enum"
+                  values: ["1.5mm", "3mm", "5mm"]
+                - name: "voltage"
+                  type: "enum"
+                  values: ["3S", "4S", "4S-6S", "6S"]
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  parameters:
+    productId:
+      name: productId
+      in: path
+      required: true
+      description: Product UUID
+      schema:
+        type: string
+        format: uuid
+        example: "prod-001"
+    categoryId:
+      name: categoryId
+      in: path
+      required: true
+      description: Category UUID
+      schema:
+        type: string
+        example: "cat-motors-brushless"
+    offset:
+      name: offset
+      in: query
+      description: Starting position (zero-based)
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    limit:
+      name: limit
+      in: query
+      description: Number of results to return
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+  schemas:
+    SearchRequest:
+      type: object
+      properties:
+        query:
+          type: string
+          example: "brushless motor 2207"
+        filters:
+          type: object
+          properties:
+            categoryId:
+              type: string
+            specifications:
+              type: object
+              additionalProperties: true
+            priceRange:
+              type: object
+              properties:
+                min: { type: number }
+                max: { type: number }
+            brand:
+              type: string
+            status:
+              type: string
+              enum: [active, discontinued, backorder]
+        sort:
+          type: string
+          enum: [relevance, price, rating, name, createdDate]
+          default: relevance
+        offset:
+          type: integer
+          minimum: 0
+          default: 0
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+
+    SearchResult:
+      type: object
+      required: [totalResults, products, offset, limit]
+      properties:
+        totalResults:
+          type: integer
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductSummary'
+        offset:
+          type: integer
+        limit:
+          type: integer
+
+    Product:
+      type: object
+      required: [productId, name, description, brand, sku, status, specifications, categories, pricing, availability]
+      properties:
+        productId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        shortDescription:
+          type: string
+        brand:
+          type: string
+        sku:
+          type: string
+        status:
+          type: string
+          enum: [active, discontinued, backorder]
+        images:
+          type: array
+          items: { type: string, format: uri }
+        specifications:
+          type: object
+          additionalProperties: true
+        categories:
+          type: array
+          items: { type: string }
+        pricing:
+          $ref: '#/components/schemas/ProductPricing'
+        availability:
+          $ref: '#/components/schemas/ProductAvailability'
+        compatibleWith:
+          type: array
+          items: { type: string }
+        relatedProducts:
+          type: array
+          items: { type: string }
+        frequentlyBoughtWith:
+          type: array
+          items: { type: string }
+        createdDate:
+          type: string
+          format: date-time
+        updatedDate:
+          type: string
+          format: date-time
+
+    ProductSummary:
+      type: object
+      required: [productId, name, brand, pricing, availability]
+      properties:
+        productId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        shortDescription:
+          type: string
+        brand:
+          type: string
+        pricing:
+          type: object
+          properties:
+            basePrice: { type: number }
+            currency: { type: string }
+        availability:
+          type: object
+          properties:
+            status: { type: string }
+            quantityAvailable: { type: integer }
+        images:
+          type: array
+          items: { type: string, format: uri }
+
+    ProductPricing:
+      type: object
+      required: [productId, basePrice, currency]
+      properties:
+        productId:
+          type: string
+          format: uuid
+        basePrice:
+          type: number
+        currency:
+          type: string
+          example: "USD"
+        volumeDiscounts:
+          type: array
+          items:
+            type: object
+            properties:
+              minQuantity: { type: integer }
+              price: { type: number }
+        activePromotions:
+          type: array
+          items:
+            type: object
+            properties:
+              name: { type: string }
+              discountPrice: { type: number }
+              validUntil: { type: string, format: date-time }
+
+    ProductAvailability:
+      type: object
+      required: [productId, status]
+      properties:
+        productId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [in-stock, backorder, discontinued]
+        quantityAvailable:
+          type: integer
+        estimatedRestockDate:
+          type: ["string", "null"]
+          format: date-time
+
+    ReviewList:
+      type: object
+      required: [totalResults, averageRating, reviews, offset, limit]
+      properties:
+        totalResults:
+          type: integer
+        averageRating:
+          type: number
+        reviews:
+          type: array
+          items:
+            $ref: '#/components/schemas/Review'
+        offset:
+          type: integer
+        limit:
+          type: integer
+
+    Review:
+      type: object
+      required: [reviewId, productId, rating, title, body, author, createdDate]
+      properties:
+        reviewId:
+          type: string
+          format: uuid
+        productId:
+          type: string
+          format: uuid
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        title:
+          type: string
+        body:
+          type: string
+        author:
+          type: string
+        verifiedPurchase:
+          type: boolean
+        createdDate:
+          type: string
+          format: date-time
+
+    TechnicalDocument:
+      type: object
+      required: [documentId, productId, title, type, format, url]
+      properties:
+        documentId:
+          type: string
+          format: uuid
+        productId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        type:
+          type: string
+          enum: [datasheet, cad-file, compliance-certificate, manual]
+        format:
+          type: string
+          example: "PDF"
+        url:
+          type: string
+          format: uri
+        fileSize:
+          type: integer
+          description: File size in bytes
+
+    ComparisonMatrix:
+      type: object
+      required: [products, sharedSpecifications, differingSpecifications]
+      properties:
+        products:
+          type: array
+          items:
+            type: object
+            properties:
+              productId: { type: string }
+              name: { type: string }
+        sharedSpecifications:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties: true
+        differingSpecifications:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties: true
+
+    Suggestion:
+      type: object
+      properties:
+        suggestedTerms:
+          type: array
+          items: { type: string }
+        suggestedCategories:
+          type: array
+          items:
+            type: object
+            properties:
+              categoryId: { type: string }
+              name: { type: string }
+        suggestedProducts:
+          type: array
+          items:
+            type: object
+            properties:
+              productId: { type: string }
+              name: { type: string }
+
+    Category:
+      type: object
+      required: [categoryId, name]
+      properties:
+        categoryId:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        parentCategory:
+          type: ["string", "null"]
+        childCategories:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+        facets:
+          type: array
+          items:
+            $ref: '#/components/schemas/Facet'
+        productCount:
+          type: integer
+        sortOrder:
+          type: integer
+
+    ProductList:
+      type: object
+      required: [totalResults, products, offset, limit]
+      properties:
+        totalResults:
+          type: integer
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductSummary'
+        offset:
+          type: integer
+        limit:
+          type: integer
+
+    Facet:
+      type: object
+      required: [name, type]
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [range, enum]
+        values:
+          type: array
+          items: { type: string }
+        range:
+          type: object
+          properties:
+            min: { type: number }
+            max: { type: number }
+
+    ProblemDetails:
+      type: object
+      required: [type, title, status]
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          example:
+            type: "https://api.droneparts.com/problems/bad-request"
+            title: "Bad Request"
+            status: 400
+            detail: "Invalid filter parameters"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          example:
+            type: "https://api.droneparts.com/problems/not-found"
+            title: "Not Found"
+            status: 404
+            detail: "The requested resource does not exist"
+
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      name: X-API-Key
+      in: header
+    oauth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.droneparts.com/oauth/token
+          scopes:
+            catalog:read: Read catalog data

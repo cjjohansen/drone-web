@@ -1,0 +1,200 @@
+{
+  "info": {
+    "name": "Catalog Storefront API",
+    "description": "Product discovery, browsing, evaluation, and comparison for mechatronic/drone ecommerce. Covers JS1 (Discovery), JS2 (Evaluation), JS3 (Comparison), JS5 (Browsing).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      { "key": "key", "value": "X-API-Key" },
+      { "key": "value", "value": "{{apiKey}}" },
+      { "key": "in", "value": "header" }
+    ]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "https://api.droneparts.com/catalog/v1" },
+    { "key": "apiKey", "value": "your-api-key" },
+    { "key": "productId", "value": "prod-001" },
+    { "key": "categoryId", "value": "cat-motors-brushless" }
+  ],
+  "item": [
+    {
+      "name": "JS1 — Product Discovery",
+      "item": [
+        {
+          "name": "Search products",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/products/search",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"brushless motor 2207\",\n  \"filters\": {\n    \"categoryId\": \"cat-motors-brushless\",\n    \"specifications\": { \"kvRating\": { \"min\": 1700, \"max\": 2500 } },\n    \"priceRange\": { \"min\": 15, \"max\": 50 }\n  },\n  \"sort\": \"price\",\n  \"offset\": 0,\n  \"limit\": 20\n}"
+            }
+          }
+        },
+        {
+          "name": "Get autocomplete suggestions",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/products/autocomplete",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"query\": \"brus\", \"limit\": 5 }"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "JS2 — Product Evaluation",
+      "item": [
+        {
+          "name": "Get product details",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/products/{{productId}}"
+          }
+        },
+        {
+          "name": "Get product pricing",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/products/{{productId}}/pricing"
+          }
+        },
+        {
+          "name": "Get product availability",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/products/{{productId}}/availability"
+          }
+        },
+        {
+          "name": "Get product reviews",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/products/{{productId}}/reviews?sort=rating&offset=0&limit=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "{{productId}}", "reviews"],
+              "query": [
+                { "key": "sort", "value": "rating" },
+                { "key": "offset", "value": "0" },
+                { "key": "limit", "value": "5" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get technical documents",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/products/{{productId}}/documents?type=datasheet",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "{{productId}}", "documents"],
+              "query": [{ "key": "type", "value": "datasheet" }]
+            }
+          }
+        },
+        {
+          "name": "Get compatible products",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/products/{{productId}}/compatible?offset=0&limit=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "{{productId}}", "compatible"],
+              "query": [
+                { "key": "offset", "value": "0" },
+                { "key": "limit", "value": "5" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get similar products",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/products/{{productId}}/similar?offset=0&limit=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "{{productId}}", "similar"],
+              "query": [
+                { "key": "offset", "value": "0" },
+                { "key": "limit", "value": "5" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get frequently bought together",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/products/{{productId}}/frequently-bought-together?limit=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "{{productId}}", "frequently-bought-together"],
+              "query": [{ "key": "limit", "value": "5" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "JS3 — Product Comparison",
+      "item": [
+        {
+          "name": "Compare products",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/products/compare",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"productIds\": [\"prod-001\", \"prod-002\", \"prod-003\"] }"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "JS5 — Catalog Browsing",
+      "item": [
+        {
+          "name": "Get category tree",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/categories"
+          }
+        },
+        {
+          "name": "Get category facets",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/categories/{{categoryId}}/facets"
+          }
+        },
+        {
+          "name": "Get category products",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/categories/{{categoryId}}/products?sort=price&offset=0&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories", "{{categoryId}}", "products"],
+              "query": [
+                { "key": "sort", "value": "price" },
+                { "key": "offset", "value": "0" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
