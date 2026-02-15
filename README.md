@@ -58,7 +58,7 @@ Big Picture Event Storming following Alberto Brandolini's methodology — 40 dom
 
 ## API Boundaries
 
-Three bounded contexts identified using DDD principles. No synchronous cross-boundary calls — integration is fully async via domain events.
+Three bounded contexts identified using DDD principles. No synchronous cross-boundary calls — integration is fully async via integration events (a curated subset of internal domain events published for cross-boundary consumption).
 
 | Boundary | Responsibility | Job Stories |
 |----------|---------------|-------------|
@@ -66,11 +66,11 @@ Three bounded contexts identified using DDD principles. No synchronous cross-bou
 | **Compatibility API** | Validate multi-component builds, identify incompatibilities, suggest replacements | JS4 |
 | **Partner Catalog API** | Bulk catalog feeds, batch availability, batch pricing for partner systems | JS6 |
 
-**Integration model:** Catalog API publishes domain events (Product.Created, Product.Updated, Product.Discontinued, etc.). Compatibility and Partner APIs consume events to maintain local caches. No synchronous cross-boundary calls during operations.
+**Integration model:** Catalog API publishes integration events (Product.Created, Product.Updated, Product.Discontinued, Product.PriceChanged, Product.AvailabilityChanged). Compatibility and Partner APIs consume these to maintain local caches. No synchronous cross-boundary calls during operations. Internal domain events (e.g., Catalog Searched, Product Details Viewed) stay within their bounded context.
 
 ## Ralph Loop
 
-The **Ralph Loop** is an AI-assisted development workflow that drives this project through ADDR phases. It maintains persistent state across sessions:
+The **[Ralph Loop](https://github.com/anthropics/claude-code/blob/main/plugins/ralph-wiggum/README.md)** is an AI-assisted development workflow that drives this project through ADDR phases. Based on Geoff Huntley's iterative autonomous agent pattern — keep feeding an AI agent a task until the job is done, persisting learnings between iterations. It maintains persistent state across sessions:
 
 - **`.ralph/STATE.md`** — Current phase, what's done, what's next
 - **`.ralph/agent/decisions.md`** — Decision log with rationale (D-001 through D-015)
