@@ -118,6 +118,25 @@
 
 ---
 
+## Refine Phase Decisions
+
+### D-019: UUID standardization for example IDs
+**Date:** 2026-02-20
+**Decision:** Replaced human-readable example IDs (`prod-001`, `rev-001`, `doc-001`, etc.) with valid UUID v4 values across all OpenAPI, AsyncAPI, Postman, and documentation artifacts. Kept `categoryId` as human-readable slugs and `feedId` as composite strings.
+**Rationale:** Redocly CLI linting flagged 15+ warnings because example values didn't conform to the `format: uuid` declared in schemas. The UUID/string split follows a natural boundary: system-generated opaque identifiers use UUIDs, admin-curated or composite identifiers remain human-readable strings. 166 replacements across 8 files.
+
+### D-020: Added license and missing example fields
+**Date:** 2026-02-20
+**Decision:** Added `license: { name: Proprietary }` to all 3 OpenAPI specs. Added missing `productId` fields to nested pricing, availability, review, and document examples. Added `400` response to `getCategoryTree`.
+**Rationale:** Resolved all remaining Redocly recommended-ruleset warnings. All 3 OpenAPI specs now pass with zero warnings.
+
+### D-021: Redocly CLI adopted for OpenAPI validation
+**Date:** 2026-02-20
+**Decision:** Adopted `@redocly/cli` as the primary OpenAPI linter, replacing `swagger-cli validate`.
+**Rationale:** Redocly provides deeper linting (300+ rules including example validation, security best practices, and style enforcement) compared to swagger-cli's basic schema validation. swagger-cli missed 19 warnings that Redocly caught.
+
+---
+
 ## Open Questions
 
 | ID | Phase | Question | Status |

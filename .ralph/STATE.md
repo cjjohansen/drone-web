@@ -7,65 +7,54 @@
 ## Project
 
 **Name:** Drone Web — Catalog Storefront API Design
-**Repo:** drone-web (`/mnt/c/dev/repos/drone-web`)
-**Branch:** `addr-design-phase-2`
-**Goal:** Design a Catalog Storefront API for a mechatronic/drone ecommerce platform using the ADDR (Align-Define-Design-Refine) process by James Higginbotham
+**Repo:** drone-web (`c:\dev\repos\drone-web`)
+**Branch:** `addr-catalog-admin`
+**Goal:** Design APIs for a mechatronic/drone ecommerce platform using the ADDR (Align-Define-Design-Refine) process by James Higginbotham
 
 ## Current Phase
 
-**Phase:** ADDR Refine — validated, ready to commit (Ralph Loop autonomous run)
-**Status:** All 4 ADDR phases complete. Refine artifacts validated with official CLI tools.
-**Blockers:** None
+**Phase:** ADDR Catalog Storefront — COMPLETE. Next: ADDR Catalog Administration (write side)
+**Status:** All 4 ADDR phases for the read-side Catalog Storefront are done. Refine finalization pushed via PR #6 (pending merge to main).
+**Blockers:** PR #6 needs to be merged on GitHub before main has the Refine fixes. After merge, pull main and rebase this branch.
 
-## What Was Just Completed
+## What Was Just Completed (this session)
+
+- [x] Pushed Refine finalization commit (`7a86c30`) on `fix/readme-project-structure`
+- [x] Created PR #6 → main: UUID standardization, Redocly validation, Cursor rules, Event Modeling skill
+- [x] Fetched and pulled main (up through PR #5)
+- [x] Created new branch `addr-catalog-admin` from main
+- [x] Back pressure check — updated all Ralph files
+
+## ADDR Catalog Storefront Summary (COMPLETE)
 
 ### Align Phase (VALIDATED + COMMITTED)
-- [x] 4 personas defined (Professional Integrator, Fleet Procurement Buyer, Casual Browser, Partner System)
-- [x] 6 unifying job stories (JS1–JS6) covering full storefront experience
-- [x] 23 activity steps grouped into activities (was 24 — removed pagination step)
-- [x] Hobbyist Builder persona removed (D-001) — platform targets professional/enterprise
-- [x] Big Picture Event Storming: 40 domain events, 4 pivotal events (was 5 — downgraded Comparison Matrix Generated)
-- [x] Event Storming skills created (`.cursor/skills/event-storming/` and `.cursor/skills/event-storming-drawio/`)
-- [x] **Validation completed** — 6 findings, all resolved (see `design/addr/align/validation.md`)
-  - D-009: Downgraded "Comparison Matrix Generated" from pivotal
-  - D-010: Filled persona matrix gaps (Casual Browser+JS1, Fleet Buyer+JS5)
-  - D-011: Removed pagination as activity step
-  - Enriched filter and availability descriptions
-- [x] Git committed and pushed
+- 4 personas, 6 job stories (JS1–JS6), 23 activity steps
+- Big Picture Event Storming: 40 domain events, 4 pivotal events
+- Event Storming skills created
+- Validated (6 findings resolved) — see `design/addr/align/validation.md`
 
 ### Define Phase (VALIDATED + COMMITTED)
-- [x] 3 API boundaries identified using DDD principles
-- [x] 14 resources modeled with properties and relationships
-- [x] 19 API operations profiled with participants, events, characteristics
-- [x] Sequence diagrams for all 6 job stories (Mermaid format)
-- [x] Integration model: async event-driven, no synchronous cross-boundary calls
-- [x] Distinguished integration events from internal domain events
-- [x] Git committed and pushed
+- 3 API boundaries (Catalog Storefront, Component Compatibility, Partner Catalog)
+- 14 resources, 19 API operations profiled
+- Sequence diagrams for all 6 job stories
+- Async event-driven integration model
 
 ### Design Phase (VALIDATED + COMMITTED)
-- [x] Style guide created (`design/addr/design/style-guide.md`)
-- [x] High-level API design table — Catalog API (14 operations)
-- [x] High-level API design table — Compatibility API (2 operations)
-- [x] High-level API design table — Partner Catalog API (3 operations)
-- [x] Design decisions recorded (D-016, D-017, D-018)
-- [x] Validate Design artifacts — all 19 ops covered, style guide compliant
-- [x] Package Design deliverable + commit + push
+- Style guide, API design tables for all 3 boundaries (19 operations)
+- Decisions D-016 through D-018
 
-### Refine Phase (VALIDATED)
-- [x] OpenAPI 3.1 spec — Catalog Storefront API (14 operations, validated)
-- [x] OpenAPI 3.1 spec — Component Compatibility API (2 operations, validated)
-- [x] OpenAPI 3.1 spec — Partner Catalog Syndication API (3 operations, validated)
-- [x] AsyncAPI 3.0 spec — 7 integration events (validated)
-- [x] README request/response examples for all 6 job stories
-- [x] Mermaid sequence diagrams with HTTP methods and status codes
-- [x] Postman collections for all 3 APIs
-- [x] Validation report — all specs pass CLI validation
-- [ ] Git commit + push Refine phase
+### Refine Phase (VALIDATED + PUSHED via PR #6)
+- OpenAPI 3.1 specs for all 3 APIs (validated with Redocly CLI — zero warnings)
+- AsyncAPI 3.0 spec — 7 integration events (validated with @asyncapi/cli)
+- Postman collections, request/response examples, sequence diagrams
+- UUID standardization (D-019), license/example fixes (D-020), Redocly adoption (D-021)
+- Cursor rules and Event Modeling skill created
 
 ## What Comes Next
 
-1. **Commit + push Refine phase** on `addr-design-phase-2` branch
-2. **ADDR process complete** — all 4 phases done
+1. **Merge PR #6** on GitHub, then pull main and rebase `addr-catalog-admin`
+2. **ADDR Catalog Administration** — 2nd ADDR run for the write side (commands, approval workflows, pricing rules, inventory management). Produces Event Model with STATE_CHANGE + AUTOMATION slices.
+3. **Event Modeling** — generate Event Model JSON from specs using `legacy-system-2-eventmodel` skill
 
 ## Key Decisions
 
@@ -78,25 +67,29 @@
 | D-016 | Search and compare as functional POST endpoints | 2026-02-15 |
 | D-017 | Compatibility check returns 201 Created | 2026-02-15 |
 | D-018 | Sub-resource paths for product relationships | 2026-02-15 |
+| D-019 | UUID standardization for example IDs | 2026-02-20 |
+| D-020 | Added license and missing example fields | 2026-02-20 |
+| D-021 | Redocly CLI adopted for OpenAPI validation | 2026-02-20 |
 
 ## Important Context
 
 - **ADDR prompts:** `design/addr/addr-ai-prompts.md` contains the full ADDR prompt guide from launchany/addr-ai-prompts. Ralph MUST follow these prompts for each phase.
 - **Domain:** Mechatronic product ecommerce — drones, motors, ESCs, flight controllers, sensors, frames, batteries, FPV gear
 - **Personas:** Professional Integrator, Fleet Procurement Buyer, Casual Browser, Partner System (NO hobbyist)
-- **AsyncAPI:** Refine phase will produce AsyncAPI 3.0 specs for all integration events (for future Event Catalog integration)
+- **AsyncAPI:** AsyncAPI 3.0 specs produced for all integration events (for future Event Catalog integration)
 - **Integration events vs domain events:** Only state-changing events with cross-boundary relevance are published as integration events. Internal domain events stay within their bounded context.
 - **3 API boundaries:** Catalog Storefront API (JS1-JS5), Component Compatibility API (JS4), Partner Catalog Syndication API (JS6)
-- **Git remote:** `origin` → `https://github.com/cjjohansen/drone-web.git` (push via token auth)
+- **Git remote:** `origin` → `https://github.com/cjjohansen/drone-web.git` (push via token auth embedded in URL)
 - **Style guide:** Based on ADDR prompts — RESTful, offset pagination, RFC 9457 errors, RFC 3339 dates, UUIDs, plural nouns, functional endpoints via POST
+- **Validation tooling:** `@redocly/cli lint` for OpenAPI, `@asyncapi/cli validate` for AsyncAPI
 
 ## Files to Know
 
 | File | Purpose |
 |------|---------|
 | `.ralph/STATE.md` | This file — session handoff |
-| `.ralph/agent/decisions.md` | Decision log (D-001 through D-015+) |
-| `.ralph/agent/learnings.md` | Persistent memory — mistakes and patterns |
+| `.ralph/agent/decisions.md` | Decision log (D-001 through D-021) |
+| `.ralph/agent/learnings.md` | Persistent memory — mistakes and patterns (LRN-001 through LRN-017) |
 | `.ralph/tasks/addr-process.md` | ADDR phase task tracking |
 | `.ralph/specs/catalog-storefront.md` | Catalog Storefront product spec — what we're building |
 | `design/addr/addr-ai-prompts.md` | ADDR prompt guide (from launchany) |
@@ -106,8 +99,10 @@
 | `design/addr/define/` | Define phase deliverables |
 | `design/addr/design/` | Design phase deliverables |
 | `design/addr/refine/` | Refine phase deliverables (OpenAPI, AsyncAPI, Postman, examples) |
-| `design/addr/align/event-storming.drawio` | Big Picture Event Storming diagram (organic Brandolini layout with split patterns) |
+| `design/addr/align/event-storming.drawio` | Big Picture Event Storming diagram |
+| `.cursor/rules/ralph-loop.mdc` | Cursor rule — Ralph Loop session management |
+| `.cursor/rules/addr-process.mdc` | Cursor rule — ADDR methodology conventions |
+| `.cursor/rules/git-conventions.mdc` | Cursor rule — Git auth and branching |
 | `.cursor/skills/event-storming/SKILL.md` | Event Storming domain knowledge skill |
 | `.cursor/skills/event-storming-drawio/SKILL.md` | Event Storming draw.io generation skill |
-| `.cursor/skills/event-storming-drawio/_drawio-engine.js` | Reusable Node.js engine for programmatic drawio generation |
-| `design/addr/align/big-picture-event-storming.drawio` | Reference layout file (user's hand-crafted organic Brandolini layout) |
+| `.cursor/skills/legacy-system-2-eventmodel/SKILL.md` | Event Modeling skill — generate Event Model JSON |
