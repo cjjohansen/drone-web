@@ -137,12 +137,12 @@ components:
         - name: BrushlessMotorCreated
           summary: New brushless motor added
           payload:
-            eventId: "evt-001"
+            eventId: "1a2b3c4d-5e6f-4a01-b7c8-d9e0f1a2b3c4"
             eventType: "catalog.product.created"
             timestamp: "2026-02-15T10:00:00Z"
             source: "catalog-api"
             data:
-              productId: "prod-001"
+              productId: "d290f1ee-6c54-4b01-90e6-d701748f0851"
               name: "EMAX ECO II 2207 1900KV"
               brand: "EMAX"
               sku: "EMAX-ECO2-2207-1900"
@@ -172,12 +172,12 @@ components:
         - name: MotorSpecsUpdated
           summary: Motor specifications updated
           payload:
-            eventId: "evt-002"
+            eventId: "2b3c4d5e-6f7a-4b02-88d9-e0f1a2b3c4d5"
             eventType: "catalog.product.updated"
             timestamp: "2026-02-15T14:30:00Z"
             source: "catalog-api"
             data:
-              productId: "prod-001"
+              productId: "d290f1ee-6c54-4b01-90e6-d701748f0851"
               name: "EMAX ECO II 2207 1900KV"
               brand: "EMAX"
               sku: "EMAX-ECO2-2207-1900"
@@ -208,12 +208,12 @@ components:
         - name: MotorDiscontinued
           summary: Motor discontinued
           payload:
-            eventId: "evt-003"
+            eventId: "3c4d5e6f-7a8b-4c03-89e0-f1a2b3c4d5e6"
             eventType: "catalog.product.discontinued"
             timestamp: "2026-02-15T16:00:00Z"
             source: "catalog-api"
             data:
-              productId: "prod-099"
+              productId: "e5f6a7b8-c9d0-4e1f-ba3b-4c5d6e7f8a9b"
               reason: "End of life — replaced by ECO III series"
 
     ProductPriceChanged:
@@ -227,12 +227,12 @@ components:
         - name: MotorPriceReduced
           summary: Motor price reduced
           payload:
-            eventId: "evt-004"
+            eventId: "4d5e6f7a-8b9c-4d04-90f1-a2b3c4d5e6f7"
             eventType: "catalog.product.price-changed"
             timestamp: "2026-02-15T11:00:00Z"
             source: "catalog-api"
             data:
-              productId: "prod-001"
+              productId: "d290f1ee-6c54-4b01-90e6-d701748f0851"
               previousPrice: 19.99
               newPrice: 18.99
               currency: "USD"
@@ -248,12 +248,12 @@ components:
         - name: MotorBackordered
           summary: Motor goes to backorder
           payload:
-            eventId: "evt-005"
+            eventId: "5e6f7a8b-9c0d-4e05-a1a2-b3c4d5e6f7a8"
             eventType: "catalog.product.availability-changed"
             timestamp: "2026-02-15T12:00:00Z"
             source: "catalog-api"
             data:
-              productId: "prod-020"
+              productId: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
               previousStatus: "in-stock"
               newStatus: "backorder"
               quantityAvailable: 0
@@ -270,7 +270,7 @@ components:
         - name: NewSubcategory
           summary: New subcategory for GPS modules
           payload:
-            eventId: "evt-006"
+            eventId: "6f7a8b9c-0d1e-4f06-b2b3-c4d5e6f7a8b9"
             eventType: "catalog.category.created"
             timestamp: "2026-02-15T09:00:00Z"
             source: "catalog-api"
@@ -290,7 +290,7 @@ components:
         - name: CategoryRenamed
           summary: Category renamed
           payload:
-            eventId: "evt-007"
+            eventId: "7a8b9c0d-1e2f-4a07-83c4-d5e6f7a8b9c0"
             eventType: "catalog.category.updated"
             timestamp: "2026-02-15T09:30:00Z"
             source: "catalog-api"

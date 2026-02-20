@@ -2,6 +2,8 @@
 
 > **Phase:** ADDR — Refine
 > **Format:** Mermaid sequence diagrams with HTTP methods and status codes
+>
+> **Note:** Product and check IDs are abbreviated for diagram readability. See the OpenAPI specs for full UUID examples.
 
 ---
 

@@ -44,7 +44,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{ \"productIds\": [\"prod-001\", \"prod-010\", \"prod-020\"] }"
+              "raw": "{ \"productIds\": [\"d290f1ee-6c54-4b01-90e6-d701748f0851\", \"f47ac10b-58cc-4372-a567-0e02b2c3d479\", \"7c9e6679-7425-40de-944b-e07fc1f90ae7\"] }"
             }
           }
         },
@@ -56,7 +56,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{ \"productIds\": [\"prod-001\", \"prod-010\"] }"
+              "raw": "{ \"productIds\": [\"d290f1ee-6c54-4b01-90e6-d701748f0851\", \"f47ac10b-58cc-4372-a567-0e02b2c3d479\"] }"
             }
           }
         }

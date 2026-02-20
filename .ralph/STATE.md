@@ -13,8 +13,8 @@
 
 ## Current Phase
 
-**Phase:** ADDR Refine — validated, ready to commit (Ralph Loop autonomous run)
-**Status:** All 4 ADDR phases complete. Refine artifacts validated with official CLI tools.
+**Phase:** ADDR Refine — re-validated with Redocly CLI, ready to commit
+**Status:** All 4 ADDR phases complete. Refine artifacts re-validated with `@redocly/cli lint` (zero warnings). UUID standardization applied (D-019). Cursor rules and Event Modeling skill created.
 **Blockers:** None
 
 ## What Was Just Completed
@@ -51,7 +51,7 @@
 - [x] Validate Design artifacts — all 19 ops covered, style guide compliant
 - [x] Package Design deliverable + commit + push
 
-### Refine Phase (VALIDATED)
+### Refine Phase (RE-VALIDATED WITH REDOCLY)
 - [x] OpenAPI 3.1 spec — Catalog Storefront API (14 operations, validated)
 - [x] OpenAPI 3.1 spec — Component Compatibility API (2 operations, validated)
 - [x] OpenAPI 3.1 spec — Partner Catalog Syndication API (3 operations, validated)
@@ -60,24 +60,24 @@
 - [x] Mermaid sequence diagrams with HTTP methods and status codes
 - [x] Postman collections for all 3 APIs
 - [x] Validation report — all specs pass CLI validation
+- [x] **Redocly re-validation** — 19 warnings found and resolved (D-019, D-020, D-021)
+- [x] UUID standardization — 166 replacements across 8 files (D-019)
+- [x] Added license metadata + missing required fields in examples (D-020)
+- [x] Installed `@redocly/cli` for ongoing validation (D-021)
+- [x] Cursor rules created (ralph-loop, addr-process, git-conventions)
+- [x] Event Modeling skill created (`legacy-system-2-eventmodel`)
 - [ ] Git commit + push Refine phase
 
 ## What Comes Next
 
 1. **Commit + push Refine phase** on `addr-design-phase-2` branch
-2. **ADDR process complete** — all 4 phases done
+2. **ADDR Catalog Storefront complete** — all 4 phases done
+3. **ADDR Catalog Administration** — 2nd ADDR run for the write side (commands, approval workflows, pricing rules). Produces Event Model with rich STATE_CHANGE + AUTOMATION slices.
+4. **Event Modeling** — generate Event Model JSON from specs using `legacy-system-2-eventmodel` skill
 
 ## Key Decisions
 
-| ID | Decision | Date |
-|----|----------|------|
-| D-001–D-004 | Align phase decisions (see agent/decisions.md) | 2026-02-14 |
-| D-005–D-008 | Define phase decisions (see agent/decisions.md) | 2026-02-14 |
-| D-009–D-013 | Align validation + tooling decisions | 2026-02-14 |
-| D-014–D-015 | Define validation decisions | 2026-02-15 |
-| D-016 | Search and compare as functional POST endpoints | 2026-02-15 |
-| D-017 | Compatibility check returns 201 Created | 2026-02-15 |
-| D-018 | Sub-resource paths for product relationships | 2026-02-15 |
+See `.ralph/agent/decisions.md` for all decisions (D-001 through D-021).
 
 ## Important Context
 
@@ -111,3 +111,6 @@
 | `.cursor/skills/event-storming-drawio/SKILL.md` | Event Storming draw.io generation skill |
 | `.cursor/skills/event-storming-drawio/_drawio-engine.js` | Reusable Node.js engine for programmatic drawio generation |
 | `design/addr/align/big-picture-event-storming.drawio` | Reference layout file (user's hand-crafted organic Brandolini layout) |
+| `.cursor/rules/ralph-loop.mdc` | Cursor rule — Ralph Loop session management and back pressure checks |
+| `.cursor/rules/addr-process.mdc` | Cursor rule — ADDR methodology conventions |
+| `.cursor/skills/legacy-system-2-eventmodel/SKILL.md` | Event Modeling skill — generate Event Model JSON from system analysis |
