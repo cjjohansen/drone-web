@@ -141,7 +141,7 @@
 
 ### D-022: Domain-scoped ADDR folder structure
 **Date:** 2026-02-20
-**Decision:** Restructured `design/addr/` into domain-specific folders: `design/catalog-storefront/addr/` and `design/catalog-admin/addr/`. Promoted `addr-ai-prompts.md` to `design/` as a shared methodology reference.
+**Decision:** Restructured `design/addr/` into domain-specific folders: `design/catalog-storefront/addr/` and `design/catalog-management/addr/`. Promoted `addr-ai-prompts.md` to `design/` as a shared methodology reference.
 **Rationale:** With multiple ADDR runs (storefront read side, admin write side), artifacts would collide in a flat `design/addr/` structure (duplicate filenames like `personas.md`, `validation.md`). Each domain gets its own folder with `addr/` inside containing the 4 phase folders, keeping the methodology explicit while isolating each run's deliverables. The shared prompts file sits at `design/` level since it's used across all runs.
 
 ### D-023: Shared API style guide

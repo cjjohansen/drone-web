@@ -119,7 +119,7 @@ drone-web/
 │   │           ├── sequence-diagrams.md
 │   │           ├── validation.md
 │   │           └── postman/
-│   └── catalog-admin/                  # Catalog Administration domain (write side) — IN PROGRESS
+│   └── catalog-management/              # Catalog Management domain (write side) — IN PROGRESS
 │       └── addr/
 │           ├── align/
 │           ├── define/
@@ -131,7 +131,7 @@ drone-web/
 │   ├── agent/learnings.md              # Persistent learnings
 │   ├── specs/catalog-storefront.md     # Product spec
 │   ├── tasks/addr-process.md           # Storefront task tracking (complete)
-│   └── tasks/addr-catalog-admin.md     # Admin task tracking (current)
+│   └── tasks/addr-catalog-management.md # Catalog Management task tracking (current)
 ├── .cursor/skills/                     # Cursor agent skills
 │   ├── event-storming/SKILL.md         # Event Storming domain knowledge
 │   ├── event-storming-drawio/          # draw.io generation skill
