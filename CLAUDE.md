@@ -18,8 +18,8 @@ When learning from mistakes, record them in `.ralph/agent/learnings.md` followin
 
 This project uses the ADDR (Align-Define-Design-Refine) API design methodology by James Higginbotham.
 
-- **Prompts guide:** `design/addr/addr-ai-prompts.md` — follow these prompts for each phase
-- **Design artifacts:** `design/addr/{phase}/` — Align, Define, Design, Refine deliverables
+- **Prompts guide:** `design/addr-ai-prompts.md` — follow these prompts for each phase
+- **Design artifacts:** `design/{domain}/addr/{phase}/` — Align, Define, Design, Refine deliverables per domain
 - **Domain:** Mechatronic product ecommerce (drones, motors, ESCs, flight controllers, sensors, frames, batteries, FPV gear)
 
 ## Git

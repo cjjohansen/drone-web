@@ -11,7 +11,7 @@ The Design phase translates the Define phase's implementation-agnostic API profi
 
 | File | Description |
 |------|-------------|
-| [style-guide.md](style-guide.md) | API design style guidelines (RESTful, offset pagination, RFC 9457 errors, RFC 3339 dates) |
+| [style-guide.md](../../../style-guide.md) | API design style guidelines (shared — RESTful, offset pagination, RFC 9457 errors, RFC 3339 dates) |
 | [api-design.md](api-design.md) | High-level API design tables for all 3 boundaries (19 operations) |
 | [validation.md](validation.md) | Validation report — all 19 operations cross-referenced against Define profiles and style guide |
 
