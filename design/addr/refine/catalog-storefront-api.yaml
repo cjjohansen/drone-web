@@ -7,6 +7,9 @@ info:
   version: 1.0.0
   contact:
     name: Drone Web API Team
+  license:
+    name: Proprietary
+    url: https://droneparts.com/terms
 
 servers:
   - url: https://api.droneparts.com/catalog/v1
@@ -60,13 +63,13 @@ paths:
               example:
                 totalResults: 47
                 products:
-                  - productId: "prod-001"
+                  - productId: "d290f1ee-6c54-4b01-90e6-d701748f0851"
                     name: "EMAX ECO II 2207 1900KV"
                     shortDescription: "High-efficiency brushless motor for 5\" freestyle builds"
                     brand: "EMAX"
                     pricing: { basePrice: 18.99, currency: "USD" }
                     availability: { status: "in-stock", quantityAvailable: 342 }
-                    images: ["https://cdn.droneparts.com/img/prod-001-thumb.jpg"]
+                    images: ["https://cdn.droneparts.com/img/d290f1ee-6c54-4b01-90e6-d701748f0851-thumb.jpg"]
                 offset: 0
                 limit: 20
         '400':
@@ -107,7 +110,7 @@ paths:
                   - categoryId: "cat-motors-brushless"
                     name: "Brushless Motors"
                 suggestedProducts:
-                  - productId: "prod-001"
+                  - productId: "d290f1ee-6c54-4b01-90e6-d701748f0851"
                     name: "EMAX ECO II 2207 1900KV"
         '400':
           $ref: '#/components/responses/BadRequest'
@@ -128,7 +131,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Product'
               example:
-                productId: "prod-001"
+                productId: "d290f1ee-6c54-4b01-90e6-d701748f0851"
                 name: "EMAX ECO II 2207 1900KV"
                 description: "The EMAX ECO II series delivers high efficiency and smooth power delivery for 5-inch freestyle and racing quads. Features N52H arc magnets and 0.15mm lamination for minimal iron loss."
                 shortDescription: "High-efficiency brushless motor for 5\" freestyle builds"
@@ -136,8 +139,8 @@ paths:
                 sku: "EMAX-ECO2-2207-1900"
                 status: "active"
                 images:
-                  - "https://cdn.droneparts.com/img/prod-001-main.jpg"
-                  - "https://cdn.droneparts.com/img/prod-001-side.jpg"
+                  - "https://cdn.droneparts.com/img/d290f1ee-6c54-4b01-90e6-d701748f0851-main.jpg"
+                  - "https://cdn.droneparts.com/img/d290f1ee-6c54-4b01-90e6-d701748f0851-side.jpg"
                 specifications:
                   motorSize: "2207"
                   kvRating: 1900
@@ -148,6 +151,7 @@ paths:
                   motorType: "brushless"
                 categories: ["cat-motors-brushless"]
                 pricing:
+                  productId: "d290f1ee-6c54-4b01-90e6-d701748f0851"
                   basePrice: 18.99
                   currency: "USD"
                   volumeDiscounts:
@@ -156,6 +160,7 @@ paths:
                     - minQuantity: 50
                       price: 14.99
                 availability:
+                  productId: "d290f1ee-6c54-4b01-90e6-d701748f0851"
                   status: "in-stock"
                   quantityAvailable: 342
                 createdDate: "2025-06-15T10:00:00Z"
@@ -179,7 +184,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProductPricing'
               example:
-                productId: "prod-001"
+                productId: "d290f1ee-6c54-4b01-90e6-d701748f0851"
                 basePrice: 18.99
                 currency: "USD"
                 volumeDiscounts:
@@ -207,7 +212,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProductAvailability'
               example:
-                productId: "prod-001"
+                productId: "d290f1ee-6c54-4b01-90e6-d701748f0851"
                 status: "in-stock"
                 quantityAvailable: 342
                 estimatedRestockDate: null
@@ -241,7 +246,8 @@ paths:
                 totalResults: 23
                 averageRating: 4.6
                 reviews:
-                  - reviewId: "rev-001"
+                  - reviewId: "a1234567-b89c-4def-a012-3456789abcde"
+                    productId: "d290f1ee-6c54-4b01-90e6-d701748f0851"
                     rating: 5
                     title: "Excellent motor for freestyle"
                     body: "Smooth power delivery, great build quality. Running on 6S with Gemfan 51466."
@@ -277,13 +283,15 @@ paths:
                 items:
                   $ref: '#/components/schemas/TechnicalDocument'
               example:
-                - documentId: "doc-001"
+                - documentId: "c2345678-d9ae-4f01-b123-456789abcdef"
+                  productId: "d290f1ee-6c54-4b01-90e6-d701748f0851"
                   title: "EMAX ECO II 2207 Datasheet"
                   type: "datasheet"
                   format: "PDF"
                   url: "https://cdn.droneparts.com/docs/emax-eco2-2207-datasheet.pdf"
                   fileSize: 245760
-                - documentId: "doc-002"
+                - documentId: "d3456789-e0bf-4a12-8234-56789abcdef0"
+                  productId: "d290f1ee-6c54-4b01-90e6-d701748f0851"
                   title: "EMAX ECO II 2207 STEP Model"
                   type: "cad-file"
                   format: "STEP"
@@ -312,7 +320,7 @@ paths:
               example:
                 totalResults: 12
                 products:
-                  - productId: "prod-010"
+                  - productId: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
                     name: "T-Motor F45A 4-in-1 ESC"
                     shortDescription: "45A BLHeli_32 ESC, supports 4S-6S"
                     brand: "T-Motor"
@@ -390,7 +398,7 @@ paths:
                   minItems: 2
                   maxItems: 5
             example:
-              productIds: ["prod-001", "prod-002", "prod-003"]
+              productIds: ["d290f1ee-6c54-4b01-90e6-d701748f0851", "a23f6c7d-8e9b-4a12-b345-6789abcdef01", "b34a7d8e-9f0c-4b23-8456-789abcdef012"]
       responses:
         '200':
           description: Comparison matrix
@@ -400,20 +408,20 @@ paths:
                 $ref: '#/components/schemas/ComparisonMatrix'
               example:
                 products:
-                  - productId: "prod-001"
+                  - productId: "d290f1ee-6c54-4b01-90e6-d701748f0851"
                     name: "EMAX ECO II 2207 1900KV"
-                  - productId: "prod-002"
+                  - productId: "a23f6c7d-8e9b-4a12-b345-6789abcdef01"
                     name: "T-Motor Velox V2 2207 1950KV"
-                  - productId: "prod-003"
+                  - productId: "b34a7d8e-9f0c-4b23-8456-789abcdef012"
                     name: "iFlight XING2 2207 1855KV"
                 sharedSpecifications:
-                  motorSize: { "prod-001": "2207", "prod-002": "2207", "prod-003": "2207" }
-                  motorType: { "prod-001": "brushless", "prod-002": "brushless", "prod-003": "brushless" }
+                  motorSize: { "d290f1ee-6c54-4b01-90e6-d701748f0851": "2207", "a23f6c7d-8e9b-4a12-b345-6789abcdef01": "2207", "b34a7d8e-9f0c-4b23-8456-789abcdef012": "2207" }
+                  motorType: { "d290f1ee-6c54-4b01-90e6-d701748f0851": "brushless", "a23f6c7d-8e9b-4a12-b345-6789abcdef01": "brushless", "b34a7d8e-9f0c-4b23-8456-789abcdef012": "brushless" }
                 differingSpecifications:
-                  kvRating: { "prod-001": 1900, "prod-002": 1950, "prod-003": 1855 }
-                  weight: { "prod-001": "31.6g", "prod-002": "30.2g", "prod-003": "32.1g" }
-                  maxThrust: { "prod-001": "1580g", "prod-002": "1620g", "prod-003": "1550g" }
-                  basePrice: { "prod-001": 18.99, "prod-002": 24.99, "prod-003": 21.99 }
+                  kvRating: { "d290f1ee-6c54-4b01-90e6-d701748f0851": 1900, "a23f6c7d-8e9b-4a12-b345-6789abcdef01": 1950, "b34a7d8e-9f0c-4b23-8456-789abcdef012": 1855 }
+                  weight: { "d290f1ee-6c54-4b01-90e6-d701748f0851": "31.6g", "a23f6c7d-8e9b-4a12-b345-6789abcdef01": "30.2g", "b34a7d8e-9f0c-4b23-8456-789abcdef012": "32.1g" }
+                  maxThrust: { "d290f1ee-6c54-4b01-90e6-d701748f0851": "1580g", "a23f6c7d-8e9b-4a12-b345-6789abcdef01": "1620g", "b34a7d8e-9f0c-4b23-8456-789abcdef012": "1550g" }
+                  basePrice: { "d290f1ee-6c54-4b01-90e6-d701748f0851": 18.99, "a23f6c7d-8e9b-4a12-b345-6789abcdef01": 24.99, "b34a7d8e-9f0c-4b23-8456-789abcdef012": 21.99 }
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -461,6 +469,8 @@ paths:
                       name: "Single ESCs"
                   productCount: 89
                   sortOrder: 2
+        '400':
+          $ref: '#/components/responses/BadRequest'
 
   /categories/{categoryId}/products:
     get:
@@ -528,7 +538,7 @@ components:
       schema:
         type: string
         format: uuid
-        example: "prod-001"
+        example: "d290f1ee-6c54-4b01-90e6-d701748f0851"
     categoryId:
       name: categoryId
       in: path

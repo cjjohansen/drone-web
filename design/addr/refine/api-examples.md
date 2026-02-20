@@ -54,22 +54,22 @@ curl -X POST https://api.droneparts.com/catalog/v1/products/search \
   "totalResults": 47,
   "products": [
     {
-      "productId": "prod-001",
+      "productId": "d290f1ee-6c54-4b01-90e6-d701748f0851",
       "name": "EMAX ECO II 2207 1900KV",
       "shortDescription": "High-efficiency brushless motor for 5\" freestyle builds",
       "brand": "EMAX",
       "pricing": { "basePrice": 18.99, "currency": "USD" },
       "availability": { "status": "in-stock", "quantityAvailable": 342 },
-      "images": ["https://cdn.droneparts.com/img/prod-001-thumb.jpg"]
+      "images": ["https://cdn.droneparts.com/img/d290f1ee-6c54-4b01-90e6-d701748f0851-thumb.jpg"]
     },
     {
-      "productId": "prod-002",
+      "productId": "a23f6c7d-8e9b-4a12-b345-6789abcdef01",
       "name": "T-Motor Velox V2 2207 1950KV",
       "shortDescription": "Premium racing motor with titanium shaft",
       "brand": "T-Motor",
       "pricing": { "basePrice": 24.99, "currency": "USD" },
       "availability": { "status": "in-stock", "quantityAvailable": 156 },
-      "images": ["https://cdn.droneparts.com/img/prod-002-thumb.jpg"]
+      "images": ["https://cdn.droneparts.com/img/a23f6c7d-8e9b-4a12-b345-6789abcdef01-thumb.jpg"]
     }
   ],
   "offset": 0,
@@ -96,7 +96,7 @@ X-API-Key: your-api-key
     { "categoryId": "cat-motors-brushless", "name": "Brushless Motors" }
   ],
   "suggestedProducts": [
-    { "productId": "prod-001", "name": "EMAX ECO II 2207 1900KV" }
+    { "productId": "d290f1ee-6c54-4b01-90e6-d701748f0851", "name": "EMAX ECO II 2207 1900KV" }
   ]
 }
 ```
@@ -108,20 +108,20 @@ X-API-Key: your-api-key
 ### Get product details
 
 ```http
-GET /catalog/v1/products/prod-001 HTTP/1.1
+GET /catalog/v1/products/d290f1ee-6c54-4b01-90e6-d701748f0851 HTTP/1.1
 Host: api.droneparts.com
 X-API-Key: your-api-key
 ```
 
 ```bash
-curl https://api.droneparts.com/catalog/v1/products/prod-001 \
+curl https://api.droneparts.com/catalog/v1/products/d290f1ee-6c54-4b01-90e6-d701748f0851 \
   -H "X-API-Key: your-api-key"
 ```
 
 **Response: 200 OK**
 ```json
 {
-  "productId": "prod-001",
+  "productId": "d290f1ee-6c54-4b01-90e6-d701748f0851",
   "name": "EMAX ECO II 2207 1900KV",
   "description": "The EMAX ECO II series delivers high efficiency and smooth power delivery for 5-inch freestyle and racing quads.",
   "brand": "EMAX",
@@ -156,7 +156,7 @@ curl https://api.droneparts.com/catalog/v1/products/prod-001 \
 ### Get technical documents
 
 ```http
-GET /catalog/v1/products/prod-001/documents?type=datasheet HTTP/1.1
+GET /catalog/v1/products/d290f1ee-6c54-4b01-90e6-d701748f0851/documents?type=datasheet HTTP/1.1
 Host: api.droneparts.com
 X-API-Key: your-api-key
 ```
@@ -165,7 +165,7 @@ X-API-Key: your-api-key
 ```json
 [
   {
-    "documentId": "doc-001",
+    "documentId": "c2345678-d9ae-4f01-b123-456789abcdef",
     "title": "EMAX ECO II 2207 Datasheet",
     "type": "datasheet",
     "format": "PDF",
@@ -178,7 +178,7 @@ X-API-Key: your-api-key
 ### Get product reviews
 
 ```http
-GET /catalog/v1/products/prod-001/reviews?sort=rating&offset=0&limit=5 HTTP/1.1
+GET /catalog/v1/products/d290f1ee-6c54-4b01-90e6-d701748f0851/reviews?sort=rating&offset=0&limit=5 HTTP/1.1
 Host: api.droneparts.com
 X-API-Key: your-api-key
 ```
@@ -190,7 +190,7 @@ X-API-Key: your-api-key
   "averageRating": 4.6,
   "reviews": [
     {
-      "reviewId": "rev-001",
+      "reviewId": "a1234567-b89c-4def-a012-3456789abcde",
       "rating": 5,
       "title": "Excellent motor for freestyle",
       "body": "Smooth power delivery, great build quality. Running on 6S with Gemfan 51466.",
@@ -207,7 +207,7 @@ X-API-Key: your-api-key
 ### Get compatible products
 
 ```http
-GET /catalog/v1/products/prod-001/compatible?offset=0&limit=5 HTTP/1.1
+GET /catalog/v1/products/d290f1ee-6c54-4b01-90e6-d701748f0851/compatible?offset=0&limit=5 HTTP/1.1
 Host: api.droneparts.com
 X-API-Key: your-api-key
 ```
@@ -218,7 +218,7 @@ X-API-Key: your-api-key
   "totalResults": 12,
   "products": [
     {
-      "productId": "prod-010",
+      "productId": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
       "name": "T-Motor F45A 4-in-1 ESC",
       "shortDescription": "45A BLHeli_32 ESC, supports 4S-6S",
       "brand": "T-Motor",
@@ -243,33 +243,33 @@ Host: api.droneparts.com
 Content-Type: application/json
 X-API-Key: your-api-key
 
-{ "productIds": ["prod-001", "prod-002", "prod-003"] }
+{ "productIds": ["d290f1ee-6c54-4b01-90e6-d701748f0851", "a23f6c7d-8e9b-4a12-b345-6789abcdef01", "b34a7d8e-9f0c-4b23-8456-789abcdef012"] }
 ```
 
 ```bash
 curl -X POST https://api.droneparts.com/catalog/v1/products/compare \
   -H "Content-Type: application/json" \
   -H "X-API-Key: your-api-key" \
-  -d '{ "productIds": ["prod-001", "prod-002", "prod-003"] }'
+  -d '{ "productIds": ["d290f1ee-6c54-4b01-90e6-d701748f0851", "a23f6c7d-8e9b-4a12-b345-6789abcdef01", "b34a7d8e-9f0c-4b23-8456-789abcdef012"] }'
 ```
 
 **Response: 200 OK**
 ```json
 {
   "products": [
-    { "productId": "prod-001", "name": "EMAX ECO II 2207 1900KV" },
-    { "productId": "prod-002", "name": "T-Motor Velox V2 2207 1950KV" },
-    { "productId": "prod-003", "name": "iFlight XING2 2207 1855KV" }
+    { "productId": "d290f1ee-6c54-4b01-90e6-d701748f0851", "name": "EMAX ECO II 2207 1900KV" },
+    { "productId": "a23f6c7d-8e9b-4a12-b345-6789abcdef01", "name": "T-Motor Velox V2 2207 1950KV" },
+    { "productId": "b34a7d8e-9f0c-4b23-8456-789abcdef012", "name": "iFlight XING2 2207 1855KV" }
   ],
   "sharedSpecifications": {
-    "motorSize": { "prod-001": "2207", "prod-002": "2207", "prod-003": "2207" },
-    "motorType": { "prod-001": "brushless", "prod-002": "brushless", "prod-003": "brushless" }
+    "motorSize": { "d290f1ee-6c54-4b01-90e6-d701748f0851": "2207", "a23f6c7d-8e9b-4a12-b345-6789abcdef01": "2207", "b34a7d8e-9f0c-4b23-8456-789abcdef012": "2207" },
+    "motorType": { "d290f1ee-6c54-4b01-90e6-d701748f0851": "brushless", "a23f6c7d-8e9b-4a12-b345-6789abcdef01": "brushless", "b34a7d8e-9f0c-4b23-8456-789abcdef012": "brushless" }
   },
   "differingSpecifications": {
-    "kvRating": { "prod-001": 1900, "prod-002": 1950, "prod-003": 1855 },
-    "weight": { "prod-001": "31.6g", "prod-002": "30.2g", "prod-003": "32.1g" },
-    "maxThrust": { "prod-001": "1580g", "prod-002": "1620g", "prod-003": "1550g" },
-    "basePrice": { "prod-001": 18.99, "prod-002": 24.99, "prod-003": 21.99 }
+    "kvRating": { "d290f1ee-6c54-4b01-90e6-d701748f0851": 1900, "a23f6c7d-8e9b-4a12-b345-6789abcdef01": 1950, "b34a7d8e-9f0c-4b23-8456-789abcdef012": 1855 },
+    "weight": { "d290f1ee-6c54-4b01-90e6-d701748f0851": "31.6g", "a23f6c7d-8e9b-4a12-b345-6789abcdef01": "30.2g", "b34a7d8e-9f0c-4b23-8456-789abcdef012": "32.1g" },
+    "maxThrust": { "d290f1ee-6c54-4b01-90e6-d701748f0851": "1580g", "a23f6c7d-8e9b-4a12-b345-6789abcdef01": "1620g", "b34a7d8e-9f0c-4b23-8456-789abcdef012": "1550g" },
+    "basePrice": { "d290f1ee-6c54-4b01-90e6-d701748f0851": 18.99, "a23f6c7d-8e9b-4a12-b345-6789abcdef01": 24.99, "b34a7d8e-9f0c-4b23-8456-789abcdef012": 21.99 }
   }
 }
 ```
@@ -286,26 +286,26 @@ Host: api.droneparts.com
 Content-Type: application/json
 X-API-Key: your-api-key
 
-{ "productIds": ["prod-001", "prod-010", "prod-020", "prod-030"] }
+{ "productIds": ["d290f1ee-6c54-4b01-90e6-d701748f0851", "f47ac10b-58cc-4372-a567-0e02b2c3d479", "7c9e6679-7425-40de-944b-e07fc1f90ae7", "c3d4e5f6-a7b8-4c9d-ae1f-2a3b4c5d6e7f"] }
 ```
 
 ```bash
 curl -X POST https://api.droneparts.com/compatibility/v1/checks \
   -H "Content-Type: application/json" \
   -H "X-API-Key: your-api-key" \
-  -d '{ "productIds": ["prod-001", "prod-010", "prod-020", "prod-030"] }'
+  -d '{ "productIds": ["d290f1ee-6c54-4b01-90e6-d701748f0851", "f47ac10b-58cc-4372-a567-0e02b2c3d479", "7c9e6679-7425-40de-944b-e07fc1f90ae7", "c3d4e5f6-a7b8-4c9d-ae1f-2a3b4c5d6e7f"] }'
 ```
 
 **Response: 201 Created**
 ```json
 {
-  "checkId": "chk-001",
-  "components": ["prod-001", "prod-010", "prod-020", "prod-030"],
+  "checkId": "550e8400-e29b-41d4-a716-446655440000",
+  "components": ["d290f1ee-6c54-4b01-90e6-d701748f0851", "f47ac10b-58cc-4372-a567-0e02b2c3d479", "7c9e6679-7425-40de-944b-e07fc1f90ae7", "c3d4e5f6-a7b8-4c9d-ae1f-2a3b4c5d6e7f"],
   "status": "fail",
   "incompatibilities": [
     {
-      "componentA": "prod-001",
-      "componentB": "prod-020",
+      "componentA": "d290f1ee-6c54-4b01-90e6-d701748f0851",
+      "componentB": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
       "rule": "Motor voltage range (4S-6S) exceeds ESC maximum (4S)",
       "type": "voltage-mismatch",
       "severity": "error"
@@ -318,7 +318,7 @@ curl -X POST https://api.droneparts.com/compatibility/v1/checks \
 ### Get compatible replacements
 
 ```http
-GET /compatibility/v1/checks/chk-001/replacements/prod-020 HTTP/1.1
+GET /compatibility/v1/checks/550e8400-e29b-41d4-a716-446655440000/replacements/7c9e6679-7425-40de-944b-e07fc1f90ae7 HTTP/1.1
 Host: api.droneparts.com
 X-API-Key: your-api-key
 ```
@@ -327,14 +327,14 @@ X-API-Key: your-api-key
 ```json
 [
   {
-    "productId": "prod-021",
+    "productId": "8daf8890-8536-41ef-a55c-f18ad2a01bf8",
     "name": "T-Motor F45A 4-in-1 ESC (6S)",
     "brand": "T-Motor",
     "specifications": { "maxVoltage": "6S", "continuousCurrent": "45A" },
     "pricing": { "basePrice": 42.99, "currency": "USD" }
   },
   {
-    "productId": "prod-022",
+    "productId": "9eb09901-9647-42f0-b66d-a29be3b12ca9",
     "name": "Holybro Tekko32 F4 50A (6S)",
     "brand": "Holybro",
     "specifications": { "maxVoltage": "6S", "continuousCurrent": "50A" },
@@ -414,7 +414,7 @@ X-API-Key: your-api-key
   "totalResults": 78,
   "products": [
     {
-      "productId": "prod-001",
+      "productId": "d290f1ee-6c54-4b01-90e6-d701748f0851",
       "name": "EMAX ECO II 2207 1900KV",
       "shortDescription": "High-efficiency brushless motor for 5\" freestyle builds",
       "brand": "EMAX",
@@ -452,7 +452,7 @@ curl "https://api.droneparts.com/partner-catalog/v1/feed?lastUpdatedSince=2026-0
   "productCount": 2,
   "products": [
     {
-      "productId": "prod-001",
+      "productId": "d290f1ee-6c54-4b01-90e6-d701748f0851",
       "name": "EMAX ECO II 2207 1900KV",
       "brand": "EMAX",
       "sku": "EMAX-ECO2-2207-1900",
@@ -476,15 +476,15 @@ Host: api.droneparts.com
 Content-Type: application/json
 X-API-Key: partner-api-key
 
-{ "productIds": ["prod-001", "prod-010", "prod-020"] }
+{ "productIds": ["d290f1ee-6c54-4b01-90e6-d701748f0851", "f47ac10b-58cc-4372-a567-0e02b2c3d479", "7c9e6679-7425-40de-944b-e07fc1f90ae7"] }
 ```
 
 **Response: 200 OK**
 ```json
 [
-  { "productId": "prod-001", "status": "in-stock", "quantityAvailable": 342, "estimatedRestockDate": null },
-  { "productId": "prod-010", "status": "in-stock", "quantityAvailable": 89, "estimatedRestockDate": null },
-  { "productId": "prod-020", "status": "backorder", "quantityAvailable": 0, "estimatedRestockDate": "2026-03-01T00:00:00Z" }
+  { "productId": "d290f1ee-6c54-4b01-90e6-d701748f0851", "status": "in-stock", "quantityAvailable": 342, "estimatedRestockDate": null },
+  { "productId": "f47ac10b-58cc-4372-a567-0e02b2c3d479", "status": "in-stock", "quantityAvailable": 89, "estimatedRestockDate": null },
+  { "productId": "7c9e6679-7425-40de-944b-e07fc1f90ae7", "status": "backorder", "quantityAvailable": 0, "estimatedRestockDate": "2026-03-01T00:00:00Z" }
 ]
 ```
 
@@ -496,14 +496,14 @@ Host: api.droneparts.com
 Content-Type: application/json
 X-API-Key: partner-api-key
 
-{ "productIds": ["prod-001", "prod-010"] }
+{ "productIds": ["d290f1ee-6c54-4b01-90e6-d701748f0851", "f47ac10b-58cc-4372-a567-0e02b2c3d479"] }
 ```
 
 **Response: 200 OK**
 ```json
 [
   {
-    "productId": "prod-001",
+    "productId": "d290f1ee-6c54-4b01-90e6-d701748f0851",
     "basePrice": 18.99,
     "volumeDiscounts": [
       { "minQuantity": 10, "price": 16.99 },
@@ -513,7 +513,7 @@ X-API-Key: partner-api-key
     "currency": "USD"
   },
   {
-    "productId": "prod-010",
+    "productId": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
     "basePrice": 42.99,
     "volumeDiscounts": [{ "minQuantity": 5, "price": 39.99 }],
     "activePromotions": [],
