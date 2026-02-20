@@ -8,7 +8,7 @@
 
 **Name:** Drone Web — Catalog Storefront API Design
 **Repo:** drone-web (`c:\dev\repos\drone-web`)
-**Branch:** `addr-catalog-admin`
+**Branch:** `addr-catalog-management`
 **Goal:** Design APIs for a mechatronic/drone ecommerce platform using the ADDR (Align-Define-Design-Refine) process by James Higginbotham
 
 ## Current Phase
@@ -22,7 +22,7 @@
 - [x] Pushed Refine finalization commit (`7a86c30`) on `fix/readme-project-structure`
 - [x] Created PR #6 → main: UUID standardization, Redocly validation, Cursor rules, Event Modeling skill
 - [x] Fetched and pulled main (up through PR #5)
-- [x] Created new branch `addr-catalog-admin` from main
+- [x] Created new branch `addr-catalog-management` from main
 - [x] Back pressure check — updated all Ralph files
 
 ## ADDR Catalog Storefront Summary (COMPLETE)
@@ -52,7 +52,7 @@
 
 ## What Comes Next
 
-1. **ADDR Catalog Administration** — 2nd ADDR run for the write side (commands, approval workflows, pricing rules, inventory management). Task: `.ralph/tasks/addr-catalog-admin.md`
+1. **ADDR Catalog Management** — 2nd ADDR run for the write side (commands, approval workflows, pricing rules, inventory management). Task: `.ralph/tasks/addr-catalog-management.md`
 2. **Event Modeling** — generate Event Model JSON from specs using `legacy-system-2-eventmodel` skill (separate task, after Catalog Admin ADDR completes)
 
 ## Key Decisions
@@ -92,11 +92,11 @@
 | `.ralph/agent/decisions.md` | Decision log (D-001 through D-021) |
 | `.ralph/agent/learnings.md` | Persistent memory — mistakes and patterns (LRN-001 through LRN-017) |
 | `.ralph/tasks/addr-process.md` | ADDR Catalog Storefront task tracking (complete) |
-| `.ralph/tasks/addr-catalog-admin.md` | ADDR Catalog Administration task tracking (current) |
+| `.ralph/tasks/addr-catalog-management.md` | ADDR Catalog Management task tracking (current) |
 | `.ralph/specs/catalog-storefront.md` | Catalog Storefront product spec — what we're building |
 | `design/addr-ai-prompts.md` | ADDR prompt guide (shared, from launchany) |
 | `design/catalog-storefront/addr/` | Catalog Storefront ADDR deliverables (complete) |
-| `design/catalog-admin/addr/` | Catalog Administration ADDR deliverables (current) |
+| `design/catalog-management/addr/` | Catalog Management ADDR deliverables (current) |
 | `design/style-guide.md` | API design style guide (shared across all domains) |
 | `design/catalog-storefront/addr/align/event-storming.drawio` | Big Picture Event Storming diagram |
 | `.cursor/rules/ralph-loop.mdc` | Cursor rule — Ralph Loop session management |

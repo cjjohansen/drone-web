@@ -1,9 +1,9 @@
-# Task: ADDR Catalog Administration API (write side)
+# Task: ADDR Catalog Management API (write side)
 
 **Status:** not_started
 **Priority:** high
 **Created:** 2026-02-20
-**Branch:** `addr-catalog-admin`
+**Branch:** `addr-catalog-management`
 **Prompts:** `design/addr-ai-prompts.md`
 **Depends on:** ADDR Catalog Storefront (complete — see `addr-process.md`)
 
