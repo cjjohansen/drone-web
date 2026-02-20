@@ -26,7 +26,7 @@
 - [x] Package Define deliverable
 - [x] Git commit + push Define phase
 
-### Design Phase (VALIDATED)
+### Design Phase (VALIDATED + COMMITTED)
 - [x] Establish design style guidelines (`design/addr/design/style-guide.md`)
 - [x] Produce API design — Catalog API (14 operations)
 - [x] Produce API design — Compatibility API (2 operations)
@@ -34,9 +34,9 @@
 - [x] Validate Design artifacts — all 19 ops covered, style guide compliant (see validation.md)
 - [x] Design decisions recorded (D-016, D-017, D-018)
 - [x] Package Design deliverable (README + api-design.md + style-guide.md + validation.md)
-- [ ] Git commit + push Design phase
+- [x] Git commit + push Design phase
 
-### Refine Phase (VALIDATED)
+### Refine Phase (RE-VALIDATED WITH REDOCLY)
 - [x] Generate OpenAPI 3.1 spec — Catalog Storefront API (14 ops, validated with swagger-cli)
 - [x] Generate OpenAPI 3.1 spec — Component Compatibility API (2 ops, validated)
 - [x] Generate OpenAPI 3.1 spec — Partner Catalog Syndication API (3 ops, validated)
@@ -46,4 +46,7 @@
 - [x] Generate Postman collections for all 3 APIs
 - [x] Validate Refine artifacts — all specs pass CLI validation
 - [x] Package Refine deliverable (README + validation.md)
+- [x] Redocly re-validation — 19 warnings found and resolved (D-019, D-020, D-021)
+- [x] UUID standardization — 166 replacements across 8 files
+- [x] Cursor rules + Event Modeling skill created
 - [ ] Git commit + push Refine phase

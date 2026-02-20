@@ -7,6 +7,9 @@ info:
   version: 1.0.0
   contact:
     name: Drone Web API Team
+  license:
+    name: Proprietary
+    url: https://droneparts.com/terms
 
 servers:
   - url: https://api.droneparts.com/partner-catalog/v1
@@ -63,7 +66,7 @@ paths:
                 generatedDate: "2026-02-15T15:00:00Z"
                 productCount: 2
                 products:
-                  - productId: "prod-001"
+                  - productId: "d290f1ee-6c54-4b01-90e6-d701748f0851"
                     name: "EMAX ECO II 2207 1900KV"
                     brand: "EMAX"
                     sku: "EMAX-ECO2-2207-1900"
@@ -75,9 +78,9 @@ paths:
                     categories: ["Brushless Motors"]
                     pricing: { basePrice: 18.99, currency: "USD" }
                     availability: { status: "in-stock", quantityAvailable: 342 }
-                    images: ["https://cdn.droneparts.com/img/prod-001-main.jpg"]
+                    images: ["https://cdn.droneparts.com/img/d290f1ee-6c54-4b01-90e6-d701748f0851-main.jpg"]
                     updatedDate: "2026-01-20T14:30:00Z"
-                  - productId: "prod-010"
+                  - productId: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
                     name: "T-Motor F45A 4-in-1 ESC"
                     brand: "T-Motor"
                     sku: "TMOT-F45A-4IN1"
@@ -88,7 +91,7 @@ paths:
                     categories: ["4-in-1 ESCs"]
                     pricing: { basePrice: 42.99, currency: "USD" }
                     availability: { status: "in-stock", quantityAvailable: 89 }
-                    images: ["https://cdn.droneparts.com/img/prod-010-main.jpg"]
+                    images: ["https://cdn.droneparts.com/img/f47ac10b-58cc-4372-a567-0e02b2c3d479-main.jpg"]
                     updatedDate: "2026-02-10T09:00:00Z"
                 offset: 0
                 limit: 100
@@ -121,7 +124,7 @@ paths:
                   minItems: 1
                   maxItems: 500
             example:
-              productIds: ["prod-001", "prod-010", "prod-020"]
+              productIds: ["d290f1ee-6c54-4b01-90e6-d701748f0851", "f47ac10b-58cc-4372-a567-0e02b2c3d479", "7c9e6679-7425-40de-944b-e07fc1f90ae7"]
       responses:
         '200':
           description: Batch availability results
@@ -132,15 +135,15 @@ paths:
                 items:
                   $ref: '#/components/schemas/BatchAvailability'
               example:
-                - productId: "prod-001"
+                - productId: "d290f1ee-6c54-4b01-90e6-d701748f0851"
                   status: "in-stock"
                   quantityAvailable: 342
                   estimatedRestockDate: null
-                - productId: "prod-010"
+                - productId: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
                   status: "in-stock"
                   quantityAvailable: 89
                   estimatedRestockDate: null
-                - productId: "prod-020"
+                - productId: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
                   status: "backorder"
                   quantityAvailable: 0
                   estimatedRestockDate: "2026-03-01T00:00:00Z"
@@ -173,7 +176,7 @@ paths:
                   minItems: 1
                   maxItems: 500
             example:
-              productIds: ["prod-001", "prod-010"]
+              productIds: ["d290f1ee-6c54-4b01-90e6-d701748f0851", "f47ac10b-58cc-4372-a567-0e02b2c3d479"]
       responses:
         '200':
           description: Batch pricing results
@@ -184,7 +187,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/BatchPricing'
               example:
-                - productId: "prod-001"
+                - productId: "d290f1ee-6c54-4b01-90e6-d701748f0851"
                   basePrice: 18.99
                   volumeDiscounts:
                     - minQuantity: 10
@@ -193,7 +196,7 @@ paths:
                       price: 14.99
                   activePromotions: []
                   currency: "USD"
-                - productId: "prod-010"
+                - productId: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
                   basePrice: 42.99
                   volumeDiscounts:
                     - minQuantity: 5
