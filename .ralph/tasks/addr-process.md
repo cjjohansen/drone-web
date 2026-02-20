@@ -3,7 +3,7 @@
 **Status:** complete (Catalog Storefront read side)
 **Priority:** high
 **Created:** 2026-02-14
-**Prompts:** `design/addr/addr-ai-prompts.md`
+**Prompts:** `design/addr-ai-prompts.md`
 
 ## Subtasks
 
@@ -27,7 +27,7 @@
 - [x] Git commit + push Define phase
 
 ### Design Phase (VALIDATED + COMMITTED)
-- [x] Establish design style guidelines (`design/addr/design/style-guide.md`)
+- [x] Establish design style guidelines (`design/style-guide.md`)
 - [x] Produce API design — Catalog API (14 operations)
 - [x] Produce API design — Compatibility API (2 operations)
 - [x] Produce API design — Partner Catalog API (3 operations)
@@ -50,19 +50,3 @@
 - [x] Cursor rules + Event Modeling skill created
 - [x] Package Refine deliverable (README + validation.md)
 - [x] Git commit + push Refine phase (PR #6 to main)
-
----
-
-## Next: ADDR Catalog Administration (write side)
-
-**Status:** not started
-**Branch:** `addr-catalog-admin`
-**Prerequisite:** Merge PR #6 on GitHub, pull main, rebase branch
-
-### Planned Subtasks
-- [ ] Merge PR #6 and rebase `addr-catalog-admin` onto main
-- [ ] Read ADDR prompts for Align phase
-- [ ] Define write-side personas and job stories (admin, catalog manager, pricing manager)
-- [ ] Event Storming for command side (commands, policies, read models)
-- [ ] ADDR Align → Define → Design → Refine for Catalog Administration API
-- [ ] Event Modeling — generate Event Model JSON using `legacy-system-2-eventmodel` skill

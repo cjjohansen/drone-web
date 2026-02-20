@@ -45,7 +45,7 @@ Drones and mechatronic components: motors, ESCs, flight controllers, sensors, fr
 
 Big Picture Event Storming following Alberto Brandolini's methodology — 40 domain events organized across 7 subdomains with 4 pivotal events marking boundary shifts.
 
-![Event Storming — Big Picture](design/addr/align/event-storming.svg)
+![Event Storming — Big Picture](design/catalog-storefront/addr/align/event-storming.svg)
 
 ### Pivotal Events
 
@@ -83,57 +83,64 @@ The Ralph Loop reads state at session start, follows ADDR prompts for each phase
 
 ```
 drone-web/
-├── design/addr/
-│   ├── addr-ai-prompts.md              # ADDR prompt guide (from launchany)
-│   ├── align/                          # Align phase deliverables
-│   │   ├── README.md                   # Align phase overview
-│   │   ├── personas.md                 # 4 personas with job story mapping
-│   │   ├── job-stories.md              # 6 unifying job stories
-│   │   ├── activity-steps.md           # 23 activity steps
-│   │   ├── event-storming.md           # Big Picture Event Storming (40 events)
-│   │   ├── event-storming.drawio       # Interactive diagram (draw.io)
-│   │   ├── event-storming.svg          # SVG export of the diagram
-│   │   ├── big-picture-event-storming.drawio  # Reference layout (hand-crafted)
-│   │   └── validation.md              # Align phase validation report
-│   ├── define/                         # Define phase deliverables
-│   │   ├── README.md                   # Define phase overview
-│   │   ├── boundaries.md               # 3 API boundaries with DDD rationale
-│   │   ├── resources.md                # 14 resources with properties
-│   │   ├── api-profiles.md             # 19 operations with events/characteristics
-│   │   ├── sequence-diagrams.md        # Mermaid diagrams for all 6 job stories
-│   │   └── validation.md              # Define phase validation report
-│   ├── design/                         # Design phase deliverables
-│   │   ├── README.md                   # Design phase overview
-│   │   ├── style-guide.md              # API design style guide
-│   │   ├── api-design.md               # High-level API design tables (3 APIs, 19 ops)
-│   │   └── validation.md              # Design phase validation report
-│   └── refine/                         # Refine phase deliverables
-│       ├── README.md                   # Refine phase overview
-│       ├── catalog-storefront-api.yaml # OpenAPI 3.1 — Catalog Storefront API
-│       ├── component-compatibility-api.yaml  # OpenAPI 3.1 — Compatibility API
-│       ├── partner-catalog-api.yaml    # OpenAPI 3.1 — Partner Catalog API
-│       ├── integration-events.yaml     # AsyncAPI 3.0 — 7 integration events
-│       ├── api-examples.md             # Request/response examples for all 6 job stories
-│       ├── sequence-diagrams.md        # Mermaid diagrams with HTTP methods/status codes
-│       ├── validation.md              # Refine phase validation report
-│       └── postman/                    # Postman collections
-│           ├── catalog-storefront-api.postman_collection.json
-│           ├── component-compatibility-api.postman_collection.json
-│           └── partner-catalog-api.postman_collection.json
-├── Documentation/                      # Reference materials
-│   └── AI_Assisted_API_Design_Dec_2025_LaunchAny.01 1.pdf
+├── design/
+│   ├── addr-ai-prompts.md              # ADDR prompt guide (shared, from launchany)
+│   ├── style-guide.md                  # API design style guide (shared across all domains)
+│   ├── catalog-storefront/             # Catalog Storefront domain (read side) — COMPLETE
+│   │   └── addr/
+│   │       ├── align/                  # Align phase deliverables
+│   │       │   ├── README.md
+│   │       │   ├── personas.md         # 4 personas with job story mapping
+│   │       │   ├── job-stories.md      # 6 unifying job stories
+│   │       │   ├── activity-steps.md   # 23 activity steps
+│   │       │   ├── event-storming.md   # Big Picture Event Storming (40 events)
+│   │       │   ├── event-storming.drawio
+│   │       │   ├── event-storming.svg
+│   │       │   ├── big-picture-event-storming.drawio
+│   │       │   └── validation.md
+│   │       ├── define/                 # Define phase deliverables
+│   │       │   ├── README.md
+│   │       │   ├── boundaries.md       # 3 API boundaries with DDD rationale
+│   │       │   ├── resources.md        # 14 resources with properties
+│   │       │   ├── api-profiles.md     # 19 operations with events/characteristics
+│   │       │   ├── sequence-diagrams.md
+│   │       │   └── validation.md
+│   │       ├── design/                 # Design phase deliverables
+│   │       │   ├── README.md
+│   │       │   ├── api-design.md       # High-level API design tables (3 APIs, 19 ops)
+│   │       │   └── validation.md
+│   │       └── refine/                 # Refine phase deliverables
+│   │           ├── README.md
+│   │           ├── catalog-storefront-api.yaml   # OpenAPI 3.1
+│   │           ├── component-compatibility-api.yaml
+│   │           ├── partner-catalog-api.yaml
+│   │           ├── integration-events.yaml       # AsyncAPI 3.0
+│   │           ├── api-examples.md
+│   │           ├── sequence-diagrams.md
+│   │           ├── validation.md
+│   │           └── postman/
+│   └── catalog-admin/                  # Catalog Administration domain (write side) — IN PROGRESS
+│       └── addr/
+│           ├── align/
+│           ├── define/
+│           ├── design/
+│           └── refine/
 ├── .ralph/                             # Ralph Loop workspace
 │   ├── STATE.md                        # Session handoff state
-│   ├── agent/decisions.md              # Decision log (D-001 – D-018)
+│   ├── agent/decisions.md              # Decision log (D-001 – D-022)
 │   ├── agent/learnings.md              # Persistent learnings
 │   ├── specs/catalog-storefront.md     # Product spec
-│   └── tasks/addr-process.md           # Task tracking
+│   ├── tasks/addr-process.md           # Storefront task tracking (complete)
+│   └── tasks/addr-catalog-admin.md     # Admin task tracking (current)
 ├── .cursor/skills/                     # Cursor agent skills
 │   ├── event-storming/SKILL.md         # Event Storming domain knowledge
-│   └── event-storming-drawio/          # draw.io generation skill
+│   ├── event-storming-drawio/          # draw.io generation skill
+│   │   ├── SKILL.md
+│   │   └── _drawio-engine.js
+│   └── legacy-system-2-eventmodel/     # Event Modeling skill
 │       ├── SKILL.md
-│       └── _drawio-engine.js           # Reusable Node.js engine
-└── CLAUDE.md                           # Project instructions for Claude Code
+│       └── schema.json
+└── CLAUDE.md                           # Project instructions
 ```
 
 ## Current Status

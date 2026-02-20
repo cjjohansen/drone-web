@@ -38,7 +38,7 @@ Deep technical specifications and **component compatibility verification** — b
 | **Casual Browser** | Newcomer or researcher exploring the catalog | Category browsing, product descriptions, reviews |
 | **Partner System** | External system consuming catalog data programmatically | Bulk feeds, batch availability, batch pricing |
 
-Full persona details: `design/addr/align/personas.md`
+Full persona details: `design/catalog-storefront/addr/align/personas.md`
 
 ---
 
@@ -53,8 +53,8 @@ Full persona details: `design/addr/align/personas.md`
 | JS5 | I'm exploring without a specific product in mind | Browse through a category hierarchy | Discover products and understand the range of options |
 | JS6 | I'm a partner system needing product info | Retrieve catalog data, pricing, and availability | Display accurate product information in my system |
 
-Full job stories: `design/addr/align/job-stories.md`
-Activity steps (24): `design/addr/align/activity-steps.md`
+Full job stories: `design/catalog-storefront/addr/align/job-stories.md`
+Activity steps (24): `design/catalog-storefront/addr/align/activity-steps.md`
 
 ---
 
@@ -88,10 +88,10 @@ Activity steps (24): `design/addr/align/activity-steps.md`
 | CompatibilityCheck.Completed | Compatibility API | — |
 | CatalogFeed.Accessed | Partner Catalog API | — |
 
-Full boundary details: `design/addr/define/boundaries.md`
-Resources (14): `design/addr/define/resources.md`
-API profiles (19 ops): `design/addr/define/api-profiles.md`
-Sequence diagrams: `design/addr/define/sequence-diagrams.md`
+Full boundary details: `design/catalog-storefront/addr/define/boundaries.md`
+Resources (14): `design/catalog-storefront/addr/define/resources.md`
+API profiles (19 ops): `design/catalog-storefront/addr/define/api-profiles.md`
+Sequence diagrams: `design/catalog-storefront/addr/define/sequence-diagrams.md`
 
 ---
 

@@ -15,7 +15,7 @@
 
 **Phase:** ADDR Catalog Storefront — COMPLETE. Next: ADDR Catalog Administration (write side)
 **Status:** All 4 ADDR phases for the read-side Catalog Storefront are done. Refine finalization pushed via PR #6 (pending merge to main).
-**Blockers:** PR #6 needs to be merged on GitHub before main has the Refine fixes. After merge, pull main and rebase this branch.
+**Blockers:** None
 
 ## What Was Just Completed (this session)
 
@@ -31,7 +31,7 @@
 - 4 personas, 6 job stories (JS1–JS6), 23 activity steps
 - Big Picture Event Storming: 40 domain events, 4 pivotal events
 - Event Storming skills created
-- Validated (6 findings resolved) — see `design/addr/align/validation.md`
+- Validated (6 findings resolved) — see `design/catalog-storefront/addr/align/validation.md`
 
 ### Define Phase (VALIDATED + COMMITTED)
 - 3 API boundaries (Catalog Storefront, Component Compatibility, Partner Catalog)
@@ -52,9 +52,8 @@
 
 ## What Comes Next
 
-1. **Merge PR #6** on GitHub, then pull main and rebase `addr-catalog-admin`
-2. **ADDR Catalog Administration** — 2nd ADDR run for the write side (commands, approval workflows, pricing rules, inventory management). Produces Event Model with STATE_CHANGE + AUTOMATION slices.
-3. **Event Modeling** — generate Event Model JSON from specs using `legacy-system-2-eventmodel` skill
+1. **ADDR Catalog Administration** — 2nd ADDR run for the write side (commands, approval workflows, pricing rules, inventory management). Task: `.ralph/tasks/addr-catalog-admin.md`
+2. **Event Modeling** — generate Event Model JSON from specs using `legacy-system-2-eventmodel` skill (separate task, after Catalog Admin ADDR completes)
 
 ## Key Decisions
 
@@ -70,10 +69,12 @@
 | D-019 | UUID standardization for example IDs | 2026-02-20 |
 | D-020 | Added license and missing example fields | 2026-02-20 |
 | D-021 | Redocly CLI adopted for OpenAPI validation | 2026-02-20 |
+| D-022 | Domain-scoped ADDR folder structure | 2026-02-20 |
+| D-023 | Shared API style guide | 2026-02-20 |
 
 ## Important Context
 
-- **ADDR prompts:** `design/addr/addr-ai-prompts.md` contains the full ADDR prompt guide from launchany/addr-ai-prompts. Ralph MUST follow these prompts for each phase.
+- **ADDR prompts:** `design/addr-ai-prompts.md` contains the full ADDR prompt guide from launchany/addr-ai-prompts. Ralph MUST follow these prompts for each phase.
 - **Domain:** Mechatronic product ecommerce — drones, motors, ESCs, flight controllers, sensors, frames, batteries, FPV gear
 - **Personas:** Professional Integrator, Fleet Procurement Buyer, Casual Browser, Partner System (NO hobbyist)
 - **AsyncAPI:** AsyncAPI 3.0 specs produced for all integration events (for future Event Catalog integration)
@@ -90,16 +91,14 @@
 | `.ralph/STATE.md` | This file — session handoff |
 | `.ralph/agent/decisions.md` | Decision log (D-001 through D-021) |
 | `.ralph/agent/learnings.md` | Persistent memory — mistakes and patterns (LRN-001 through LRN-017) |
-| `.ralph/tasks/addr-process.md` | ADDR phase task tracking |
+| `.ralph/tasks/addr-process.md` | ADDR Catalog Storefront task tracking (complete) |
+| `.ralph/tasks/addr-catalog-admin.md` | ADDR Catalog Administration task tracking (current) |
 | `.ralph/specs/catalog-storefront.md` | Catalog Storefront product spec — what we're building |
-| `design/addr/addr-ai-prompts.md` | ADDR prompt guide (from launchany) |
-| `design/addr/design/style-guide.md` | API design style guide |
-| `design/addr/design/api-design.md` | High-level API design tables (all 3 boundaries) |
-| `design/addr/align/` | Align phase deliverables |
-| `design/addr/define/` | Define phase deliverables |
-| `design/addr/design/` | Design phase deliverables |
-| `design/addr/refine/` | Refine phase deliverables (OpenAPI, AsyncAPI, Postman, examples) |
-| `design/addr/align/event-storming.drawio` | Big Picture Event Storming diagram |
+| `design/addr-ai-prompts.md` | ADDR prompt guide (shared, from launchany) |
+| `design/catalog-storefront/addr/` | Catalog Storefront ADDR deliverables (complete) |
+| `design/catalog-admin/addr/` | Catalog Administration ADDR deliverables (current) |
+| `design/style-guide.md` | API design style guide (shared across all domains) |
+| `design/catalog-storefront/addr/align/event-storming.drawio` | Big Picture Event Storming diagram |
 | `.cursor/rules/ralph-loop.mdc` | Cursor rule — Ralph Loop session management |
 | `.cursor/rules/addr-process.mdc` | Cursor rule — ADDR methodology conventions |
 | `.cursor/rules/git-conventions.mdc` | Cursor rule — Git auth and branching |

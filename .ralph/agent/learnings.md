@@ -21,13 +21,13 @@
 ## LRN-003 (2026-02-14)
 - **Category:** ADDR / Process
 - **Context:** Started driving ADDR phases without referencing the official ADDR prompts. User pointed to launchany/addr-ai-prompts repo with comprehensive phase-by-phase prompts.
-- **Learning:** Always check for and follow the ADDR prompt guide at `design/addr/addr-ai-prompts.md`. These prompts encode the methodology correctly and ensure consistent, high-quality artifacts.
-- **Action:** Read `design/addr/addr-ai-prompts.md` before starting any ADDR phase. Follow the prompts sequentially.
+- **Learning:** Always check for and follow the ADDR prompt guide at `design/addr-ai-prompts.md`. These prompts encode the methodology correctly and ensure consistent, high-quality artifacts.
+- **Action:** Read `design/addr-ai-prompts.md` before starting any ADDR phase. Follow the prompts sequentially.
 
 ## LRN-004 (2026-02-14)
 - **Category:** Workspace / Documentation
 - **Context:** Initially placed decision log in `design/addr/decision-log.md` mixed with design artifacts. User wanted operational/agent files separate from deliverables.
-- **Learning:** Agent operational files (state, decisions, learnings, tasks) belong in `.ralph/`. Design deliverables belong in `design/addr/`. Keep them separate — `.ralph/` is the agent's workspace, `design/` is the deliverable.
+- **Learning:** Agent operational files (state, decisions, learnings, tasks) belong in `.ralph/`. Design deliverables belong in `design/{domain}/addr/`. Keep them separate — `.ralph/` is the agent's workspace, `design/` is the deliverable.
 - **Action:** Never put agent operational files in the design directory. Use `.ralph/` structure: STATE.md, agent/, tasks/, specs/.
 
 ## LRN-005 (2026-02-14)
@@ -64,7 +64,7 @@
 - **Category:** Event Storming / Visual Layout
 - **Context:** Multiple iterations to get Brandolini-style layout right. Initial attempts used full-width swimlane dividers, stacked horizontal rows, and explicit async arrows — all non-Brandolini.
 - **Learning:** Brandolini's Big Picture layout is **organic**, not grid-based. Key principles: (1) **Spatial proximity** communicates dependency — place dependent subdomains directly below their trigger. (2) **Red separator lines are local** — only span the split area, not the full canvas. (3) **No arrows** — positioning alone conveys causality. (4) Subdomain ellipses can sit at varied Y-positions. (5) Pivotal events sit in the **gap between** subdomains, never inside.
-- **Action:** When generating Event Storming layouts, follow organic Brandolini principles. Use the reference file `design/addr/align/big-picture-event-storming.drawio` for visual guidance.
+- **Action:** When generating Event Storming layouts, follow organic Brandolini principles. Use the reference file `design/catalog-storefront/addr/align/big-picture-event-storming.drawio` for visual guidance.
 
 ## LRN-011 (2026-02-14)
 - **Category:** Event Storming / Split Patterns
