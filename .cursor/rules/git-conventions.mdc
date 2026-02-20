@@ -1,0 +1,10 @@
+---
+description: Git conventions for the drone-web project — remote auth, branch strategy
+alwaysApply: false
+---
+
+# Git Conventions
+
+- Remote: `origin` → GitHub (`cjjohansen/drone-web`)
+- Push requires token auth via `GITHUB_PERSONAL_ACCESS_TOKEN` env var
+- Commit and push after each completed ADDR phase

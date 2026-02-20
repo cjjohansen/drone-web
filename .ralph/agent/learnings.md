@@ -78,11 +78,11 @@
 - **Learning:** VS Code's draw.io extension (`hediet.vscode-drawio`) can cache diagram state. After regenerating a `.drawio` file, the user must **"Revert File"** (Ctrl+Shift+P → "Revert File") or close and reopen the tab to see changes.
 - **Action:** After generating/updating `.drawio` files, remind the user to revert or reopen the tab.
 
-## LRN-013 (2026-02-15)
+## LRN-013 (2026-02-15, updated 2026-02-20)
 - **Category:** Tooling / API Spec Validation
-- **Context:** Initially used `@redocly/cli` for OpenAPI validation — it works but is a third-party opinionated linter, not the official tool. Then used `swagger-cli` which validated correctly but is deprecated and abandoned. User wanted the official tools from the OpenAPI and AsyncAPI organizations.
-- **Learning:** For OpenAPI validation, `swagger-cli` works but is deprecated (it says so itself). The Swagger/OpenAPI ecosystem doesn't have a single blessed CLI — `@redocly/cli` is the most actively maintained option. For AsyncAPI, `@asyncapi/cli` is the official tool from the AsyncAPI Initiative. Both are available via `npx`. Future projects should consider installing these as devDependencies for repeatable validation.
-- **Action:** Use `swagger-cli validate` or `@redocly/cli lint` for OpenAPI specs, `@asyncapi/cli validate` for AsyncAPI specs. Note that `swagger-cli` is deprecated — track the ecosystem for an official replacement. Always validate specs with CLI tools before committing.
+- **Context:** Initially used `@redocly/cli` for OpenAPI validation — it works but is a third-party opinionated linter, not the official tool. Then used `swagger-cli` which validated correctly but is deprecated and abandoned. User wanted the official tools from the OpenAPI and AsyncAPI organizations. On 2026-02-20, re-validated with Redocly CLI and found 19 warnings that `swagger-cli` had missed entirely (example format mismatches, missing required fields in examples, missing error responses, missing license metadata).
+- **Learning:** `swagger-cli validate` only checks structural schema validity — it does **not** validate that examples conform to their schemas, that required fields appear in inline examples, or that operations have error responses. `@redocly/cli lint` catches all of these with its recommended ruleset. Use Redocly as the primary validation tool, not swagger-cli.
+- **Action:** Use `@redocly/cli lint` (not `swagger-cli`) for OpenAPI validation. Use `@asyncapi/cli validate` for AsyncAPI. Run validation **iteratively during authoring**, not just once at the end — catching example mismatches early avoids bulk rework.
 
 ## LRN-014 (2026-02-15)
 - **Category:** Tooling / Spec Authoring with Context7
@@ -110,3 +110,9 @@
   - **Astro:** `/websites/astro_build_en` (17,075 snippets, High rep, score 84.4) — modern web framework with islands architecture. Massive snippet coverage. Also available: v6-specific at `/websites/v6_astro_build_en` (5,423 snippets, score 82.8).
   - **React Flow:** `/websites/reactflow_dev` (1,113 snippets, High rep, score 79.2) — customizable React component for node-based editors and diagrams. Could power interactive architecture visualizations, event flow diagrams, or pipeline editors.
 - **Action:** Query these Context7 libraries when building with EventCatalog, Astro, or React Flow. Use the docs-site libraries (higher snippet count) over source-code libraries for implementation guidance.
+
+## LRN-017 (2026-02-20)
+- **Category:** API Design / Examples
+- **Context:** OpenAPI specs declared `format: uuid` on ID fields but used human-readable example values like `"prod-001"`. `swagger-cli validate` passed clean. Redocly caught 15+ warnings for example/schema mismatch, plus missing required fields in nested examples.
+- **Learning:** When declaring a `format` constraint (uuid, date-time, uri, email, etc.), examples **must** use values that conform to that format. Decide the ID format strategy (UUID vs slug vs composite) **before** writing examples, not after. Also: nested/inline examples must include all `required` properties from the referenced schema — it's easy to omit fields like `productId` on sub-resources when the ID feels implied by context.
+- **Action:** At the start of Refine phase, establish an ID format convention (which entities get UUIDs, which get slugs) and create a mapping table. Reference the table when writing all examples. Run `redocly lint` after each spec file is written, not just at the end.
