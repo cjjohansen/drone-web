@@ -7,6 +7,9 @@ info:
   version: 1.0.0
   contact:
     name: Drone Web API Team
+  license:
+    name: Proprietary
+    url: https://droneparts.com/terms
 
 servers:
   - url: https://api.droneparts.com/compatibility/v1
@@ -46,7 +49,7 @@ paths:
                   minItems: 2
                   description: Product IDs of components to check
             example:
-              productIds: ["prod-001", "prod-010", "prod-020", "prod-030"]
+              productIds: ["d290f1ee-6c54-4b01-90e6-d701748f0851", "f47ac10b-58cc-4372-a567-0e02b2c3d479", "7c9e6679-7425-40de-944b-e07fc1f90ae7", "c3d4e5f6-a7b8-4c9d-ae1f-2a3b4c5d6e7f"]
       responses:
         '201':
           description: Compatibility check created
@@ -55,12 +58,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/CompatibilityCheck'
               example:
-                checkId: "chk-001"
-                components: ["prod-001", "prod-010", "prod-020", "prod-030"]
+                checkId: "550e8400-e29b-41d4-a716-446655440000"
+                components: ["d290f1ee-6c54-4b01-90e6-d701748f0851", "f47ac10b-58cc-4372-a567-0e02b2c3d479", "7c9e6679-7425-40de-944b-e07fc1f90ae7", "c3d4e5f6-a7b8-4c9d-ae1f-2a3b4c5d6e7f"]
                 status: "fail"
                 incompatibilities:
-                  - componentA: "prod-001"
-                    componentB: "prod-020"
+                  - componentA: "d290f1ee-6c54-4b01-90e6-d701748f0851"
+                    componentB: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
                     rule: "Motor voltage range (4S-6S) exceeds ESC maximum (4S)"
                     type: "voltage-mismatch"
                     severity: "error"
@@ -92,7 +95,7 @@ paths:
                 type: "https://api.droneparts.com/problems/unprocessable-entity"
                 title: "Unprocessable Entity"
                 status: 422
-                detail: "Product 'prod-099' is not a recognized component type for compatibility checking"
+                detail: "Product 'e5f6a7b8-c9d0-4e1f-ba3b-4c5d6e7f8a9b' is not a recognized component type for compatibility checking"
 
   /checks/{checkId}/replacements/{productId}:
     get:
@@ -110,7 +113,7 @@ paths:
           schema:
             type: string
             format: uuid
-            example: "chk-001"
+            example: "550e8400-e29b-41d4-a716-446655440000"
         - name: productId
           in: path
           required: true
@@ -118,7 +121,7 @@ paths:
           schema:
             type: string
             format: uuid
-            example: "prod-020"
+            example: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
       responses:
         '200':
           description: Compatible replacement products
@@ -129,7 +132,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/ReplacementProduct'
               example:
-                - productId: "prod-021"
+                - productId: "8daf8890-8536-41ef-a55c-f18ad2a01bf8"
                   name: "T-Motor F45A 4-in-1 ESC (6S)"
                   brand: "T-Motor"
                   specifications:
@@ -139,7 +142,7 @@ paths:
                   pricing:
                     basePrice: 42.99
                     currency: "USD"
-                - productId: "prod-022"
+                - productId: "9eb09901-9647-42f0-b66d-a29be3b12ca9"
                   name: "Holybro Tekko32 F4 50A (6S)"
                   brand: "Holybro"
                   specifications:

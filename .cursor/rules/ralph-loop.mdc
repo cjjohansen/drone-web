@@ -1,0 +1,41 @@
+---
+description: Ralph Loop — session state management, decision tracking, and back pressure validation for the drone-web project
+alwaysApply: true
+---
+
+# Ralph Loop
+
+## Session Start (CRITICAL)
+
+Read these files in order at the start of every session:
+
+1. `.ralph/STATE.md` — Current phase, what's done, what's next, key context
+2. `.ralph/agent/learnings.md` — Mistakes to avoid, patterns to follow
+3. `.ralph/agent/decisions.md` — Decisions made so far with rationale
+4. `.ralph/tasks/addr-process.md` — Task tracking and progress
+
+## During Work
+
+- **Decisions**: Record in `.ralph/agent/decisions.md` following the D-XXX format
+- **Learnings**: Record in `.ralph/agent/learnings.md` following the LRN-XXX format
+- **Task progress**: Update `.ralph/tasks/addr-process.md` as tasks complete
+
+## Back Pressure Check (Validation)
+
+Perform before committing, ending a session, or when significant progress is made:
+
+1. Re-read all 4 Ralph files (STATE, learnings, decisions, tasks)
+2. Verify STATE.md reflects current reality — phase, status, completed items, blockers
+3. Verify decisions.md includes all decisions made this session
+4. Verify learnings.md includes any new patterns or mistakes discovered
+5. Verify tasks tracking is up to date
+6. Check for inconsistencies across files (e.g., STATE says "done" but tasks says "pending")
+7. Update STATE.md with current progress and what comes next
+
+## Session End
+
+Update `.ralph/STATE.md` with:
+- What was just completed
+- What comes next
+- Any new blockers
+- Updated key decisions table if new D-XXX entries were added
