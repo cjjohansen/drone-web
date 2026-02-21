@@ -1,6 +1,6 @@
 # Task: ADDR Catalog Management API (write side)
 
-**Status:** not_started
+**Status:** in_progress
 **Priority:** high
 **Created:** 2026-02-20
 **Branch:** `addr-catalog-management`
@@ -18,15 +18,15 @@ The existing storefront artifacts inform this work:
 
 ## Subtasks
 
-### Align Phase
-- [ ] Read ADDR prompts for Align phase (`design/addr-ai-prompts.md`)
-- [ ] Review storefront Align artifacts for reusable context
-- [ ] Define admin/write-side personas (e.g., Catalog Manager, Pricing Manager, Inventory Operator, System Admin)
-- [ ] Compose unifying job stories for catalog administration
-- [ ] Expand job stories into activities and activity steps
-- [ ] Event Storming for command side (commands, policies, read models, automations)
-- [ ] Validate Align artifacts
-- [ ] Package Align deliverable
+### Align Phase (VALIDATED)
+- [x] Read ADDR prompts for Align phase (`design/addr-ai-prompts.md`)
+- [x] Review storefront Align artifacts for reusable context
+- [x] Define write-side personas (Catalog Manager, Pricing Analyst, Inventory Controller, Category Manager, Compatibility Engineer)
+- [x] Compose unifying job stories (JS1–JS6)
+- [x] Expand job stories into activities and activity steps (38 steps)
+- [x] Event Storming for command side (36 events, 4 pivotal, 7 subdomains, 21 integration events)
+- [x] Validate Align artifacts (2 findings, both applied — see validation.md)
+- [x] Package Align deliverable
 - [ ] Git commit + push Align phase
 
 ### Define Phase
