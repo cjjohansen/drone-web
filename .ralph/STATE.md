@@ -19,11 +19,15 @@
 
 ## What Was Just Completed (this session)
 
-- [x] Pushed Refine finalization commit (`7a86c30`) on `fix/readme-project-structure`
-- [x] Created PR #6 → main: UUID standardization, Redocly validation, Cursor rules, Event Modeling skill
-- [x] Fetched and pulled main (up through PR #5)
-- [x] Created new branch `addr-catalog-management` from main
-- [x] Back pressure check — updated all Ralph files
+- [x] Reworked railway skill to fixed LEGO/BRIO-style pieces (turnout/merger, 45° bends, branch sleepers)
+- [x] Moved race artifacts into `.cursor/skills/railway-drawio/` (`example-race.js`, `example-race.drawio`)
+- [x] Added `README.md` component catalog and refreshed `SKILL.md`
+- [x] Added legend rendering in race example and tuned spacing/placement
+- [x] Tuned outer loop geometry to avoid overlap and support x/y widening controls
+- [x] Added fail-fast collision checking in example generation
+- [x] Added reusable piece-list DSL + per-piece collision checks in engine:
+  - `dsl(x, y, heading).add(...).build(opts)`
+  - `buildTrackFromList(x, y, heading, pieces, opts)`
 
 ## ADDR Catalog Storefront Summary (COMPLETE)
 
@@ -71,6 +75,7 @@
 | D-021 | Redocly CLI adopted for OpenAPI validation | 2026-02-20 |
 | D-022 | Domain-scoped ADDR folder structure | 2026-02-20 |
 | D-023 | Shared API style guide | 2026-02-20 |
+| D-024 | Piece-list DSL with fail-fast collision checks | 2026-02-20 |
 
 ## Important Context
 
@@ -89,8 +94,8 @@
 | File | Purpose |
 |------|---------|
 | `.ralph/STATE.md` | This file — session handoff |
-| `.ralph/agent/decisions.md` | Decision log (D-001 through D-021) |
-| `.ralph/agent/learnings.md` | Persistent memory — mistakes and patterns (LRN-001 through LRN-017) |
+| `.ralph/agent/decisions.md` | Decision log (D-001 through D-024) |
+| `.ralph/agent/learnings.md` | Persistent memory — mistakes and patterns (LRN-001 through LRN-018) |
 | `.ralph/tasks/addr-process.md` | ADDR Catalog Storefront task tracking (complete) |
 | `.ralph/tasks/addr-catalog-management.md` | ADDR Catalog Management task tracking (current) |
 | `.ralph/specs/catalog-storefront.md` | Catalog Storefront product spec — what we're building |

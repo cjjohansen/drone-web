@@ -151,6 +151,18 @@
 
 ---
 
+## Railway DrawIO Decisions
+
+### D-024: Piece-list DSL with fail-fast collision checks
+**Date:** 2026-02-20
+**Decision:** Added a reusable piece-list DSL to `.cursor/skills/railway-drawio/_railway-engine.js`:
+- `dsl(x, y, heading).add(...).build(options)`
+- `buildTrackFromList(x, y, heading, pieces, options)`
+Both validate collision constraints after each piece placement and throw on illegal layouts.
+**Rationale:** Users requested a LEGO-like workflow where tracks are laid in sequence from a known start pose and each placement can be accepted/rejected immediately as legal/illegal. A list DSL makes layouts declarative and reusable, while fail-fast collision checks enforce geometric validity during construction.
+
+---
+
 ## Open Questions
 
 | ID | Phase | Question | Status |

@@ -116,3 +116,9 @@
 - **Context:** OpenAPI specs declared `format: uuid` on ID fields but used human-readable example values like `"prod-001"`. `swagger-cli validate` passed clean. Redocly caught 15+ warnings for example/schema mismatch, plus missing required fields in nested examples.
 - **Learning:** When declaring a `format` constraint (uuid, date-time, uri, email, etc.), examples **must** use values that conform to that format. Decide the ID format strategy (UUID vs slug vs composite) **before** writing examples, not after. Also: nested/inline examples must include all `required` properties from the referenced schema — it's easy to omit fields like `productId` on sub-resources when the ID feels implied by context.
 - **Action:** At the start of Refine phase, establish an ID format convention (which entities get UUIDs, which get slugs) and create a mapping table. Reference the table when writing all examples. Run `redocly lint` after each spec file is written, not just at the end.
+
+## LRN-018 (2026-02-20)
+- **Category:** Diagram Tooling / Geometry Validation
+- **Context:** Iterative track layout changes repeatedly introduced subtle overlaps and illegal closeness between inner and outer loops. Manual visual inspection alone was insufficient and cache/reload behavior in draw.io made feedback noisy.
+- **Learning:** For piece-based track builders, collision checks must run **during placement** (piece-by-piece), not only as a final pass. A declarative piece list + per-piece validation gives deterministic, reusable layout behavior and immediate error location (`index`, `piece name`, `distance`).
+- **Action:** Keep collision checks in engine-level DSL (`buildTrackFromList` / `dsl().build`) with configurable clearance and sampling density. Use fail-fast errors to guide layout tuning.
