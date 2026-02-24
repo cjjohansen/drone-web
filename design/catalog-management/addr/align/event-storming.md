@@ -33,7 +33,12 @@ Actor: Catalog Manager
 
 Command: Create Product
 Aggregate: Product
-  → Event: Product Created
+  → Event: Product Created ⭐ PIVOTAL
+  Policy: WHENEVER Product Created → Initialize Pricing (Pricing subdomain)
+  Policy: WHENEVER Product Created → Set Initial Inventory (Inventory subdomain)
+  Policy: WHENEVER Product Created → Assign to Category (Category Management subdomain)
+  Policy: WHENEVER Product Created → Index in Storefront (external)
+  Policy: WHENEVER Product Created → Publish to Partner Feeds (external)
 
 Command: Update Product Attributes
 Aggregate: Product
@@ -43,13 +48,6 @@ Command: Update Technical Specifications
 Aggregate: Product
   → Event: Product Specifications Updated
 
-Command: Discontinue Product
-Aggregate: Product
-  → Event: Product Discontinued ⭐ PIVOTAL
-  Policy: WHENEVER Product Discontinued → Notify Partner Systems
-  Policy: WHENEVER Product Discontinued → Update Compatibility Rules
-  Policy: WHENEVER Product Discontinued → Flag Active Backorders
-
 Command: Reactivate Product
 Aggregate: Product
   → Event: Product Reactivated
@@ -57,6 +55,13 @@ Aggregate: Product
 Command: Set Replacement Product
 Aggregate: Product
   → Event: Replacement Product Linked
+
+Command: Discontinue Product
+Aggregate: Product
+  → Event: Product Discontinued ⭐ PIVOTAL
+  Policy: WHENEVER Product Discontinued → Notify Partner Systems
+  Policy: WHENEVER Product Discontinued → Update Compatibility Rules
+  Policy: WHENEVER Product Discontinued → Flag Active Backorders
 ```
 
 ### 2. Bulk Import Subdomain
@@ -115,7 +120,7 @@ Aggregate: Product Pricing
 
 Command: Create Promotional Pricing
 Aggregate: Promotion
-  → Event: Promotion Created ⭐ PIVOTAL
+  → Event: Promotion Created
   Policy: WHENEVER Promotion Created → Schedule Activation
   Policy: WHENEVER Promotion Created → Notify Partner Systems
 
@@ -206,7 +211,7 @@ Actor: Compatibility Engineer
 
 Command: Create Compatibility Rule
 Aggregate: Compatibility Rule
-  → Event: Compatibility Rule Created ⭐ PIVOTAL
+  → Event: Compatibility Rule Created
   Policy: WHENEVER Compatibility Rule Created → Rebuild Compatibility Cache
 
 Command: Update Compatibility Rule
@@ -234,10 +239,9 @@ Aggregate: Component Group
 
 | # | Pivotal Event | Why It's Pivotal |
 |---|--------------|-----------------|
-| 1 | **Product Discontinued** | Cascading cross-boundary impact: storefront must hide/flag the product, compatibility rules may need updating, partner feeds must reflect the change, active backorders need handling. Multiple policies trigger. |
-| 2 | **Import Batch Processed** | Bulk creation/update of products triggers a cascade of downstream events (multiple Product Created/Updated). High-volume boundary crossing that affects storefront indexing, compatibility cache, and partner feeds simultaneously. |
-| 3 | **Promotion Created** | Creates a time-bounded pricing state that affects storefront display, partner data feeds, and requires scheduled activation/deactivation. Cross-boundary impact with temporal dimension. |
-| 4 | **Compatibility Rule Created** | Directly affects the Compatibility API's behavior. New rules change which component combinations pass/fail verification. Requires cache rebuild and may retroactively affect saved configurations. |
+| 1 | **Product Created** | Genesis event — massive fanout. Triggers initialization across 5 internal subdomains (Pricing, Inventory, Category Management, Technical Documentation, Compatibility Rules) plus 3 external systems (Storefront, Partner feeds, Compatibility API). Every new product bootstraps activity across nearly the entire domain. |
+| 2 | **Product Discontinued** | End-of-lifecycle — cleanup fanout. Storefront must hide/flag the product, compatibility rules may need updating, partner feeds must reflect the change, active backorders need handling. Multiple policies trigger. |
+| 3 | **Import Batch Processed** | Bulk workflow completion — triggers multiple Product Created/Updated events. High-volume boundary crossing that feeds into Product Lifecycle, cascading through Product Created's fanout. |
 
 ---
 
@@ -245,7 +249,7 @@ Aggregate: Component Group
 
 | Subdomain | Event Count | Events |
 |-----------|-------------|--------|
-| Product Lifecycle | 6 | Product Created, Product Updated, Product Specifications Updated, Product Discontinued, Product Reactivated, Replacement Product Linked |
+| Product Lifecycle | 6 | Product Created, Product Updated, Product Specifications Updated, Product Reactivated, Replacement Product Linked, Product Discontinued |
 | Bulk Import | 3 | Import Job Submitted, Import Batch Processed, Import Job Completed/Failed |
 | Technical Documentation | 4 | Document Uploaded, Document Associated, Document Version Replaced, Document Removed |
 | Pricing | 5 | Base Price Set, Volume Tiers Updated, Promotion Created, Promotion Cancelled, Group Price Adjustment Applied |
