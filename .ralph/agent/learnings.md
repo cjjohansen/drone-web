@@ -127,4 +127,10 @@
 - **Category:** ADDR / Workflow Strategy
 - **Context:** Reworking Catalog Management after an initial full run raised a process question: replace prior artifacts or preserve them as historical baseline while iterating.
 - **Learning:** For methodology iteration and realistic delivery tradeoffs, preserve the original ADDR run and create a sibling v2 run instead of overwriting. This keeps auditability and enables side-by-side comparison of assumptions, boundaries, and outputs.
-- **Action:** When a redesign is requested after substantial progress, keep prior run artifacts intact and create a new domain/run folder (for example, `catalog-management-v2`) with explicit rationale in decisions and state files.
+- **Action:** When a redesign is requested after substantial progress, keep prior run artifacts intact and create a new domain/run folder (for example, `catalog-management-v2`) with explicit rationale in decisions and state files. If Event Storming is deferred, mark the deferral as temporary and capture reintroduction intent.
+
+## LRN-020 (2026-02-25)
+- **Category:** Ralph Loop / Documentation Governance
+- **Context:** Decisions were duplicated in `STATE.md` and `.ralph/agent/decisions.md`, creating drift risk and unnecessary synchronization work.
+- **Learning:** Use a strict single source of truth: all decisions live only in `.ralph/agent/decisions.md`. `STATE.md` should summarize status, progress, blockers, and next steps, but never duplicate decision content.
+- **Action:** When updating Ralph files, add decisions only in `decisions.md` and reference that file from `STATE.md` via a short pointer section.

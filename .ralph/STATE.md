@@ -8,7 +8,7 @@
 
 **Name:** Drone Web — Catalog Storefront API Design
 **Repo:** drone-web (`c:\dev\repos\drone-web`)
-**Branch:** `addr-catalog-management-v2` (planned/current workstream)
+**Branch:** `addr-catalog-management` (current branch; v2 artifacts are active workstream)
 **Goal:** Design APIs for a mechatronic/drone ecommerce platform using the ADDR (Align-Define-Design-Refine) process by James Higginbotham
 
 ## Current Phase
@@ -57,24 +57,9 @@
 3. **Proceed through Define/Design/Refine** for v2 admin/write-side APIs
 4. **Generate EventModel outputs** (`config.json`, `high-level-analysis.json`) after Align/flow mapping is stable
 
-## Key Decisions
+## Decision Source
 
-| ID | Decision | Date |
-|----|----------|------|
-| D-001–D-004 | Align phase decisions (see agent/decisions.md) | 2026-02-14 |
-| D-005–D-008 | Define phase decisions (see agent/decisions.md) | 2026-02-14 |
-| D-009–D-013 | Align validation + tooling decisions | 2026-02-14 |
-| D-014–D-015 | Define validation decisions | 2026-02-15 |
-| D-016 | Search and compare as functional POST endpoints | 2026-02-15 |
-| D-017 | Compatibility check returns 201 Created | 2026-02-15 |
-| D-018 | Sub-resource paths for product relationships | 2026-02-15 |
-| D-019 | UUID standardization for example IDs | 2026-02-20 |
-| D-020 | Added license and missing example fields | 2026-02-20 |
-| D-021 | Redocly CLI adopted for OpenAPI validation | 2026-02-20 |
-| D-022 | Domain-scoped ADDR folder structure | 2026-02-20 |
-| D-023 | Shared API style guide | 2026-02-20 |
-| D-024 | Piece-list DSL with fail-fast collision checks | 2026-02-20 |
-| D-025 | Preserve Catalog Management v1; run sibling v2 without Event Storming | 2026-02-25 |
+All formal decisions are recorded only in `.ralph/agent/decisions.md`.
 
 ## Important Context
 
@@ -84,7 +69,7 @@
 - **AsyncAPI:** AsyncAPI 3.0 specs produced for all integration events (for future Event Catalog integration)
 - **Integration events vs domain events:** Only state-changing events with cross-boundary relevance are published as integration events. Internal domain events stay within their bounded context.
 - **3 API boundaries:** Catalog Storefront API (JS1-JS5), Component Compatibility API (JS4), Partner Catalog Syndication API (JS6)
-- **Catalog Management strategy:** Keep v1 as baseline; build v2 as sibling run with boundary-first Align artifacts (`boundary-map.md` + `eventmodel-mapping.md`) before EventModel JSON generation
+- **Catalog Management strategy:** Keep v1 as baseline; build v2 as sibling run with temporary Event Storming deferral in Align (`boundary-map.md` + `eventmodel-mapping.md`) before EventModel JSON generation. Reintroduce Event Storming when approach/tooling matures.
 - **Git remote:** `origin` → `https://github.com/cjjohansen/drone-web.git` (push via token auth embedded in URL)
 - **Style guide:** Based on ADDR prompts — RESTful, offset pagination, RFC 9457 errors, RFC 3339 dates, UUIDs, plural nouns, functional endpoints via POST
 - **Validation tooling:** `@redocly/cli lint` for OpenAPI, `@asyncapi/cli validate` for AsyncAPI
@@ -95,7 +80,7 @@
 |------|---------|
 | `.ralph/STATE.md` | This file — session handoff |
 | `.ralph/agent/decisions.md` | Decision log (D-001 through D-025) |
-| `.ralph/agent/learnings.md` | Persistent memory — mistakes and patterns (LRN-001 through LRN-019) |
+| `.ralph/agent/learnings.md` | Persistent memory — mistakes and patterns (LRN-001 through LRN-020) |
 | `.ralph/tasks/addr-process.md` | ADDR Catalog Storefront task tracking (complete) |
 | `.ralph/tasks/addr-catalog-management.md` | ADDR Catalog Management v1 task tracking (baseline preserved) |
 | `.ralph/tasks/addr-catalog-management-v2.md` | ADDR Catalog Management v2 task tracking (active) |
@@ -112,3 +97,4 @@
 | `.cursor/skills/event-storming/SKILL.md` | Event Storming domain knowledge skill |
 | `.cursor/skills/event-storming-drawio/SKILL.md` | Event Storming draw.io generation skill |
 | `.cursor/skills/legacy-system-2-eventmodel/SKILL.md` | Event Modeling skill — generate Event Model JSON |
+| `.cursor/skills/ralph-loop-governance/SKILL.md` | Ralph file governance skill — single-source decision logging |
