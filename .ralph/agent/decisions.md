@@ -165,10 +165,10 @@ Both validate collision constraints after each piece placement and throw on ille
 
 ## Catalog Management v2 Decisions
 
-### D-025: Preserve v1 run and execute sibling v2 run without Event Storming
+### D-025: Preserve v1 run and temporarily defer Event Storming in sibling v2 Align
 **Date:** 2026-02-25
-**Decision:** Keep `design/catalog-management/addr/` as the baseline historical run and create a new sibling run at `design/catalog-management-v2/addr/` for revised work. In this v2 Align phase, replace Event Storming with a boundary-first decomposition (`boundary-map.md`) and explicit EventModel slice mapping (`eventmodel-mapping.md`).
-**Rationale:** Preserving v1 avoids loss of context and supports auditability/comparison. The v2 approach reflects real-life iteration constraints while still producing rigorous boundary and event-flow inputs for Define/Design/Refine and downstream EventModel generation.
+**Decision:** Keep `design/catalog-management/addr/` as the baseline historical run and create a new sibling run at `design/catalog-management-v2/addr/` for revised work. For v2 Align, temporarily defer Event Storming and use a boundary-first decomposition (`boundary-map.md`) plus explicit EventModel slice mapping (`eventmodel-mapping.md`).
+**Rationale:** Preserving v1 avoids loss of context and supports auditability/comparison. Temporary deferral allows progress while Event Storming approach/tooling matures; Event Storming remains the intended long-term Align artifact and will be reintroduced when mature.
 
 ---
 

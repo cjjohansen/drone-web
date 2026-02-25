@@ -20,7 +20,7 @@ The existing storefront artifacts inform this work:
 
 ## Subtasks
 
-### Align Phase (NO EVENT STORMING)
+### Align Phase (EVENT STORMING TEMPORARILY DEFERRED)
 - [ ] Read ADDR prompts for Align phase (`design/addr-ai-prompts.md`)
 - [ ] Review storefront Align artifacts for reusable context
 - [ ] Review Catalog Management v1 Align artifacts as baseline/reference

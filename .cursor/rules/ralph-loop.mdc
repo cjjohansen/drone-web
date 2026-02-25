@@ -12,19 +12,20 @@ Read these files in order at the start of every session:
 1. `.ralph/STATE.md` — Current phase, what's done, what's next, key context
 2. `.ralph/agent/learnings.md` — Mistakes to avoid, patterns to follow
 3. `.ralph/agent/decisions.md` — Decisions made so far with rationale
-4. `.ralph/tasks/addr-process.md` — Task tracking and progress
+4. Active task tracker(s) referenced by `STATE.md` under "Files to Know" (for example, `.ralph/tasks/addr-process.md`, `.ralph/tasks/addr-catalog-management-v2.md`)
 
 ## During Work
 
 - **Decisions**: Record in `.ralph/agent/decisions.md` following the D-XXX format
 - **Learnings**: Record in `.ralph/agent/learnings.md` following the LRN-XXX format
-- **Task progress**: Update `.ralph/tasks/addr-process.md` as tasks complete
+- **Task progress**: Update active task tracker(s) referenced by `STATE.md` as tasks complete
+- **Decision source of truth**: Never duplicate decisions in `STATE.md`; keep them only in `.ralph/agent/decisions.md`
 
 ## Back Pressure Check (Validation)
 
 Perform before committing, ending a session, or when significant progress is made:
 
-1. Re-read all 4 Ralph files (STATE, learnings, decisions, tasks)
+1. Re-read core Ralph files (STATE, learnings, decisions, active task trackers)
 2. Verify STATE.md reflects current reality — phase, status, completed items, blockers
 3. Verify decisions.md includes all decisions made this session
 4. Verify learnings.md includes any new patterns or mistakes discovered
@@ -38,4 +39,4 @@ Update `.ralph/STATE.md` with:
 - What was just completed
 - What comes next
 - Any new blockers
-- Updated key decisions table if new D-XXX entries were added
+- A pointer to `.ralph/agent/decisions.md` as the only decision source
