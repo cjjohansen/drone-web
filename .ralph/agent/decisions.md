@@ -185,6 +185,11 @@ Both validate collision constraints after each piece placement and throw on ille
 **Decision:** Accept the Align v2 deliverable set in `design/catalog-management-v2/addr/align/` (`README.md`, `personas.md`, `job-stories.md`, `activity-steps.md`, `boundary-map.md`, `eventmodel-mapping.md`, `validation.md`) as complete and transition the active plan to Define.
 **Rationale:** The artifacts provide sufficient boundary clarity, command/state-change mapping, and validation coverage to proceed into API boundary profiling without blocking on Event Storming maturity.
 
+### D-029: Keep Governance and Bulk Ingestion as explicit Define boundaries in v2
+**Date:** 2026-02-25
+**Decision:** In Catalog Management v2 Define, retain `Catalog Governance API` and `Bulk Ingestion API` as explicit first-class boundaries instead of merging them into Product Lifecycle or domain-specific admin APIs.
+**Rationale:** Governance and ingestion both carry distinct invariants and reliability requirements (approval policy consistency, batch replay/idempotency, operational scaling) that would be diluted and duplicated if embedded in other boundaries. Keeping them explicit improves autonomy, auditability, and clearer event contracts to read-side consumers.
+
 ---
 
 ## Open Questions
