@@ -33,8 +33,8 @@
 ## LRN-005 (2026-02-14)
 - **Category:** ADDR / Methodology
 - **Context:** Read all 9 chapters of user's Principles of Web API Design series. Event Storming was initially placed as a supplementary artifact but it's actually a core Align phase activity per Higginbotham Ch. 4-5.
-- **Learning:** The ADDR Align phase flow is: Job Stories → Event Storming → Activities & Steps. Event Storming is the bridge between job stories and API boundaries. Pivotal events on the canvas directly indicate bounded context boundaries (Define phase input). The API Profile (Define phase) is implementation-agnostic — REST/GraphQL/gRPC choices come in Design phase only.
-- **Action:** Always run Event Storming as part of Align, before Define. Use pivotal events to validate boundary decisions.
+- **Learning:** The ADDR Align phase flow is typically: Job Stories → Event Storming → Activities & Steps. Event Storming is normally the bridge between job stories and API boundaries, and pivotal events often inform boundary splits for Define.
+- **Action:** Default to Event Storming during Align unless the user explicitly requests a different decomposition artifact (for example, a boundary map plus EventModel mapping). When overridden, record the rationale as an explicit decision.
 
 ## LRN-006 (2026-02-14)
 - **Category:** ADDR / Async APIs
@@ -122,3 +122,9 @@
 - **Context:** Iterative track layout changes repeatedly introduced subtle overlaps and illegal closeness between inner and outer loops. Manual visual inspection alone was insufficient and cache/reload behavior in draw.io made feedback noisy.
 - **Learning:** For piece-based track builders, collision checks must run **during placement** (piece-by-piece), not only as a final pass. A declarative piece list + per-piece validation gives deterministic, reusable layout behavior and immediate error location (`index`, `piece name`, `distance`).
 - **Action:** Keep collision checks in engine-level DSL (`buildTrackFromList` / `dsl().build`) with configurable clearance and sampling density. Use fail-fast errors to guide layout tuning.
+
+## LRN-019 (2026-02-25)
+- **Category:** ADDR / Workflow Strategy
+- **Context:** Reworking Catalog Management after an initial full run raised a process question: replace prior artifacts or preserve them as historical baseline while iterating.
+- **Learning:** For methodology iteration and realistic delivery tradeoffs, preserve the original ADDR run and create a sibling v2 run instead of overwriting. This keeps auditability and enables side-by-side comparison of assumptions, boundaries, and outputs.
+- **Action:** When a redesign is requested after substantial progress, keep prior run artifacts intact and create a new domain/run folder (for example, `catalog-management-v2`) with explicit rationale in decisions and state files.
