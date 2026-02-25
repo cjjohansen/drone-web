@@ -190,6 +190,11 @@ Both validate collision constraints after each piece placement and throw on ille
 **Decision:** In Catalog Management v2 Define, retain `Catalog Governance API` and `Bulk Ingestion API` as explicit first-class boundaries instead of merging them into Product Lifecycle or domain-specific admin APIs.
 **Rationale:** Governance and ingestion both carry distinct invariants and reliability requirements (approval policy consistency, batch replay/idempotency, operational scaling) that would be diluted and duplicated if embedded in other boundaries. Keeping them explicit improves autonomy, auditability, and clearer event contracts to read-side consumers.
 
+### D-030: Standardize write-side command reliability conventions in shared style guide
+**Date:** 2026-02-25
+**Decision:** Extend `design/style-guide.md` with write-side conventions requiring `Idempotency-Key` on retry-prone command POST operations, `If-Match` for optimistic concurrency on mutable resources, and `202 Accepted` for asynchronous command submissions with trackable job/request resources.
+**Rationale:** Catalog Management v2 is command-heavy with long-running and retry-prone operations (repricing, ingestion replay, lifecycle and governance transitions). A shared reliability contract reduces duplicate per-API decisions and keeps behavior consistent across all write-side boundaries.
+
 ---
 
 ## Open Questions
