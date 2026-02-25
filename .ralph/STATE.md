@@ -8,26 +8,22 @@
 
 **Name:** Drone Web — Catalog Storefront API Design
 **Repo:** drone-web (`c:\dev\repos\drone-web`)
-**Branch:** `addr-catalog-management`
+**Branch:** `addr-catalog-management-v2` (planned/current workstream)
 **Goal:** Design APIs for a mechatronic/drone ecommerce platform using the ADDR (Align-Define-Design-Refine) process by James Higginbotham
 
 ## Current Phase
 
-**Phase:** ADDR Catalog Storefront — COMPLETE. Next: ADDR Catalog Administration (write side)
-**Status:** All 4 ADDR phases for the read-side Catalog Storefront are done. Refine finalization pushed via PR #6 (pending merge to main).
+**Phase:** ADDR Catalog Management v2 — Align (in progress)
+**Status:** Catalog Storefront ADDR is complete (PR #6 pending merge). Catalog Management v1 run is preserved as baseline; v2 run is now the active path.
 **Blockers:** None
 
 ## What Was Just Completed (this session)
 
-- [x] Reworked railway skill to fixed LEGO/BRIO-style pieces (turnout/merger, 45° bends, branch sleepers)
-- [x] Moved race artifacts into `.cursor/skills/railway-drawio/` (`example-race.js`, `example-race.drawio`)
-- [x] Added `README.md` component catalog and refreshed `SKILL.md`
-- [x] Added legend rendering in race example and tuned spacing/placement
-- [x] Tuned outer loop geometry to avoid overlap and support x/y widening controls
-- [x] Added fail-fast collision checking in example generation
-- [x] Added reusable piece-list DSL + per-piece collision checks in engine:
-  - `dsl(x, y, heading).add(...).build(opts)`
-  - `buildTrackFromList(x, y, heading, pieces, opts)`
+- [x] Reviewed learnings/decisions for service-boundary and subdomain implications
+- [x] Confirmed strategy to preserve Catalog Management v1 as baseline artifacts
+- [x] Created v2 task file: `.ralph/tasks/addr-catalog-management-v2.md`
+- [x] Chose v2 run layout: sibling domain folder `design/catalog-management-v2/addr/`
+- [x] Finalized plan direction: no Event Storming in Align v2; use boundary map + EventModel mapping instead
 
 ## ADDR Catalog Storefront Summary (COMPLETE)
 
@@ -56,8 +52,10 @@
 
 ## What Comes Next
 
-1. **ADDR Catalog Management** — 2nd ADDR run for the write side (commands, approval workflows, pricing rules, inventory management). Task: `.ralph/tasks/addr-catalog-management.md`
-2. **Event Modeling** — generate Event Model JSON from specs using `legacy-system-2-eventmodel` skill (separate task, after Catalog Admin ADDR completes)
+1. **Scaffold Catalog Management v2 artifacts** under `design/catalog-management-v2/addr/` (align/define/design/refine)
+2. **Execute Align v2** (no event storming): personas, job stories, activity steps, `boundary-map.md`, `eventmodel-mapping.md`, `validation.md`
+3. **Proceed through Define/Design/Refine** for v2 admin/write-side APIs
+4. **Generate EventModel outputs** (`config.json`, `high-level-analysis.json`) after Align/flow mapping is stable
 
 ## Key Decisions
 
@@ -76,6 +74,7 @@
 | D-022 | Domain-scoped ADDR folder structure | 2026-02-20 |
 | D-023 | Shared API style guide | 2026-02-20 |
 | D-024 | Piece-list DSL with fail-fast collision checks | 2026-02-20 |
+| D-025 | Preserve Catalog Management v1; run sibling v2 without Event Storming | 2026-02-25 |
 
 ## Important Context
 
@@ -85,6 +84,7 @@
 - **AsyncAPI:** AsyncAPI 3.0 specs produced for all integration events (for future Event Catalog integration)
 - **Integration events vs domain events:** Only state-changing events with cross-boundary relevance are published as integration events. Internal domain events stay within their bounded context.
 - **3 API boundaries:** Catalog Storefront API (JS1-JS5), Component Compatibility API (JS4), Partner Catalog Syndication API (JS6)
+- **Catalog Management strategy:** Keep v1 as baseline; build v2 as sibling run with boundary-first Align artifacts (`boundary-map.md` + `eventmodel-mapping.md`) before EventModel JSON generation
 - **Git remote:** `origin` → `https://github.com/cjjohansen/drone-web.git` (push via token auth embedded in URL)
 - **Style guide:** Based on ADDR prompts — RESTful, offset pagination, RFC 9457 errors, RFC 3339 dates, UUIDs, plural nouns, functional endpoints via POST
 - **Validation tooling:** `@redocly/cli lint` for OpenAPI, `@asyncapi/cli validate` for AsyncAPI
@@ -94,14 +94,16 @@
 | File | Purpose |
 |------|---------|
 | `.ralph/STATE.md` | This file — session handoff |
-| `.ralph/agent/decisions.md` | Decision log (D-001 through D-024) |
-| `.ralph/agent/learnings.md` | Persistent memory — mistakes and patterns (LRN-001 through LRN-018) |
+| `.ralph/agent/decisions.md` | Decision log (D-001 through D-025) |
+| `.ralph/agent/learnings.md` | Persistent memory — mistakes and patterns (LRN-001 through LRN-019) |
 | `.ralph/tasks/addr-process.md` | ADDR Catalog Storefront task tracking (complete) |
-| `.ralph/tasks/addr-catalog-management.md` | ADDR Catalog Management task tracking (current) |
+| `.ralph/tasks/addr-catalog-management.md` | ADDR Catalog Management v1 task tracking (baseline preserved) |
+| `.ralph/tasks/addr-catalog-management-v2.md` | ADDR Catalog Management v2 task tracking (active) |
 | `.ralph/specs/catalog-storefront.md` | Catalog Storefront product spec — what we're building |
 | `design/addr-ai-prompts.md` | ADDR prompt guide (shared, from launchany) |
 | `design/catalog-storefront/addr/` | Catalog Storefront ADDR deliverables (complete) |
-| `design/catalog-management/addr/` | Catalog Management ADDR deliverables (current) |
+| `design/catalog-management/addr/` | Catalog Management ADDR deliverables (v1 baseline) |
+| `design/catalog-management-v2/addr/` | Catalog Management ADDR deliverables (active run) |
 | `design/style-guide.md` | API design style guide (shared across all domains) |
 | `design/catalog-storefront/addr/align/event-storming.drawio` | Big Picture Event Storming diagram |
 | `.cursor/rules/ralph-loop.mdc` | Cursor rule — Ralph Loop session management |

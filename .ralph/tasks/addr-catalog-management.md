@@ -1,6 +1,6 @@
 # Task: ADDR Catalog Management API (write side)
 
-**Status:** in_progress
+**Status:** paused (baseline preserved; superseded by v2 run)
 **Priority:** high
 **Created:** 2026-02-20
 **Branch:** `addr-catalog-management`
