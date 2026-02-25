@@ -13,18 +13,17 @@
 
 ## Current Phase
 
-**Phase:** ADDR Catalog Management v2 — Define (ready to start)
-**Status:** Align v2 is closed with boundary-first artifacts and validation. Catalog Storefront ADDR is complete (PR #6 pending merge). Catalog Management v1 is baseline-only. Catalog Management v2 remains the single active plan.
+**Phase:** ADDR Catalog Management v2 — Design (ready to start)
+**Status:** Define v2 is complete and validated in `design/catalog-management-v2/addr/define/`. Catalog Storefront ADDR is complete (PR #6 pending merge). Catalog Management v1 is baseline-only. Catalog Management v2 remains the single active plan.
 **Blockers:** None
 
 ## What Was Just Completed (this session)
 
-- [x] Closed Align v2 with Catalog Management artifacts under `design/catalog-management-v2/addr/align/`:
-  - `README.md`, `personas.md`, `job-stories.md`, `activity-steps.md`
-  - `boundary-map.md`, `eventmodel-mapping.md`, `validation.md`
-- [x] Updated v2 task tracker and marked Align as complete (push pending)
-- [x] Recorded Align closure decision (D-028)
-- [x] Recorded Align exit learning for deferred Event Storming path (LRN-022)
+- [x] Completed Define v2 deliverables under `design/catalog-management-v2/addr/define/`:
+  - `README.md`, `boundaries.md`, `resources.md`, `api-profiles.md`, `sequence-diagrams.md`, `validation.md`
+- [x] Mapped all 37 Align activity steps to Define API operations and generated sequence coverage for JS1-JS6
+- [x] Updated v2 task tracker and marked Define content tasks complete (commit/push still pending)
+- [x] Recorded Define boundary decision D-029 in `.ralph/agent/decisions.md`
 
 ## ADDR Catalog Storefront Summary (COMPLETE)
 
@@ -53,10 +52,10 @@
 
 ## What Comes Next
 
-1. **Start Define v2:** finalize candidate admin API boundaries and consolidation assessment
-2. **Define resources and API profiles** per boundary (command operations and emitted state-change events)
-3. **Generate Define sequence diagrams** for admin job stories and package Define deliverable
-4. **Proceed through Design/Refine**, then generate EventModel outputs (`config.json`, `high-level-analysis.json`)
+1. **Start Design v2:** map Define operations to HTTP methods/resource paths and produce high-level API design tables
+2. **Extend shared style guidance** with write-side conventions (idempotency keys, optimistic concurrency, bulk command handling)
+3. **Validate and package Design artifacts**, then commit/push Define + Design progress per ADDR workflow
+4. **Proceed through Refine**, then generate EventModel outputs (`config.json`, `high-level-analysis.json`)
 
 ## Decision Source
 
@@ -80,7 +79,7 @@ All formal decisions are recorded only in `.ralph/agent/decisions.md`.
 | File | Purpose |
 |------|---------|
 | `.ralph/STATE.md` | This file — session handoff |
-| `.ralph/agent/decisions.md` | Decision log (D-001 through D-028) |
+| `.ralph/agent/decisions.md` | Decision log (D-001 through D-029) |
 | `.ralph/agent/learnings.md` | Persistent memory — mistakes and patterns (LRN-001 through LRN-022) |
 | `.ralph/tasks/addr-process.md` | ADDR Catalog Storefront task tracking (complete) |
 | `.ralph/tasks/addr-catalog-management.md` | ADDR Catalog Management v1 task tracking (baseline preserved) |
@@ -90,6 +89,7 @@ All formal decisions are recorded only in `.ralph/agent/decisions.md`.
 | `design/catalog-storefront/addr/` | Catalog Storefront ADDR deliverables (complete) |
 | `design/catalog-management/addr/` | Catalog Management ADDR deliverables (v1 baseline) |
 | `design/catalog-management-v2/addr/` | Catalog Management ADDR deliverables (active run) |
+| `design/catalog-management-v2/addr/define/` | Catalog Management v2 Define deliverables (complete, Design input) |
 | `design/style-guide.md` | API design style guide (shared across all domains) |
 | `design/catalog-storefront/addr/align/event-storming.drawio` | Big Picture Event Storming diagram |
 | `.cursor/rules/ralph-loop.mdc` | Cursor rule — Ralph Loop session management |

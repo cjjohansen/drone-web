@@ -35,13 +35,13 @@ The existing storefront artifacts inform this work:
 - [ ] Git push Align phase
 
 ### Define Phase
-- [ ] Identify candidate admin API boundaries (may extend or add to existing 3)
-- [ ] Assess boundary consolidation with existing storefront boundaries
-- [ ] Identify API resources per admin boundary
-- [ ] Generate API profiles per boundary (command operations, state-changing events)
-- [ ] Validate API profiles
-- [ ] Generate sequence diagrams for admin job stories
-- [ ] Package Define deliverable
+- [x] Identify candidate admin API boundaries (may extend or add to existing 3)
+- [x] Assess boundary consolidation with existing storefront boundaries
+- [x] Identify API resources per admin boundary
+- [x] Generate API profiles per boundary (command operations, state-changing events)
+- [x] Validate API profiles
+- [x] Generate sequence diagrams for admin job stories
+- [x] Package Define deliverable
 - [ ] Git commit + push Define phase
 
 ### Design Phase
