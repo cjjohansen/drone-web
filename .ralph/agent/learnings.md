@@ -134,3 +134,15 @@
 - **Context:** Decisions were duplicated in `STATE.md` and `.ralph/agent/decisions.md`, creating drift risk and unnecessary synchronization work.
 - **Learning:** Use a strict single source of truth: all decisions live only in `.ralph/agent/decisions.md`. `STATE.md` should summarize status, progress, blockers, and next steps, but never duplicate decision content.
 - **Action:** When updating Ralph files, add decisions only in `decisions.md` and reference that file from `STATE.md` via a short pointer section.
+
+## LRN-021 (2026-02-25)
+- **Category:** Ralph Loop / Plan Coordination
+- **Context:** While preserving v1 and executing v2, it became easy to describe multiple active tracks in `STATE.md`, which can confuse single-agent execution.
+- **Learning:** `STATE.md` should carry one active plan only. Additional tracks should be labeled baseline/reference unless there is an explicit manager-agent coordination layer.
+- **Action:** Keep one active plan in `STATE.md` and move alternatives/history into task files and decisions.
+
+## LRN-022 (2026-02-25)
+- **Category:** ADDR / Align Exit Criteria
+- **Context:** Catalog Management v2 needed progress while Event Storming remained temporarily deferred, creating uncertainty about when Align can be considered complete.
+- **Learning:** Align can be closed without Event Storming when temporary deferral is explicit and replacement artifacts are complete: unifying job stories, command-focused activity steps, a boundary map, EventModel mapping, and a validation report.
+- **Action:** When deferring Event Storming, require the boundary-map and eventmodel-mapping artifacts plus validation before moving to Define.

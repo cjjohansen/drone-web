@@ -170,6 +170,21 @@ Both validate collision constraints after each piece placement and throw on ille
 **Decision:** Keep `design/catalog-management/addr/` as the baseline historical run and create a new sibling run at `design/catalog-management-v2/addr/` for revised work. For v2 Align, temporarily defer Event Storming and use a boundary-first decomposition (`boundary-map.md`) plus explicit EventModel slice mapping (`eventmodel-mapping.md`).
 **Rationale:** Preserving v1 avoids loss of context and supports auditability/comparison. Temporary deferral allows progress while Event Storming approach/tooling matures; Event Storming remains the intended long-term Align artifact and will be reintroduced when mature.
 
+### D-026: `STATE.md` tracks exactly one active plan
+**Date:** 2026-02-25
+**Decision:** Treat `.ralph/STATE.md` as a single-agent handoff document that tracks one active plan at a time. Historical or parallel initiatives are listed as baseline/reference only unless an explicit manager/coordinator layer is introduced.
+**Rationale:** Single-plan tracking reduces ambiguity, avoids conflicting "current" directives, and keeps handoff context crisp for the next session.
+
+### D-027: Split Product Lifecycle, Documentation, and Category Management in v2 Align
+**Date:** 2026-02-25
+**Decision:** In Catalog Management v2 Align, explicitly separate Product Lifecycle Management, Technical Documentation Management, and Category/Faceting Management into distinct boundaries, with additional explicit boundaries for Catalog Governance Workflow and Bulk Ingestion.
+**Rationale:** Each area has distinct invariants, ownership, and change cadence. Explicit separation improves API boundary definition and creates a cleaner mapping to EventModel slice types.
+
+### D-028: Close Align v2 using boundary-first artifacts and move to Define
+**Date:** 2026-02-25
+**Decision:** Accept the Align v2 deliverable set in `design/catalog-management-v2/addr/align/` (`README.md`, `personas.md`, `job-stories.md`, `activity-steps.md`, `boundary-map.md`, `eventmodel-mapping.md`, `validation.md`) as complete and transition the active plan to Define.
+**Rationale:** The artifacts provide sufficient boundary clarity, command/state-change mapping, and validation coverage to proceed into API boundary profiling without blocking on Event Storming maturity.
+
 ---
 
 ## Open Questions

@@ -14,6 +14,7 @@
 When making decisions, record them in `.ralph/agent/decisions.md` following the existing format.
 When learning from mistakes, record them in `.ralph/agent/learnings.md` following the existing format.
 Do not duplicate decision entries in `.ralph/STATE.md`; keep `STATE.md` as a handoff/status document and reference `.ralph/agent/decisions.md` as the single decision source.
+Treat `.ralph/STATE.md` as single-agent/single-active-plan context. List non-active tracks as baseline/reference unless an explicit manager-agent coordination layer exists.
 
 ## ADDR Process
 

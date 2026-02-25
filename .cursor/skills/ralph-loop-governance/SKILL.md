@@ -13,6 +13,7 @@ Decisions have exactly one source of truth:
 
 - Write all D-XXX entries only in `.ralph/agent/decisions.md`
 - Never duplicate decision tables or detailed decision entries in `.ralph/STATE.md`
+- Keep exactly one active plan in `.ralph/STATE.md`; mark all others as baseline/reference
 
 ## File Responsibilities
 

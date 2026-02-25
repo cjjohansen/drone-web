@@ -20,18 +20,19 @@ The existing storefront artifacts inform this work:
 
 ## Subtasks
 
-### Align Phase (EVENT STORMING TEMPORARILY DEFERRED)
-- [ ] Read ADDR prompts for Align phase (`design/addr-ai-prompts.md`)
-- [ ] Review storefront Align artifacts for reusable context
-- [ ] Review Catalog Management v1 Align artifacts as baseline/reference
-- [ ] Define/refine write-side personas for v2
-- [ ] Compose/refine unifying job stories (JS1–JS6)
-- [ ] Expand job stories into activities and activity steps (command intent and business outcomes)
-- [ ] Map job stories and activities to candidate subdomains/service boundaries
-- [ ] Create `boundary-map.md` (ownership, interfaces, invariants, overlap/gap checks)
-- [ ] Create `eventmodel-mapping.md` (STATE_CHANGE / STATE_VIEW / AUTOMATION candidates)
-- [ ] Validate Align v2 artifacts and package deliverable
-- [ ] Git commit + push Align phase
+### Align Phase (COMPLETE; EVENT STORMING TEMPORARILY DEFERRED)
+- [x] Read ADDR prompts for Align phase (`design/addr-ai-prompts.md`)
+- [x] Review storefront Align artifacts for reusable context
+- [x] Review Catalog Management v1 Align artifacts as baseline/reference
+- [x] Define/refine write-side personas for v2
+- [x] Compose/refine unifying job stories (JS1–JS6)
+- [x] Expand job stories into activities and activity steps (command intent and business outcomes)
+- [x] Map job stories and activities to candidate subdomains/service boundaries
+- [x] Create `boundary-map.md` (ownership, interfaces, invariants, overlap/gap checks)
+- [x] Create `eventmodel-mapping.md` (STATE_CHANGE / STATE_VIEW / AUTOMATION candidates)
+- [x] Validate Align v2 artifacts and package deliverable
+- [x] Git commit Align phase
+- [ ] Git push Align phase
 
 ### Define Phase
 - [ ] Identify candidate admin API boundaries (may extend or add to existing 3)

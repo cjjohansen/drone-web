@@ -20,6 +20,7 @@ Read these files in order at the start of every session:
 - **Learnings**: Record in `.ralph/agent/learnings.md` following the LRN-XXX format
 - **Task progress**: Update active task tracker(s) referenced by `STATE.md` as tasks complete
 - **Decision source of truth**: Never duplicate decisions in `STATE.md`; keep them only in `.ralph/agent/decisions.md`
+- **Single active plan**: Keep exactly one active plan in `STATE.md`; mark others as baseline/reference unless a manager layer is explicitly introduced
 
 ## Back Pressure Check (Validation)
 
