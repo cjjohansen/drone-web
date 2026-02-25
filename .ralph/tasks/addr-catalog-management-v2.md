@@ -45,12 +45,12 @@ The existing storefront artifacts inform this work:
 - [ ] Git commit + push Define phase
 
 ### Design Phase
-- [ ] Reuse/extend existing style guide for write operations (idempotency, optimistic concurrency, etc.)
-- [ ] Produce API design tables for admin boundaries
-- [ ] Record design decisions
-- [ ] Validate Design artifacts
-- [ ] Package Design deliverable
-- [ ] Git commit + push Design phase
+- [x] Reuse/extend existing style guide for write operations (idempotency, optimistic concurrency, etc.)
+- [x] Produce API design tables for admin boundaries
+- [x] Record design decisions
+- [x] Validate Design artifacts
+- [x] Package Design deliverable
+- [ ] Git commit + push Design phase (commit done, push pending)
 
 ### Refine Phase
 - [ ] Generate OpenAPI 3.1 specs for admin APIs (validate with Redocly CLI)

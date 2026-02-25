@@ -13,17 +13,19 @@
 
 ## Current Phase
 
-**Phase:** ADDR Catalog Management v2 — Design (ready to start)
-**Status:** Define v2 is complete and validated in `design/catalog-management-v2/addr/define/`. Catalog Storefront ADDR is complete (PR #6 pending merge). Catalog Management v1 is baseline-only. Catalog Management v2 remains the single active plan.
+**Phase:** ADDR Catalog Management v2 — Refine (ready to start)
+**Status:** Define v2 and Design v2 are complete and validated in `design/catalog-management-v2/addr/{define,design}/`. Catalog Storefront ADDR is complete (PR #6 pending merge). Catalog Management v1 is baseline-only. Catalog Management v2 remains the single active plan.
 **Blockers:** None
 
 ## What Was Just Completed (this session)
 
-- [x] Completed Define v2 deliverables under `design/catalog-management-v2/addr/define/`:
-  - `README.md`, `boundaries.md`, `resources.md`, `api-profiles.md`, `sequence-diagrams.md`, `validation.md`
-- [x] Mapped all 37 Align activity steps to Define API operations and generated sequence coverage for JS1-JS6
-- [x] Updated v2 task tracker and marked Define content tasks complete (commit/push still pending)
-- [x] Recorded Define boundary decision D-029 in `.ralph/agent/decisions.md`
+- [x] Completed Design v2 deliverables under `design/catalog-management-v2/addr/design/`:
+  - `README.md`, `api-design.md`, `validation.md`
+- [x] Extended shared style guidance in `design/style-guide.md` with write-side conventions:
+  - idempotency keys, optimistic concurrency (`If-Match`), async command submission (`202 Accepted`)
+- [x] Mapped all 42 Define operations to high-level HTTP designs across 8 write-side boundaries
+- [x] Recorded Design decision D-030 in `.ralph/agent/decisions.md`
+- [x] Updated v2 task tracker to mark Design content tasks complete (commit complete, push pending)
 
 ## ADDR Catalog Storefront Summary (COMPLETE)
 
@@ -52,10 +54,10 @@
 
 ## What Comes Next
 
-1. **Start Design v2:** map Define operations to HTTP methods/resource paths and produce high-level API design tables
-2. **Extend shared style guidance** with write-side conventions (idempotency keys, optimistic concurrency, bulk command handling)
-3. **Validate and package Design artifacts**, then commit/push Define + Design progress per ADDR workflow
-4. **Proceed through Refine**, then generate EventModel outputs (`config.json`, `high-level-analysis.json`)
+1. **Start Refine v2:** generate OpenAPI 3.1 specs for the 8 write-side APIs from `design/catalog-management-v2/addr/design/api-design.md`
+2. **Generate AsyncAPI 3.0 specs** for write-side integration events emitted by command operations
+3. **Create usage artifacts** (request/response examples, mermaid sequence diagrams, Postman collections) and validate with Redocly + AsyncAPI CLI
+4. **Generate EventModel outputs** (`config.json`, `high-level-analysis.json`) after Refine packaging
 
 ## Decision Source
 
