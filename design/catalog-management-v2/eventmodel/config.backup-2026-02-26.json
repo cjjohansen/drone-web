@@ -51,73 +51,16 @@
               "type": "INBOUND",
               "title": "Create A New Product Master Record",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-create-product-state",
+              "type": "OUTBOUND",
+              "title": "Product State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-001",
-          "title": "Given authorization and valid business preconditions when Create A New Product Master Record then Product Created is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Product Lifecycle Manager) can execute this command.",
-              "id": "spec-slice-001-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "No conflicting active Product violates uniqueness or policy constraints.",
-              "id": "spec-slice-001-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: identity, naming, baseline specifications.",
-              "id": "spec-slice-001-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Create A New Product Master Record",
-              "id": "spec-slice-001-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-create-product"
-            }
-          ],
-          "then": [
-            {
-              "title": "Product Created",
-              "id": "spec-slice-001-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-product-created"
-            }
-          ],
-          "linkedId": "slice-001"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Product Lifecycle Manager",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "Product"
-      ]
-    },
-    {
-      "id": "slice-view-001",
-      "status": "Created",
-      "index": 2,
-      "title": "Product State View",
-      "context": "Product Lifecycle API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-create-product-state",
@@ -149,26 +92,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-001-view",
-          "title": "Given Product Created then Product State is updated",
+          "id": "spec-slice-001",
+          "title": "Given prior state when Create A New Product Master Record then Product Created",
           "given": [
             {
-              "title": "Product Created",
-              "id": "spec-slice-001-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-product-created"
+              "title": "Prior Product state exists",
+              "id": "spec-slice-001-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Create A New Product Master Record",
+              "id": "spec-slice-001-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-create-product"
+            }
+          ],
           "then": [
             {
+              "title": "Product Created",
+              "id": "spec-slice-001-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-product-created"
+            },
+            {
               "title": "Product State",
-              "id": "spec-slice-001-view-t1",
+              "id": "spec-slice-001-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-create-product-state"
             }
           ],
-          "linkedId": "slice-view-001"
+          "linkedId": "slice-001"
         }
       ],
       "actors": [
@@ -184,7 +139,7 @@
     {
       "id": "slice-002",
       "status": "Created",
-      "index": 3,
+      "index": 2,
       "title": "Update Technical Specification Set",
       "context": "Product Lifecycle API",
       "sliceType": "STATE_CHANGE",
@@ -232,73 +187,16 @@
               "type": "INBOUND",
               "title": "Update Technical Specification Set",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-update-product-specifications-state",
+              "type": "OUTBOUND",
+              "title": "Product State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-002",
-          "title": "Given authorization and valid business preconditions when Update Technical Specification Set then Product Specification Updated is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Product Lifecycle Manager) can execute this command.",
-              "id": "spec-slice-002-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Target Product exists and is eligible for mutation.",
-              "id": "spec-slice-002-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: productId, specification attributes.",
-              "id": "spec-slice-002-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Update Technical Specification Set",
-              "id": "spec-slice-002-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-update-product-specifications"
-            }
-          ],
-          "then": [
-            {
-              "title": "Product Specification Updated",
-              "id": "spec-slice-002-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-product-specification-updated"
-            }
-          ],
-          "linkedId": "slice-002"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Product Lifecycle Manager",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "Product"
-      ]
-    },
-    {
-      "id": "slice-view-002",
-      "status": "Created",
-      "index": 4,
-      "title": "Product State View",
-      "context": "Product Lifecycle API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-update-product-specifications-state",
@@ -330,26 +228,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-002-view",
-          "title": "Given Product Specification Updated then Product State is updated",
+          "id": "spec-slice-002",
+          "title": "Given prior state when Update Technical Specification Set then Product Specification Updated",
           "given": [
             {
-              "title": "Product Specification Updated",
-              "id": "spec-slice-002-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-product-specification-updated"
+              "title": "Prior Product state exists",
+              "id": "spec-slice-002-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Update Technical Specification Set",
+              "id": "spec-slice-002-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-update-product-specifications"
+            }
+          ],
           "then": [
             {
+              "title": "Product Specification Updated",
+              "id": "spec-slice-002-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-product-specification-updated"
+            },
+            {
               "title": "Product State",
-              "id": "spec-slice-002-view-t1",
+              "id": "spec-slice-002-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-update-product-specifications-state"
             }
           ],
-          "linkedId": "slice-view-002"
+          "linkedId": "slice-002"
         }
       ],
       "actors": [
@@ -365,7 +275,7 @@
     {
       "id": "slice-003",
       "status": "Created",
-      "index": 5,
+      "index": 3,
       "title": "Transition Product Lifecycle State",
       "context": "Product Lifecycle API",
       "sliceType": "STATE_CHANGE",
@@ -413,78 +323,16 @@
               "type": "INBOUND",
               "title": "Transition Product Lifecycle State",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-set-product-lifecycle-state-state",
+              "type": "OUTBOUND",
+              "title": "Product State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-003",
-          "title": "Given authorization and valid business preconditions when Transition Product Lifecycle State then Product Lifecycle State Changed is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Product Lifecycle Manager, Governance Reviewer) can execute this command.",
-              "id": "spec-slice-003-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Target Product / ProductLifecycleTransition exists and is eligible for mutation.",
-              "id": "spec-slice-003-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: productId, target state, reason.",
-              "id": "spec-slice-003-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Transition Product Lifecycle State",
-              "id": "spec-slice-003-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-set-product-lifecycle-state"
-            }
-          ],
-          "then": [
-            {
-              "title": "Product Lifecycle State Changed",
-              "id": "spec-slice-003-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-product-lifecycle-state-changed"
-            }
-          ],
-          "linkedId": "slice-003"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Product Lifecycle Manager",
-          "authzRequired": true
-        },
-        {
-          "name": "Governance Reviewer",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "Product",
-        "ProductLifecycleTransition"
-      ]
-    },
-    {
-      "id": "slice-view-003",
-      "status": "Created",
-      "index": 6,
-      "title": "Product State View",
-      "context": "Product Lifecycle API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-set-product-lifecycle-state-state",
@@ -516,26 +364,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-003-view",
-          "title": "Given Product Lifecycle State Changed then Product State is updated",
+          "id": "spec-slice-003",
+          "title": "Given prior state when Transition Product Lifecycle State then Product Lifecycle State Changed",
           "given": [
             {
-              "title": "Product Lifecycle State Changed",
-              "id": "spec-slice-003-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-product-lifecycle-state-changed"
+              "title": "Prior Product state exists",
+              "id": "spec-slice-003-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Transition Product Lifecycle State",
+              "id": "spec-slice-003-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-set-product-lifecycle-state"
+            }
+          ],
           "then": [
             {
+              "title": "Product Lifecycle State Changed",
+              "id": "spec-slice-003-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-product-lifecycle-state-changed"
+            },
+            {
               "title": "Product State",
-              "id": "spec-slice-003-view-t1",
+              "id": "spec-slice-003-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-set-product-lifecycle-state-state"
             }
           ],
-          "linkedId": "slice-view-003"
+          "linkedId": "slice-003"
         }
       ],
       "actors": [
@@ -556,7 +416,7 @@
     {
       "id": "slice-004",
       "status": "Created",
-      "index": 7,
+      "index": 4,
       "title": "Update Non-spec Core Attributes",
       "context": "Product Lifecycle API",
       "sliceType": "STATE_CHANGE",
@@ -604,73 +464,16 @@
               "type": "INBOUND",
               "title": "Update Non-spec Core Attributes",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-update-product-attributes-state",
+              "type": "OUTBOUND",
+              "title": "Product State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-004",
-          "title": "Given authorization and valid business preconditions when Update Non-spec Core Attributes then Product Attributes Updated is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Product Lifecycle Manager) can execute this command.",
-              "id": "spec-slice-004-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Target Product exists and is eligible for mutation.",
-              "id": "spec-slice-004-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: productId, changed attributes.",
-              "id": "spec-slice-004-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Update Non-spec Core Attributes",
-              "id": "spec-slice-004-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-update-product-attributes"
-            }
-          ],
-          "then": [
-            {
-              "title": "Product Attributes Updated",
-              "id": "spec-slice-004-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-product-attributes-updated"
-            }
-          ],
-          "linkedId": "slice-004"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Product Lifecycle Manager",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "Product"
-      ]
-    },
-    {
-      "id": "slice-view-004",
-      "status": "Created",
-      "index": 8,
-      "title": "Product State View",
-      "context": "Product Lifecycle API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-update-product-attributes-state",
@@ -702,26 +505,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-004-view",
-          "title": "Given Product Attributes Updated then Product State is updated",
+          "id": "spec-slice-004",
+          "title": "Given prior state when Update Non-spec Core Attributes then Product Attributes Updated",
           "given": [
             {
-              "title": "Product Attributes Updated",
-              "id": "spec-slice-004-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-product-attributes-updated"
+              "title": "Prior Product state exists",
+              "id": "spec-slice-004-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Update Non-spec Core Attributes",
+              "id": "spec-slice-004-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-update-product-attributes"
+            }
+          ],
           "then": [
             {
+              "title": "Product Attributes Updated",
+              "id": "spec-slice-004-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-product-attributes-updated"
+            },
+            {
               "title": "Product State",
-              "id": "spec-slice-004-view-t1",
+              "id": "spec-slice-004-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-update-product-attributes-state"
             }
           ],
-          "linkedId": "slice-view-004"
+          "linkedId": "slice-004"
         }
       ],
       "actors": [
@@ -737,7 +552,7 @@
     {
       "id": "slice-005",
       "status": "Created",
-      "index": 9,
+      "index": 5,
       "title": "Mark Product As Discontinued",
       "context": "Product Lifecycle API",
       "sliceType": "STATE_CHANGE",
@@ -785,78 +600,16 @@
               "type": "INBOUND",
               "title": "Mark Product As Discontinued",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-discontinue-product-state",
+              "type": "OUTBOUND",
+              "title": "Product State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-005",
-          "title": "Given authorization and valid business preconditions when Mark Product As Discontinued then Product Discontinued is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Product Lifecycle Manager, Governance Reviewer) can execute this command.",
-              "id": "spec-slice-005-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Target Product / ProductLifecycleTransition exists and is eligible for mutation.",
-              "id": "spec-slice-005-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: productId, discontinuation reason.",
-              "id": "spec-slice-005-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Mark Product As Discontinued",
-              "id": "spec-slice-005-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-discontinue-product"
-            }
-          ],
-          "then": [
-            {
-              "title": "Product Discontinued",
-              "id": "spec-slice-005-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-product-discontinued"
-            }
-          ],
-          "linkedId": "slice-005"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Product Lifecycle Manager",
-          "authzRequired": true
-        },
-        {
-          "name": "Governance Reviewer",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "Product",
-        "ProductLifecycleTransition"
-      ]
-    },
-    {
-      "id": "slice-view-005",
-      "status": "Created",
-      "index": 10,
-      "title": "Product State View",
-      "context": "Product Lifecycle API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-discontinue-product-state",
@@ -888,26 +641,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-005-view",
-          "title": "Given Product Discontinued then Product State is updated",
+          "id": "spec-slice-005",
+          "title": "Given prior state when Mark Product As Discontinued then Product Discontinued",
           "given": [
             {
-              "title": "Product Discontinued",
-              "id": "spec-slice-005-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-product-discontinued"
+              "title": "Prior Product state exists",
+              "id": "spec-slice-005-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Mark Product As Discontinued",
+              "id": "spec-slice-005-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-discontinue-product"
+            }
+          ],
           "then": [
             {
+              "title": "Product Discontinued",
+              "id": "spec-slice-005-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-product-discontinued"
+            },
+            {
               "title": "Product State",
-              "id": "spec-slice-005-view-t1",
+              "id": "spec-slice-005-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-discontinue-product-state"
             }
           ],
-          "linkedId": "slice-view-005"
+          "linkedId": "slice-005"
         }
       ],
       "actors": [
@@ -928,7 +693,7 @@
     {
       "id": "slice-006",
       "status": "Created",
-      "index": 11,
+      "index": 6,
       "title": "Link Successor Product For Discontinued Item",
       "context": "Product Lifecycle API",
       "sliceType": "STATE_CHANGE",
@@ -976,73 +741,16 @@
               "type": "INBOUND",
               "title": "Link Successor Product For Discontinued Item",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-link-replacement-product-state",
+              "type": "OUTBOUND",
+              "title": "Product State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-006",
-          "title": "Given authorization and valid business preconditions when Link Successor Product For Discontinued Item then Product Replacement Linked is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Product Lifecycle Manager) can execute this command.",
-              "id": "spec-slice-006-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Target ProductReplacementLink exists and is eligible for mutation.",
-              "id": "spec-slice-006-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: discontinued productId, replacement productId, reasonCode.",
-              "id": "spec-slice-006-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Link Successor Product For Discontinued Item",
-              "id": "spec-slice-006-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-link-replacement-product"
-            }
-          ],
-          "then": [
-            {
-              "title": "Product Replacement Linked",
-              "id": "spec-slice-006-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-product-replacement-linked"
-            }
-          ],
-          "linkedId": "slice-006"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Product Lifecycle Manager",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "ProductReplacementLink"
-      ]
-    },
-    {
-      "id": "slice-view-006",
-      "status": "Created",
-      "index": 12,
-      "title": "Product State View",
-      "context": "Product Lifecycle API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-link-replacement-product-state",
@@ -1074,26 +782,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-006-view",
-          "title": "Given Product Replacement Linked then Product State is updated",
+          "id": "spec-slice-006",
+          "title": "Given prior state when Link Successor Product For Discontinued Item then Product Replacement Linked",
           "given": [
             {
-              "title": "Product Replacement Linked",
-              "id": "spec-slice-006-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-product-replacement-linked"
+              "title": "Prior Product state exists",
+              "id": "spec-slice-006-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Link Successor Product For Discontinued Item",
+              "id": "spec-slice-006-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-link-replacement-product"
+            }
+          ],
           "then": [
             {
+              "title": "Product Replacement Linked",
+              "id": "spec-slice-006-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-product-replacement-linked"
+            },
+            {
               "title": "Product State",
-              "id": "spec-slice-006-view-t1",
+              "id": "spec-slice-006-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-link-replacement-product-state"
             }
           ],
-          "linkedId": "slice-view-006"
+          "linkedId": "slice-006"
         }
       ],
       "actors": [
@@ -1109,7 +829,7 @@
     {
       "id": "slice-007",
       "status": "Created",
-      "index": 13,
+      "index": 7,
       "title": "Upload Technical Document Artifact",
       "context": "Technical Documentation API",
       "sliceType": "STATE_CHANGE",
@@ -1157,74 +877,16 @@
               "type": "INBOUND",
               "title": "Upload Technical Document Artifact",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-upload-document-state",
+              "type": "OUTBOUND",
+              "title": "Document State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-007",
-          "title": "Given authorization and valid business preconditions when Upload Technical Document Artifact then Document Uploaded is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Documentation Steward) can execute this command.",
-              "id": "spec-slice-007-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "No conflicting active Document / DocumentVersion violates uniqueness or policy constraints.",
-              "id": "spec-slice-007-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: productId, document type, title, artifact reference.",
-              "id": "spec-slice-007-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Upload Technical Document Artifact",
-              "id": "spec-slice-007-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-upload-document"
-            }
-          ],
-          "then": [
-            {
-              "title": "Document Uploaded",
-              "id": "spec-slice-007-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-document-uploaded"
-            }
-          ],
-          "linkedId": "slice-007"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Documentation Steward",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "Document",
-        "DocumentVersion"
-      ]
-    },
-    {
-      "id": "slice-view-007",
-      "status": "Created",
-      "index": 14,
-      "title": "Document State View",
-      "context": "Technical Documentation API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-upload-document-state",
@@ -1256,26 +918,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-007-view",
-          "title": "Given Document Uploaded then Document State is updated",
+          "id": "spec-slice-007",
+          "title": "Given prior state when Upload Technical Document Artifact then Document Uploaded",
           "given": [
             {
-              "title": "Document Uploaded",
-              "id": "spec-slice-007-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-document-uploaded"
+              "title": "Prior Document state exists",
+              "id": "spec-slice-007-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Upload Technical Document Artifact",
+              "id": "spec-slice-007-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-upload-document"
+            }
+          ],
           "then": [
             {
+              "title": "Document Uploaded",
+              "id": "spec-slice-007-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-document-uploaded"
+            },
+            {
               "title": "Document State",
-              "id": "spec-slice-007-view-t1",
+              "id": "spec-slice-007-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-upload-document-state"
             }
           ],
-          "linkedId": "slice-view-007"
+          "linkedId": "slice-007"
         }
       ],
       "actors": [
@@ -1292,7 +966,7 @@
     {
       "id": "slice-008",
       "status": "Created",
-      "index": 15,
+      "index": 8,
       "title": "Link Document To Product Record",
       "context": "Technical Documentation API",
       "sliceType": "STATE_CHANGE",
@@ -1340,73 +1014,16 @@
               "type": "INBOUND",
               "title": "Link Document To Product Record",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-associate-document-to-product-state",
+              "type": "OUTBOUND",
+              "title": "Product State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-008",
-          "title": "Given authorization and valid business preconditions when Link Document To Product Record then Product Document Associated is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Documentation Steward) can execute this command.",
-              "id": "spec-slice-008-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Target ProductDocumentLink exists and is eligible for mutation.",
-              "id": "spec-slice-008-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: productId, documentId, primary flag.",
-              "id": "spec-slice-008-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Link Document To Product Record",
-              "id": "spec-slice-008-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-associate-document-to-product"
-            }
-          ],
-          "then": [
-            {
-              "title": "Product Document Associated",
-              "id": "spec-slice-008-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-product-document-associated"
-            }
-          ],
-          "linkedId": "slice-008"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Documentation Steward",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "ProductDocumentLink"
-      ]
-    },
-    {
-      "id": "slice-view-008",
-      "status": "Created",
-      "index": 16,
-      "title": "Product State View",
-      "context": "Technical Documentation API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-associate-document-to-product-state",
@@ -1438,26 +1055,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-008-view",
-          "title": "Given Product Document Associated then Product State is updated",
+          "id": "spec-slice-008",
+          "title": "Given prior state when Link Document To Product Record then Product Document Associated",
           "given": [
             {
-              "title": "Product Document Associated",
-              "id": "spec-slice-008-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-product-document-associated"
+              "title": "Prior Product state exists",
+              "id": "spec-slice-008-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Link Document To Product Record",
+              "id": "spec-slice-008-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-associate-document-to-product"
+            }
+          ],
           "then": [
             {
+              "title": "Product Document Associated",
+              "id": "spec-slice-008-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-product-document-associated"
+            },
+            {
               "title": "Product State",
-              "id": "spec-slice-008-view-t1",
+              "id": "spec-slice-008-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-associate-document-to-product-state"
             }
           ],
-          "linkedId": "slice-view-008"
+          "linkedId": "slice-008"
         }
       ],
       "actors": [
@@ -1473,7 +1102,7 @@
     {
       "id": "slice-009",
       "status": "Created",
-      "index": 17,
+      "index": 9,
       "title": "Update Searchable/document Metadata",
       "context": "Technical Documentation API",
       "sliceType": "STATE_CHANGE",
@@ -1521,73 +1150,16 @@
               "type": "INBOUND",
               "title": "Update Searchable/document Metadata",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-update-document-metadata-state",
+              "type": "OUTBOUND",
+              "title": "Document State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-009",
-          "title": "Given authorization and valid business preconditions when Update Searchable/document Metadata then Document Metadata Updated is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Documentation Steward) can execute this command.",
-              "id": "spec-slice-009-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Target Document exists and is eligible for mutation.",
-              "id": "spec-slice-009-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: documentId, metadata attributes/tags.",
-              "id": "spec-slice-009-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Update Searchable/document Metadata",
-              "id": "spec-slice-009-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-update-document-metadata"
-            }
-          ],
-          "then": [
-            {
-              "title": "Document Metadata Updated",
-              "id": "spec-slice-009-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-document-metadata-updated"
-            }
-          ],
-          "linkedId": "slice-009"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Documentation Steward",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "Document"
-      ]
-    },
-    {
-      "id": "slice-view-009",
-      "status": "Created",
-      "index": 18,
-      "title": "Document State View",
-      "context": "Technical Documentation API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-update-document-metadata-state",
@@ -1619,26 +1191,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-009-view",
-          "title": "Given Document Metadata Updated then Document State is updated",
+          "id": "spec-slice-009",
+          "title": "Given prior state when Update Searchable/document Metadata then Document Metadata Updated",
           "given": [
             {
-              "title": "Document Metadata Updated",
-              "id": "spec-slice-009-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-document-metadata-updated"
+              "title": "Prior Document state exists",
+              "id": "spec-slice-009-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Update Searchable/document Metadata",
+              "id": "spec-slice-009-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-update-document-metadata"
+            }
+          ],
           "then": [
             {
+              "title": "Document Metadata Updated",
+              "id": "spec-slice-009-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-document-metadata-updated"
+            },
+            {
               "title": "Document State",
-              "id": "spec-slice-009-view-t1",
+              "id": "spec-slice-009-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-update-document-metadata-state"
             }
           ],
-          "linkedId": "slice-view-009"
+          "linkedId": "slice-009"
         }
       ],
       "actors": [
@@ -1654,7 +1238,7 @@
     {
       "id": "slice-010",
       "status": "Created",
-      "index": 19,
+      "index": 10,
       "title": "Publish A New Document Version",
       "context": "Technical Documentation API",
       "sliceType": "STATE_CHANGE",
@@ -1702,73 +1286,16 @@
               "type": "INBOUND",
               "title": "Publish A New Document Version",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-publish-document-version-state",
+              "type": "OUTBOUND",
+              "title": "Document State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-010",
-          "title": "Given authorization and valid business preconditions when Publish A New Document Version then Document Version Published is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Documentation Steward) can execute this command.",
-              "id": "spec-slice-010-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Target DocumentVersion exists and is eligible for mutation.",
-              "id": "spec-slice-010-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: documentId, artifact reference, version notes.",
-              "id": "spec-slice-010-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Publish A New Document Version",
-              "id": "spec-slice-010-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-publish-document-version"
-            }
-          ],
-          "then": [
-            {
-              "title": "Document Version Published",
-              "id": "spec-slice-010-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-document-version-published"
-            }
-          ],
-          "linkedId": "slice-010"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Documentation Steward",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "DocumentVersion"
-      ]
-    },
-    {
-      "id": "slice-view-010",
-      "status": "Created",
-      "index": 20,
-      "title": "Document State View",
-      "context": "Technical Documentation API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-publish-document-version-state",
@@ -1800,26 +1327,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-010-view",
-          "title": "Given Document Version Published then Document State is updated",
+          "id": "spec-slice-010",
+          "title": "Given prior state when Publish A New Document Version then Document Version Published",
           "given": [
             {
-              "title": "Document Version Published",
-              "id": "spec-slice-010-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-document-version-published"
+              "title": "Prior Document state exists",
+              "id": "spec-slice-010-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Publish A New Document Version",
+              "id": "spec-slice-010-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-publish-document-version"
+            }
+          ],
           "then": [
             {
+              "title": "Document Version Published",
+              "id": "spec-slice-010-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-document-version-published"
+            },
+            {
               "title": "Document State",
-              "id": "spec-slice-010-view-t1",
+              "id": "spec-slice-010-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-publish-document-version-state"
             }
           ],
-          "linkedId": "slice-view-010"
+          "linkedId": "slice-010"
         }
       ],
       "actors": [
@@ -1835,7 +1374,7 @@
     {
       "id": "slice-011",
       "status": "Created",
-      "index": 21,
+      "index": 11,
       "title": "Retire Obsolete Document",
       "context": "Technical Documentation API",
       "sliceType": "STATE_CHANGE",
@@ -1883,77 +1422,16 @@
               "type": "INBOUND",
               "title": "Retire Obsolete Document",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-retire-document-state",
+              "type": "OUTBOUND",
+              "title": "Document State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-011",
-          "title": "Given authorization and valid business preconditions when Retire Obsolete Document then Document Retired is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Documentation Steward, Governance Reviewer) can execute this command.",
-              "id": "spec-slice-011-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Target Document exists and is eligible for mutation.",
-              "id": "spec-slice-011-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: documentId, retirement reason.",
-              "id": "spec-slice-011-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Retire Obsolete Document",
-              "id": "spec-slice-011-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-retire-document"
-            }
-          ],
-          "then": [
-            {
-              "title": "Document Retired",
-              "id": "spec-slice-011-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-document-retired"
-            }
-          ],
-          "linkedId": "slice-011"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Documentation Steward",
-          "authzRequired": true
-        },
-        {
-          "name": "Governance Reviewer",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "Document"
-      ]
-    },
-    {
-      "id": "slice-view-011",
-      "status": "Created",
-      "index": 22,
-      "title": "Document State View",
-      "context": "Technical Documentation API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-retire-document-state",
@@ -1985,26 +1463,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-011-view",
-          "title": "Given Document Retired then Document State is updated",
+          "id": "spec-slice-011",
+          "title": "Given prior state when Retire Obsolete Document then Document Retired",
           "given": [
             {
-              "title": "Document Retired",
-              "id": "spec-slice-011-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-document-retired"
+              "title": "Prior Document state exists",
+              "id": "spec-slice-011-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Retire Obsolete Document",
+              "id": "spec-slice-011-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-retire-document"
+            }
+          ],
           "then": [
             {
+              "title": "Document Retired",
+              "id": "spec-slice-011-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-document-retired"
+            },
+            {
               "title": "Document State",
-              "id": "spec-slice-011-view-t1",
+              "id": "spec-slice-011-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-retire-document-state"
             }
           ],
-          "linkedId": "slice-view-011"
+          "linkedId": "slice-011"
         }
       ],
       "actors": [
@@ -2024,7 +1514,7 @@
     {
       "id": "slice-012",
       "status": "Created",
-      "index": 23,
+      "index": 12,
       "title": "Set Or Replace Base Product Price",
       "context": "Pricing and Promotions API",
       "sliceType": "STATE_CHANGE",
@@ -2072,73 +1562,16 @@
               "type": "INBOUND",
               "title": "Set Or Replace Base Product Price",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-set-base-price-state",
+              "type": "OUTBOUND",
+              "title": "Price State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-012",
-          "title": "Given authorization and valid business preconditions when Set Or Replace Base Product Price then Price Base Set is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Pricing Analyst) can execute this command.",
-              "id": "spec-slice-012-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Target PriceBookEntry exists and is eligible for mutation.",
-              "id": "spec-slice-012-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: productId, base price, currency, effective period.",
-              "id": "spec-slice-012-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Set Or Replace Base Product Price",
-              "id": "spec-slice-012-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-set-base-price"
-            }
-          ],
-          "then": [
-            {
-              "title": "Price Base Set",
-              "id": "spec-slice-012-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-price-base-set"
-            }
-          ],
-          "linkedId": "slice-012"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Pricing Analyst",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "PriceBookEntry"
-      ]
-    },
-    {
-      "id": "slice-view-012",
-      "status": "Created",
-      "index": 24,
-      "title": "Price State View",
-      "context": "Pricing and Promotions API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-set-base-price-state",
@@ -2170,26 +1603,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-012-view",
-          "title": "Given Price Base Set then Price State is updated",
+          "id": "spec-slice-012",
+          "title": "Given prior state when Set Or Replace Base Product Price then Price Base Set",
           "given": [
             {
-              "title": "Price Base Set",
-              "id": "spec-slice-012-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-price-base-set"
+              "title": "Prior Price state exists",
+              "id": "spec-slice-012-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Set Or Replace Base Product Price",
+              "id": "spec-slice-012-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-set-base-price"
+            }
+          ],
           "then": [
             {
+              "title": "Price Base Set",
+              "id": "spec-slice-012-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-price-base-set"
+            },
+            {
               "title": "Price State",
-              "id": "spec-slice-012-view-t1",
+              "id": "spec-slice-012-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-set-base-price-state"
             }
           ],
-          "linkedId": "slice-view-012"
+          "linkedId": "slice-012"
         }
       ],
       "actors": [
@@ -2205,7 +1650,7 @@
     {
       "id": "slice-013",
       "status": "Created",
-      "index": 25,
+      "index": 13,
       "title": "Configure Quantity Discount Tiers",
       "context": "Pricing and Promotions API",
       "sliceType": "STATE_CHANGE",
@@ -2253,74 +1698,16 @@
               "type": "INBOUND",
               "title": "Configure Quantity Discount Tiers",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-set-volume-discount-tiers-state",
+              "type": "OUTBOUND",
+              "title": "Price State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-013",
-          "title": "Given authorization and valid business preconditions when Configure Quantity Discount Tiers then Price Volume Tiers Updated is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Pricing Analyst) can execute this command.",
-              "id": "spec-slice-013-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Target VolumeTier / PriceBookEntry exists and is eligible for mutation.",
-              "id": "spec-slice-013-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: productId, tier list.",
-              "id": "spec-slice-013-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Configure Quantity Discount Tiers",
-              "id": "spec-slice-013-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-set-volume-discount-tiers"
-            }
-          ],
-          "then": [
-            {
-              "title": "Price Volume Tiers Updated",
-              "id": "spec-slice-013-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-price-volume-tiers-updated"
-            }
-          ],
-          "linkedId": "slice-013"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Pricing Analyst",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "VolumeTier",
-        "PriceBookEntry"
-      ]
-    },
-    {
-      "id": "slice-view-013",
-      "status": "Created",
-      "index": 26,
-      "title": "Price State View",
-      "context": "Pricing and Promotions API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-set-volume-discount-tiers-state",
@@ -2352,26 +1739,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-013-view",
-          "title": "Given Price Volume Tiers Updated then Price State is updated",
+          "id": "spec-slice-013",
+          "title": "Given prior state when Configure Quantity Discount Tiers then Price Volume Tiers Updated",
           "given": [
             {
-              "title": "Price Volume Tiers Updated",
-              "id": "spec-slice-013-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-price-volume-tiers-updated"
+              "title": "Prior Price state exists",
+              "id": "spec-slice-013-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Configure Quantity Discount Tiers",
+              "id": "spec-slice-013-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-set-volume-discount-tiers"
+            }
+          ],
           "then": [
             {
+              "title": "Price Volume Tiers Updated",
+              "id": "spec-slice-013-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-price-volume-tiers-updated"
+            },
+            {
               "title": "Price State",
-              "id": "spec-slice-013-view-t1",
+              "id": "spec-slice-013-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-set-volume-discount-tiers-state"
             }
           ],
-          "linkedId": "slice-view-013"
+          "linkedId": "slice-013"
         }
       ],
       "actors": [
@@ -2388,7 +1787,7 @@
     {
       "id": "slice-014",
       "status": "Created",
-      "index": 27,
+      "index": 14,
       "title": "Start Promotion Window",
       "context": "Pricing and Promotions API",
       "sliceType": "STATE_CHANGE",
@@ -2436,77 +1835,16 @@
               "type": "INBOUND",
               "title": "Start Promotion Window",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-start-promotion-state",
+              "type": "OUTBOUND",
+              "title": "Promotion State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-014",
-          "title": "Given authorization and valid business preconditions when Start Promotion Window then Promotion Started is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Pricing Analyst, Governance Reviewer) can execute this command.",
-              "id": "spec-slice-014-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "No conflicting active PromotionWindow violates uniqueness or policy constraints.",
-              "id": "spec-slice-014-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: productId/scope, promotion type/value, time window.",
-              "id": "spec-slice-014-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Start Promotion Window",
-              "id": "spec-slice-014-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-start-promotion"
-            }
-          ],
-          "then": [
-            {
-              "title": "Promotion Started",
-              "id": "spec-slice-014-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-promotion-started"
-            }
-          ],
-          "linkedId": "slice-014"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Pricing Analyst",
-          "authzRequired": true
-        },
-        {
-          "name": "Governance Reviewer",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "PromotionWindow"
-      ]
-    },
-    {
-      "id": "slice-view-014",
-      "status": "Created",
-      "index": 28,
-      "title": "Promotion State View",
-      "context": "Pricing and Promotions API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-start-promotion-state",
@@ -2538,26 +1876,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-014-view",
-          "title": "Given Promotion Started then Promotion State is updated",
+          "id": "spec-slice-014",
+          "title": "Given prior state when Start Promotion Window then Promotion Started",
           "given": [
             {
-              "title": "Promotion Started",
-              "id": "spec-slice-014-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-promotion-started"
+              "title": "Prior Promotion state exists",
+              "id": "spec-slice-014-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Start Promotion Window",
+              "id": "spec-slice-014-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-start-promotion"
+            }
+          ],
           "then": [
             {
+              "title": "Promotion Started",
+              "id": "spec-slice-014-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-promotion-started"
+            },
+            {
               "title": "Promotion State",
-              "id": "spec-slice-014-view-t1",
+              "id": "spec-slice-014-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-start-promotion-state"
             }
           ],
-          "linkedId": "slice-view-014"
+          "linkedId": "slice-014"
         }
       ],
       "actors": [
@@ -2577,7 +1927,7 @@
     {
       "id": "slice-015",
       "status": "Created",
-      "index": 29,
+      "index": 15,
       "title": "Cancel Active Or Scheduled Promotion",
       "context": "Pricing and Promotions API",
       "sliceType": "STATE_CHANGE",
@@ -2625,77 +1975,16 @@
               "type": "INBOUND",
               "title": "Cancel Active Or Scheduled Promotion",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-cancel-promotion-state",
+              "type": "OUTBOUND",
+              "title": "Promotion State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-015",
-          "title": "Given authorization and valid business preconditions when Cancel Active Or Scheduled Promotion then Promotion Canceled is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Pricing Analyst, Governance Reviewer) can execute this command.",
-              "id": "spec-slice-015-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Target PromotionWindow exists and is eligible for mutation.",
-              "id": "spec-slice-015-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: promotionId, cancellation reason.",
-              "id": "spec-slice-015-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Cancel Active Or Scheduled Promotion",
-              "id": "spec-slice-015-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-cancel-promotion"
-            }
-          ],
-          "then": [
-            {
-              "title": "Promotion Canceled",
-              "id": "spec-slice-015-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-promotion-canceled"
-            }
-          ],
-          "linkedId": "slice-015"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Pricing Analyst",
-          "authzRequired": true
-        },
-        {
-          "name": "Governance Reviewer",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "PromotionWindow"
-      ]
-    },
-    {
-      "id": "slice-view-015",
-      "status": "Created",
-      "index": 30,
-      "title": "Promotion State View",
-      "context": "Pricing and Promotions API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-cancel-promotion-state",
@@ -2727,26 +2016,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-015-view",
-          "title": "Given Promotion Canceled then Promotion State is updated",
+          "id": "spec-slice-015",
+          "title": "Given prior state when Cancel Active Or Scheduled Promotion then Promotion Canceled",
           "given": [
             {
-              "title": "Promotion Canceled",
-              "id": "spec-slice-015-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-promotion-canceled"
+              "title": "Prior Promotion state exists",
+              "id": "spec-slice-015-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Cancel Active Or Scheduled Promotion",
+              "id": "spec-slice-015-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-cancel-promotion"
+            }
+          ],
           "then": [
             {
+              "title": "Promotion Canceled",
+              "id": "spec-slice-015-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-promotion-canceled"
+            },
+            {
               "title": "Promotion State",
-              "id": "spec-slice-015-view-t1",
+              "id": "spec-slice-015-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-cancel-promotion-state"
             }
           ],
-          "linkedId": "slice-view-015"
+          "linkedId": "slice-015"
         }
       ],
       "actors": [
@@ -2766,7 +2067,7 @@
     {
       "id": "slice-016",
       "status": "Created",
-      "index": 31,
+      "index": 16,
       "title": "Apply Scoped Repricing Across Products",
       "context": "Pricing and Promotions API",
       "sliceType": "STATE_CHANGE",
@@ -2814,77 +2115,16 @@
               "type": "INBOUND",
               "title": "Apply Scoped Repricing Across Products",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-apply-price-adjustment-state",
+              "type": "OUTBOUND",
+              "title": "Price State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-016",
-          "title": "Given authorization and valid business preconditions when Apply Scoped Repricing Across Products then Price Group Repricing Requested is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Pricing Analyst, Governance Reviewer) can execute this command.",
-              "id": "spec-slice-016-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Target RepricingJob exists and is eligible for mutation.",
-              "id": "spec-slice-016-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: scope, adjustment type/value.",
-              "id": "spec-slice-016-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Apply Scoped Repricing Across Products",
-              "id": "spec-slice-016-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-apply-price-adjustment"
-            }
-          ],
-          "then": [
-            {
-              "title": "Price Group Repricing Requested",
-              "id": "spec-slice-016-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-price-group-repricing-requested"
-            }
-          ],
-          "linkedId": "slice-016"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Pricing Analyst",
-          "authzRequired": true
-        },
-        {
-          "name": "Governance Reviewer",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "RepricingJob"
-      ]
-    },
-    {
-      "id": "slice-view-016",
-      "status": "Created",
-      "index": 32,
-      "title": "Price State View",
-      "context": "Pricing and Promotions API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-apply-price-adjustment-state",
@@ -2916,26 +2156,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-016-view",
-          "title": "Given Price Group Repricing Requested then Price State is updated",
+          "id": "spec-slice-016",
+          "title": "Given prior state when Apply Scoped Repricing Across Products then Price Group Repricing Requested",
           "given": [
             {
-              "title": "Price Group Repricing Requested",
-              "id": "spec-slice-016-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-price-group-repricing-requested"
+              "title": "Prior Price state exists",
+              "id": "spec-slice-016-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Apply Scoped Repricing Across Products",
+              "id": "spec-slice-016-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-apply-price-adjustment"
+            }
+          ],
           "then": [
             {
+              "title": "Price Group Repricing Requested",
+              "id": "spec-slice-016-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-price-group-repricing-requested"
+            },
+            {
               "title": "Price State",
-              "id": "spec-slice-016-view-t1",
+              "id": "spec-slice-016-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-apply-price-adjustment-state"
             }
           ],
-          "linkedId": "slice-view-016"
+          "linkedId": "slice-016"
         }
       ],
       "actors": [
@@ -2955,7 +2207,7 @@
     {
       "id": "slice-017",
       "status": "Created",
-      "index": 33,
+      "index": 17,
       "title": "Set On-hand Quantity",
       "context": "Inventory and Availability API",
       "sliceType": "STATE_CHANGE",
@@ -3003,73 +2255,16 @@
               "type": "INBOUND",
               "title": "Set On-hand Quantity",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-update-stock-quantity-state",
+              "type": "OUTBOUND",
+              "title": "Inventory State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-017",
-          "title": "Given authorization and valid business preconditions when Set On-hand Quantity then Inventory Quantity Updated is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Inventory Controller) can execute this command.",
-              "id": "spec-slice-017-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Target InventoryPosition exists and is eligible for mutation.",
-              "id": "spec-slice-017-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: productId, location, new quantity, reason.",
-              "id": "spec-slice-017-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Set On-hand Quantity",
-              "id": "spec-slice-017-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-update-stock-quantity"
-            }
-          ],
-          "then": [
-            {
-              "title": "Inventory Quantity Updated",
-              "id": "spec-slice-017-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-inventory-quantity-updated"
-            }
-          ],
-          "linkedId": "slice-017"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Inventory Controller",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "InventoryPosition"
-      ]
-    },
-    {
-      "id": "slice-view-017",
-      "status": "Created",
-      "index": 34,
-      "title": "Inventory State View",
-      "context": "Inventory and Availability API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-update-stock-quantity-state",
@@ -3101,26 +2296,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-017-view",
-          "title": "Given Inventory Quantity Updated then Inventory State is updated",
+          "id": "spec-slice-017",
+          "title": "Given prior state when Set On-hand Quantity then Inventory Quantity Updated",
           "given": [
             {
-              "title": "Inventory Quantity Updated",
-              "id": "spec-slice-017-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-inventory-quantity-updated"
+              "title": "Prior Inventory state exists",
+              "id": "spec-slice-017-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Set On-hand Quantity",
+              "id": "spec-slice-017-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-update-stock-quantity"
+            }
+          ],
           "then": [
             {
+              "title": "Inventory Quantity Updated",
+              "id": "spec-slice-017-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-inventory-quantity-updated"
+            },
+            {
               "title": "Inventory State",
-              "id": "spec-slice-017-view-t1",
+              "id": "spec-slice-017-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-update-stock-quantity-state"
             }
           ],
-          "linkedId": "slice-view-017"
+          "linkedId": "slice-017"
         }
       ],
       "actors": [
@@ -3136,7 +2343,7 @@
     {
       "id": "slice-018",
       "status": "Created",
-      "index": 35,
+      "index": 18,
       "title": "Set Expected Restock Date And Quantity",
       "context": "Inventory and Availability API",
       "sliceType": "STATE_CHANGE",
@@ -3184,73 +2391,16 @@
               "type": "INBOUND",
               "title": "Set Expected Restock Date And Quantity",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-set-restock-date-state",
+              "type": "OUTBOUND",
+              "title": "Inventory State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-018",
-          "title": "Given authorization and valid business preconditions when Set Expected Restock Date And Quantity then Inventory Restock Date Set is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Inventory Controller) can execute this command.",
-              "id": "spec-slice-018-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Target RestockPlan exists and is eligible for mutation.",
-              "id": "spec-slice-018-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: productId, expected date, expected quantity.",
-              "id": "spec-slice-018-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Set Expected Restock Date And Quantity",
-              "id": "spec-slice-018-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-set-restock-date"
-            }
-          ],
-          "then": [
-            {
-              "title": "Inventory Restock Date Set",
-              "id": "spec-slice-018-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-inventory-restock-date-set"
-            }
-          ],
-          "linkedId": "slice-018"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Inventory Controller",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "RestockPlan"
-      ]
-    },
-    {
-      "id": "slice-view-018",
-      "status": "Created",
-      "index": 36,
-      "title": "Inventory State View",
-      "context": "Inventory and Availability API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-set-restock-date-state",
@@ -3282,26 +2432,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-018-view",
-          "title": "Given Inventory Restock Date Set then Inventory State is updated",
+          "id": "spec-slice-018",
+          "title": "Given prior state when Set Expected Restock Date And Quantity then Inventory Restock Date Set",
           "given": [
             {
-              "title": "Inventory Restock Date Set",
-              "id": "spec-slice-018-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-inventory-restock-date-set"
+              "title": "Prior Inventory state exists",
+              "id": "spec-slice-018-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Set Expected Restock Date And Quantity",
+              "id": "spec-slice-018-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-set-restock-date"
+            }
+          ],
           "then": [
             {
+              "title": "Inventory Restock Date Set",
+              "id": "spec-slice-018-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-inventory-restock-date-set"
+            },
+            {
               "title": "Inventory State",
-              "id": "spec-slice-018-view-t1",
+              "id": "spec-slice-018-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-set-restock-date-state"
             }
           ],
-          "linkedId": "slice-view-018"
+          "linkedId": "slice-018"
         }
       ],
       "actors": [
@@ -3317,7 +2479,7 @@
     {
       "id": "slice-019",
       "status": "Created",
-      "index": 37,
+      "index": 19,
       "title": "Update Expected Lead-time Value",
       "context": "Inventory and Availability API",
       "sliceType": "STATE_CHANGE",
@@ -3365,73 +2527,16 @@
               "type": "INBOUND",
               "title": "Update Expected Lead-time Value",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-update-lead-time-state",
+              "type": "OUTBOUND",
+              "title": "Inventory State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-019",
-          "title": "Given authorization and valid business preconditions when Update Expected Lead-time Value then Inventory Lead Time Updated is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Inventory Controller) can execute this command.",
-              "id": "spec-slice-019-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Target AvailabilityPolicy exists and is eligible for mutation.",
-              "id": "spec-slice-019-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: productId, lead-time days.",
-              "id": "spec-slice-019-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Update Expected Lead-time Value",
-              "id": "spec-slice-019-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-update-lead-time"
-            }
-          ],
-          "then": [
-            {
-              "title": "Inventory Lead Time Updated",
-              "id": "spec-slice-019-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-inventory-lead-time-updated"
-            }
-          ],
-          "linkedId": "slice-019"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Inventory Controller",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "AvailabilityPolicy"
-      ]
-    },
-    {
-      "id": "slice-view-019",
-      "status": "Created",
-      "index": 38,
-      "title": "Inventory State View",
-      "context": "Inventory and Availability API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-update-lead-time-state",
@@ -3463,26 +2568,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-019-view",
-          "title": "Given Inventory Lead Time Updated then Inventory State is updated",
+          "id": "spec-slice-019",
+          "title": "Given prior state when Update Expected Lead-time Value then Inventory Lead Time Updated",
           "given": [
             {
-              "title": "Inventory Lead Time Updated",
-              "id": "spec-slice-019-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-inventory-lead-time-updated"
+              "title": "Prior Inventory state exists",
+              "id": "spec-slice-019-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Update Expected Lead-time Value",
+              "id": "spec-slice-019-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-update-lead-time"
+            }
+          ],
           "then": [
             {
+              "title": "Inventory Lead Time Updated",
+              "id": "spec-slice-019-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-inventory-lead-time-updated"
+            },
+            {
               "title": "Inventory State",
-              "id": "spec-slice-019-view-t1",
+              "id": "spec-slice-019-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-update-lead-time-state"
             }
           ],
-          "linkedId": "slice-view-019"
+          "linkedId": "slice-019"
         }
       ],
       "actors": [
@@ -3498,7 +2615,7 @@
     {
       "id": "slice-020",
       "status": "Created",
-      "index": 39,
+      "index": 20,
       "title": "Enable Or Disable Backorder Posture",
       "context": "Inventory and Availability API",
       "sliceType": "STATE_CHANGE",
@@ -3546,73 +2663,16 @@
               "type": "INBOUND",
               "title": "Enable Or Disable Backorder Posture",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-set-backorder-state-state",
+              "type": "OUTBOUND",
+              "title": "Inventory State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-020",
-          "title": "Given authorization and valid business preconditions when Enable Or Disable Backorder Posture then Inventory Backorder State Changed is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Inventory Controller) can execute this command.",
-              "id": "spec-slice-020-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Target AvailabilityPolicy exists and is eligible for mutation.",
-              "id": "spec-slice-020-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: productId, backorder flag, reason.",
-              "id": "spec-slice-020-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Enable Or Disable Backorder Posture",
-              "id": "spec-slice-020-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-set-backorder-state"
-            }
-          ],
-          "then": [
-            {
-              "title": "Inventory Backorder State Changed",
-              "id": "spec-slice-020-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-inventory-backorder-state-changed"
-            }
-          ],
-          "linkedId": "slice-020"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Inventory Controller",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "AvailabilityPolicy"
-      ]
-    },
-    {
-      "id": "slice-view-020",
-      "status": "Created",
-      "index": 40,
-      "title": "Inventory State View",
-      "context": "Inventory and Availability API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-set-backorder-state-state",
@@ -3644,26 +2704,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-020-view",
-          "title": "Given Inventory Backorder State Changed then Inventory State is updated",
+          "id": "spec-slice-020",
+          "title": "Given prior state when Enable Or Disable Backorder Posture then Inventory Backorder State Changed",
           "given": [
             {
-              "title": "Inventory Backorder State Changed",
-              "id": "spec-slice-020-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-inventory-backorder-state-changed"
+              "title": "Prior Inventory state exists",
+              "id": "spec-slice-020-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Enable Or Disable Backorder Posture",
+              "id": "spec-slice-020-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-set-backorder-state"
+            }
+          ],
           "then": [
             {
+              "title": "Inventory Backorder State Changed",
+              "id": "spec-slice-020-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-inventory-backorder-state-changed"
+            },
+            {
               "title": "Inventory State",
-              "id": "spec-slice-020-view-t1",
+              "id": "spec-slice-020-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-set-backorder-state-state"
             }
           ],
-          "linkedId": "slice-view-020"
+          "linkedId": "slice-020"
         }
       ],
       "actors": [
@@ -3679,7 +2751,7 @@
     {
       "id": "slice-021",
       "status": "Created",
-      "index": 41,
+      "index": 21,
       "title": "Suspend Temporary Purchasability",
       "context": "Inventory and Availability API",
       "sliceType": "STATE_CHANGE",
@@ -3727,77 +2799,16 @@
               "type": "INBOUND",
               "title": "Suspend Temporary Purchasability",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-suspend-product-availability-state",
+              "type": "OUTBOUND",
+              "title": "Inventory State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-021",
-          "title": "Given authorization and valid business preconditions when Suspend Temporary Purchasability then Inventory Availability Suspended is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Inventory Controller, Governance Reviewer) can execute this command.",
-              "id": "spec-slice-021-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Domain invariants for AvailabilityPolicy are satisfied before command execution.",
-              "id": "spec-slice-021-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: productId, suspension reason.",
-              "id": "spec-slice-021-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Suspend Temporary Purchasability",
-              "id": "spec-slice-021-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-suspend-product-availability"
-            }
-          ],
-          "then": [
-            {
-              "title": "Inventory Availability Suspended",
-              "id": "spec-slice-021-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-inventory-availability-suspended"
-            }
-          ],
-          "linkedId": "slice-021"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Inventory Controller",
-          "authzRequired": true
-        },
-        {
-          "name": "Governance Reviewer",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "AvailabilityPolicy"
-      ]
-    },
-    {
-      "id": "slice-view-021",
-      "status": "Created",
-      "index": 42,
-      "title": "Inventory State View",
-      "context": "Inventory and Availability API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-suspend-product-availability-state",
@@ -3829,26 +2840,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-021-view",
-          "title": "Given Inventory Availability Suspended then Inventory State is updated",
+          "id": "spec-slice-021",
+          "title": "Given prior state when Suspend Temporary Purchasability then Inventory Availability Suspended",
           "given": [
             {
-              "title": "Inventory Availability Suspended",
-              "id": "spec-slice-021-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-inventory-availability-suspended"
+              "title": "Prior Inventory state exists",
+              "id": "spec-slice-021-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Suspend Temporary Purchasability",
+              "id": "spec-slice-021-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-suspend-product-availability"
+            }
+          ],
           "then": [
             {
+              "title": "Inventory Availability Suspended",
+              "id": "spec-slice-021-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-inventory-availability-suspended"
+            },
+            {
               "title": "Inventory State",
-              "id": "spec-slice-021-view-t1",
+              "id": "spec-slice-021-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-suspend-product-availability-state"
             }
           ],
-          "linkedId": "slice-view-021"
+          "linkedId": "slice-021"
         }
       ],
       "actors": [
@@ -3868,7 +2891,7 @@
     {
       "id": "slice-022",
       "status": "Created",
-      "index": 43,
+      "index": 22,
       "title": "Create Category Node",
       "context": "Category and Faceting API",
       "sliceType": "STATE_CHANGE",
@@ -3916,73 +2939,16 @@
               "type": "INBOUND",
               "title": "Create Category Node",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-create-category-state",
+              "type": "OUTBOUND",
+              "title": "Category State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-022",
-          "title": "Given authorization and valid business preconditions when Create Category Node then Category Created is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Taxonomy Manager) can execute this command.",
-              "id": "spec-slice-022-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "No conflicting active Category violates uniqueness or policy constraints.",
-              "id": "spec-slice-022-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: parent category (optional), name, slug, sort order.",
-              "id": "spec-slice-022-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Create Category Node",
-              "id": "spec-slice-022-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-create-category"
-            }
-          ],
-          "then": [
-            {
-              "title": "Category Created",
-              "id": "spec-slice-022-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-category-created"
-            }
-          ],
-          "linkedId": "slice-022"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Taxonomy Manager",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "Category"
-      ]
-    },
-    {
-      "id": "slice-view-022",
-      "status": "Created",
-      "index": 44,
-      "title": "Category State View",
-      "context": "Category and Faceting API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-create-category-state",
@@ -4014,26 +2980,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-022-view",
-          "title": "Given Category Created then Category State is updated",
+          "id": "spec-slice-022",
+          "title": "Given prior state when Create Category Node then Category Created",
           "given": [
             {
-              "title": "Category Created",
-              "id": "spec-slice-022-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-category-created"
+              "title": "Prior Category state exists",
+              "id": "spec-slice-022-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Create Category Node",
+              "id": "spec-slice-022-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-create-category"
+            }
+          ],
           "then": [
             {
+              "title": "Category Created",
+              "id": "spec-slice-022-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-category-created"
+            },
+            {
               "title": "Category State",
-              "id": "spec-slice-022-view-t1",
+              "id": "spec-slice-022-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-create-category-state"
             }
           ],
-          "linkedId": "slice-view-022"
+          "linkedId": "slice-022"
         }
       ],
       "actors": [
@@ -4049,7 +3027,7 @@
     {
       "id": "slice-023",
       "status": "Created",
-      "index": 45,
+      "index": 23,
       "title": "Update Category Metadata",
       "context": "Category and Faceting API",
       "sliceType": "STATE_CHANGE",
@@ -4097,73 +3075,16 @@
               "type": "INBOUND",
               "title": "Update Category Metadata",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-update-category-state",
+              "type": "OUTBOUND",
+              "title": "Category State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-023",
-          "title": "Given authorization and valid business preconditions when Update Category Metadata then Category Updated is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Taxonomy Manager) can execute this command.",
-              "id": "spec-slice-023-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Target Category exists and is eligible for mutation.",
-              "id": "spec-slice-023-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: categoryId, updated metadata.",
-              "id": "spec-slice-023-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Update Category Metadata",
-              "id": "spec-slice-023-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-update-category"
-            }
-          ],
-          "then": [
-            {
-              "title": "Category Updated",
-              "id": "spec-slice-023-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-category-updated"
-            }
-          ],
-          "linkedId": "slice-023"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Taxonomy Manager",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "Category"
-      ]
-    },
-    {
-      "id": "slice-view-023",
-      "status": "Created",
-      "index": 46,
-      "title": "Category State View",
-      "context": "Category and Faceting API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-update-category-state",
@@ -4195,26 +3116,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-023-view",
-          "title": "Given Category Updated then Category State is updated",
+          "id": "spec-slice-023",
+          "title": "Given prior state when Update Category Metadata then Category Updated",
           "given": [
             {
-              "title": "Category Updated",
-              "id": "spec-slice-023-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-category-updated"
+              "title": "Prior Category state exists",
+              "id": "spec-slice-023-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Update Category Metadata",
+              "id": "spec-slice-023-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-update-category"
+            }
+          ],
           "then": [
             {
+              "title": "Category Updated",
+              "id": "spec-slice-023-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-category-updated"
+            },
+            {
               "title": "Category State",
-              "id": "spec-slice-023-view-t1",
+              "id": "spec-slice-023-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-update-category-state"
             }
           ],
-          "linkedId": "slice-view-023"
+          "linkedId": "slice-023"
         }
       ],
       "actors": [
@@ -4230,7 +3163,7 @@
     {
       "id": "slice-024",
       "status": "Created",
-      "index": 47,
+      "index": 24,
       "title": "Move Category To New Hierarchy Position",
       "context": "Category and Faceting API",
       "sliceType": "STATE_CHANGE",
@@ -4278,73 +3211,16 @@
               "type": "INBOUND",
               "title": "Move Category To New Hierarchy Position",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-move-category-state",
+              "type": "OUTBOUND",
+              "title": "Category State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-024",
-          "title": "Given authorization and valid business preconditions when Move Category To New Hierarchy Position then Category Moved is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Taxonomy Manager) can execute this command.",
-              "id": "spec-slice-024-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Target Category exists and is eligible for mutation.",
-              "id": "spec-slice-024-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: categoryId, new parent, new position.",
-              "id": "spec-slice-024-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Move Category To New Hierarchy Position",
-              "id": "spec-slice-024-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-move-category"
-            }
-          ],
-          "then": [
-            {
-              "title": "Category Moved",
-              "id": "spec-slice-024-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-category-moved"
-            }
-          ],
-          "linkedId": "slice-024"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Taxonomy Manager",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "Category"
-      ]
-    },
-    {
-      "id": "slice-view-024",
-      "status": "Created",
-      "index": 48,
-      "title": "Category State View",
-      "context": "Category and Faceting API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-move-category-state",
@@ -4376,26 +3252,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-024-view",
-          "title": "Given Category Moved then Category State is updated",
+          "id": "spec-slice-024",
+          "title": "Given prior state when Move Category To New Hierarchy Position then Category Moved",
           "given": [
             {
-              "title": "Category Moved",
-              "id": "spec-slice-024-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-category-moved"
+              "title": "Prior Category state exists",
+              "id": "spec-slice-024-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Move Category To New Hierarchy Position",
+              "id": "spec-slice-024-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-move-category"
+            }
+          ],
           "then": [
             {
+              "title": "Category Moved",
+              "id": "spec-slice-024-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-category-moved"
+            },
+            {
               "title": "Category State",
-              "id": "spec-slice-024-view-t1",
+              "id": "spec-slice-024-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-move-category-state"
             }
           ],
-          "linkedId": "slice-view-024"
+          "linkedId": "slice-024"
         }
       ],
       "actors": [
@@ -4411,7 +3299,7 @@
     {
       "id": "slice-025",
       "status": "Created",
-      "index": 49,
+      "index": 25,
       "title": "Archive/remove Category From Active Tree",
       "context": "Category and Faceting API",
       "sliceType": "STATE_CHANGE",
@@ -4459,77 +3347,16 @@
               "type": "INBOUND",
               "title": "Archive/remove Category From Active Tree",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-retire-category-state",
+              "type": "OUTBOUND",
+              "title": "Category State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-025",
-          "title": "Given authorization and valid business preconditions when Archive/remove Category From Active Tree then Category Retired is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Taxonomy Manager, Governance Reviewer) can execute this command.",
-              "id": "spec-slice-025-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Target Category exists and is eligible for mutation.",
-              "id": "spec-slice-025-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: categoryId, retirement reason.",
-              "id": "spec-slice-025-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Archive/remove Category From Active Tree",
-              "id": "spec-slice-025-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-retire-category"
-            }
-          ],
-          "then": [
-            {
-              "title": "Category Retired",
-              "id": "spec-slice-025-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-category-retired"
-            }
-          ],
-          "linkedId": "slice-025"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Taxonomy Manager",
-          "authzRequired": true
-        },
-        {
-          "name": "Governance Reviewer",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "Category"
-      ]
-    },
-    {
-      "id": "slice-view-025",
-      "status": "Created",
-      "index": 50,
-      "title": "Category State View",
-      "context": "Category and Faceting API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-retire-category-state",
@@ -4561,26 +3388,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-025-view",
-          "title": "Given Category Retired then Category State is updated",
+          "id": "spec-slice-025",
+          "title": "Given prior state when Archive/remove Category From Active Tree then Category Retired",
           "given": [
             {
-              "title": "Category Retired",
-              "id": "spec-slice-025-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-category-retired"
+              "title": "Prior Category state exists",
+              "id": "spec-slice-025-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Archive/remove Category From Active Tree",
+              "id": "spec-slice-025-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-retire-category"
+            }
+          ],
           "then": [
             {
+              "title": "Category Retired",
+              "id": "spec-slice-025-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-category-retired"
+            },
+            {
               "title": "Category State",
-              "id": "spec-slice-025-view-t1",
+              "id": "spec-slice-025-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-retire-category-state"
             }
           ],
-          "linkedId": "slice-view-025"
+          "linkedId": "slice-025"
         }
       ],
       "actors": [
@@ -4600,7 +3439,7 @@
     {
       "id": "slice-026",
       "status": "Created",
-      "index": 51,
+      "index": 26,
       "title": "Assign Product To Category",
       "context": "Category and Faceting API",
       "sliceType": "STATE_CHANGE",
@@ -4648,73 +3487,16 @@
               "type": "INBOUND",
               "title": "Assign Product To Category",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-assign-product-to-category-state",
+              "type": "OUTBOUND",
+              "title": "Category State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-026",
-          "title": "Given authorization and valid business preconditions when Assign Product To Category then Category Product Assigned is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Taxonomy Manager) can execute this command.",
-              "id": "spec-slice-026-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Target CategoryAssignment exists and is eligible for mutation.",
-              "id": "spec-slice-026-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: categoryId, productId, assignment type.",
-              "id": "spec-slice-026-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Assign Product To Category",
-              "id": "spec-slice-026-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-assign-product-to-category"
-            }
-          ],
-          "then": [
-            {
-              "title": "Category Product Assigned",
-              "id": "spec-slice-026-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-category-product-assigned"
-            }
-          ],
-          "linkedId": "slice-026"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Taxonomy Manager",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "CategoryAssignment"
-      ]
-    },
-    {
-      "id": "slice-view-026",
-      "status": "Created",
-      "index": 52,
-      "title": "Category State View",
-      "context": "Category and Faceting API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-assign-product-to-category-state",
@@ -4746,26 +3528,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-026-view",
-          "title": "Given Category Product Assigned then Category State is updated",
+          "id": "spec-slice-026",
+          "title": "Given prior state when Assign Product To Category then Category Product Assigned",
           "given": [
             {
-              "title": "Category Product Assigned",
-              "id": "spec-slice-026-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-category-product-assigned"
+              "title": "Prior Category state exists",
+              "id": "spec-slice-026-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Assign Product To Category",
+              "id": "spec-slice-026-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-assign-product-to-category"
+            }
+          ],
           "then": [
             {
+              "title": "Category Product Assigned",
+              "id": "spec-slice-026-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-category-product-assigned"
+            },
+            {
               "title": "Category State",
-              "id": "spec-slice-026-view-t1",
+              "id": "spec-slice-026-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-assign-product-to-category-state"
             }
           ],
-          "linkedId": "slice-view-026"
+          "linkedId": "slice-026"
         }
       ],
       "actors": [
@@ -4781,7 +3575,7 @@
     {
       "id": "slice-027",
       "status": "Created",
-      "index": 53,
+      "index": 27,
       "title": "Remove Product-category Assignment",
       "context": "Category and Faceting API",
       "sliceType": "STATE_CHANGE",
@@ -4829,73 +3623,16 @@
               "type": "INBOUND",
               "title": "Remove Product-category Assignment",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-remove-product-from-category-state",
+              "type": "OUTBOUND",
+              "title": "Category State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-027",
-          "title": "Given authorization and valid business preconditions when Remove Product-category Assignment then Category Product Removed is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Taxonomy Manager) can execute this command.",
-              "id": "spec-slice-027-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Target CategoryAssignment exists and is eligible for mutation.",
-              "id": "spec-slice-027-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: categoryId, productId.",
-              "id": "spec-slice-027-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Remove Product-category Assignment",
-              "id": "spec-slice-027-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-remove-product-from-category"
-            }
-          ],
-          "then": [
-            {
-              "title": "Category Product Removed",
-              "id": "spec-slice-027-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-category-product-removed"
-            }
-          ],
-          "linkedId": "slice-027"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Taxonomy Manager",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "CategoryAssignment"
-      ]
-    },
-    {
-      "id": "slice-view-027",
-      "status": "Created",
-      "index": 54,
-      "title": "Category State View",
-      "context": "Category and Faceting API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-remove-product-from-category-state",
@@ -4927,26 +3664,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-027-view",
-          "title": "Given Category Product Removed then Category State is updated",
+          "id": "spec-slice-027",
+          "title": "Given prior state when Remove Product-category Assignment then Category Product Removed",
           "given": [
             {
-              "title": "Category Product Removed",
-              "id": "spec-slice-027-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-category-product-removed"
+              "title": "Prior Category state exists",
+              "id": "spec-slice-027-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Remove Product-category Assignment",
+              "id": "spec-slice-027-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-remove-product-from-category"
+            }
+          ],
           "then": [
             {
+              "title": "Category Product Removed",
+              "id": "spec-slice-027-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-category-product-removed"
+            },
+            {
               "title": "Category State",
-              "id": "spec-slice-027-view-t1",
+              "id": "spec-slice-027-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-remove-product-from-category-state"
             }
           ],
-          "linkedId": "slice-view-027"
+          "linkedId": "slice-027"
         }
       ],
       "actors": [
@@ -4962,7 +3711,7 @@
     {
       "id": "slice-028",
       "status": "Created",
-      "index": 55,
+      "index": 28,
       "title": "Set Category Facet Configuration",
       "context": "Category and Faceting API",
       "sliceType": "STATE_CHANGE",
@@ -5010,73 +3759,16 @@
               "type": "INBOUND",
               "title": "Set Category Facet Configuration",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-define-category-facets-state",
+              "type": "OUTBOUND",
+              "title": "Category State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-028",
-          "title": "Given authorization and valid business preconditions when Set Category Facet Configuration then Category Facets Defined is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Taxonomy Manager) can execute this command.",
-              "id": "spec-slice-028-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Domain invariants for FacetDefinition are satisfied before command execution.",
-              "id": "spec-slice-028-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: categoryId, facet definitions.",
-              "id": "spec-slice-028-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Set Category Facet Configuration",
-              "id": "spec-slice-028-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-define-category-facets"
-            }
-          ],
-          "then": [
-            {
-              "title": "Category Facets Defined",
-              "id": "spec-slice-028-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-category-facets-defined"
-            }
-          ],
-          "linkedId": "slice-028"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Taxonomy Manager",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "FacetDefinition"
-      ]
-    },
-    {
-      "id": "slice-view-028",
-      "status": "Created",
-      "index": 56,
-      "title": "Category State View",
-      "context": "Category and Faceting API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-define-category-facets-state",
@@ -5108,26 +3800,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-028-view",
-          "title": "Given Category Facets Defined then Category State is updated",
+          "id": "spec-slice-028",
+          "title": "Given prior state when Set Category Facet Configuration then Category Facets Defined",
           "given": [
             {
-              "title": "Category Facets Defined",
-              "id": "spec-slice-028-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-category-facets-defined"
+              "title": "Prior Category state exists",
+              "id": "spec-slice-028-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Set Category Facet Configuration",
+              "id": "spec-slice-028-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-define-category-facets"
+            }
+          ],
           "then": [
             {
+              "title": "Category Facets Defined",
+              "id": "spec-slice-028-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-category-facets-defined"
+            },
+            {
               "title": "Category State",
-              "id": "spec-slice-028-view-t1",
+              "id": "spec-slice-028-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-define-category-facets-state"
             }
           ],
-          "linkedId": "slice-view-028"
+          "linkedId": "slice-028"
         }
       ],
       "actors": [
@@ -5143,7 +3847,7 @@
     {
       "id": "slice-029",
       "status": "Created",
-      "index": 57,
+      "index": 29,
       "title": "Create New Compatibility Rule",
       "context": "Compatibility Rules API",
       "sliceType": "STATE_CHANGE",
@@ -5191,77 +3895,16 @@
               "type": "INBOUND",
               "title": "Create New Compatibility Rule",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-create-compatibility-rule-state",
+              "type": "OUTBOUND",
+              "title": "Compatibility Rule State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-029",
-          "title": "Given authorization and valid business preconditions when Create New Compatibility Rule then Compatibility Rule Created is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Compatibility Engineer, Governance Reviewer) can execute this command.",
-              "id": "spec-slice-029-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "No conflicting active CompatibilityRule violates uniqueness or policy constraints.",
-              "id": "spec-slice-029-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: rule definition, component types, severity.",
-              "id": "spec-slice-029-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Create New Compatibility Rule",
-              "id": "spec-slice-029-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-create-compatibility-rule"
-            }
-          ],
-          "then": [
-            {
-              "title": "Compatibility Rule Created",
-              "id": "spec-slice-029-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-compatibility-rule-created"
-            }
-          ],
-          "linkedId": "slice-029"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Compatibility Engineer",
-          "authzRequired": true
-        },
-        {
-          "name": "Governance Reviewer",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "CompatibilityRule"
-      ]
-    },
-    {
-      "id": "slice-view-029",
-      "status": "Created",
-      "index": 58,
-      "title": "Compatibility Rule State View",
-      "context": "Compatibility Rules API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-create-compatibility-rule-state",
@@ -5293,26 +3936,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-029-view",
-          "title": "Given Compatibility Rule Created then Compatibility Rule State is updated",
+          "id": "spec-slice-029",
+          "title": "Given prior state when Create New Compatibility Rule then Compatibility Rule Created",
           "given": [
             {
-              "title": "Compatibility Rule Created",
-              "id": "spec-slice-029-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-compatibility-rule-created"
+              "title": "Prior Compatibility Rule state exists",
+              "id": "spec-slice-029-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Create New Compatibility Rule",
+              "id": "spec-slice-029-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-create-compatibility-rule"
+            }
+          ],
           "then": [
             {
+              "title": "Compatibility Rule Created",
+              "id": "spec-slice-029-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-compatibility-rule-created"
+            },
+            {
               "title": "Compatibility Rule State",
-              "id": "spec-slice-029-view-t1",
+              "id": "spec-slice-029-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-create-compatibility-rule-state"
             }
           ],
-          "linkedId": "slice-view-029"
+          "linkedId": "slice-029"
         }
       ],
       "actors": [
@@ -5332,7 +3987,7 @@
     {
       "id": "slice-030",
       "status": "Created",
-      "index": 59,
+      "index": 30,
       "title": "Update Existing Compatibility Rule",
       "context": "Compatibility Rules API",
       "sliceType": "STATE_CHANGE",
@@ -5380,77 +4035,16 @@
               "type": "INBOUND",
               "title": "Update Existing Compatibility Rule",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-update-compatibility-rule-state",
+              "type": "OUTBOUND",
+              "title": "Compatibility Rule State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-030",
-          "title": "Given authorization and valid business preconditions when Update Existing Compatibility Rule then Compatibility Rule Updated is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Compatibility Engineer, Governance Reviewer) can execute this command.",
-              "id": "spec-slice-030-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Target CompatibilityRule exists and is eligible for mutation.",
-              "id": "spec-slice-030-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: ruleId, changed definition fields.",
-              "id": "spec-slice-030-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Update Existing Compatibility Rule",
-              "id": "spec-slice-030-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-update-compatibility-rule"
-            }
-          ],
-          "then": [
-            {
-              "title": "Compatibility Rule Updated",
-              "id": "spec-slice-030-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-compatibility-rule-updated"
-            }
-          ],
-          "linkedId": "slice-030"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Compatibility Engineer",
-          "authzRequired": true
-        },
-        {
-          "name": "Governance Reviewer",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "CompatibilityRule"
-      ]
-    },
-    {
-      "id": "slice-view-030",
-      "status": "Created",
-      "index": 60,
-      "title": "Compatibility Rule State View",
-      "context": "Compatibility Rules API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-update-compatibility-rule-state",
@@ -5482,26 +4076,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-030-view",
-          "title": "Given Compatibility Rule Updated then Compatibility Rule State is updated",
+          "id": "spec-slice-030",
+          "title": "Given prior state when Update Existing Compatibility Rule then Compatibility Rule Updated",
           "given": [
             {
-              "title": "Compatibility Rule Updated",
-              "id": "spec-slice-030-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-compatibility-rule-updated"
+              "title": "Prior Compatibility Rule state exists",
+              "id": "spec-slice-030-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Update Existing Compatibility Rule",
+              "id": "spec-slice-030-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-update-compatibility-rule"
+            }
+          ],
           "then": [
             {
+              "title": "Compatibility Rule Updated",
+              "id": "spec-slice-030-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-compatibility-rule-updated"
+            },
+            {
               "title": "Compatibility Rule State",
-              "id": "spec-slice-030-view-t1",
+              "id": "spec-slice-030-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-update-compatibility-rule-state"
             }
           ],
-          "linkedId": "slice-view-030"
+          "linkedId": "slice-030"
         }
       ],
       "actors": [
@@ -5521,7 +4127,7 @@
     {
       "id": "slice-031",
       "status": "Created",
-      "index": 61,
+      "index": 31,
       "title": "Deactivate Rule From Active Use",
       "context": "Compatibility Rules API",
       "sliceType": "STATE_CHANGE",
@@ -5569,77 +4175,16 @@
               "type": "INBOUND",
               "title": "Deactivate Rule From Active Use",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-deactivate-compatibility-rule-state",
+              "type": "OUTBOUND",
+              "title": "Compatibility Rule State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-031",
-          "title": "Given authorization and valid business preconditions when Deactivate Rule From Active Use then Compatibility Rule Deactivated is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Compatibility Engineer, Governance Reviewer) can execute this command.",
-              "id": "spec-slice-031-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Target CompatibilityRule exists and is eligible for mutation.",
-              "id": "spec-slice-031-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: ruleId, deactivation reason.",
-              "id": "spec-slice-031-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Deactivate Rule From Active Use",
-              "id": "spec-slice-031-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-deactivate-compatibility-rule"
-            }
-          ],
-          "then": [
-            {
-              "title": "Compatibility Rule Deactivated",
-              "id": "spec-slice-031-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-compatibility-rule-deactivated"
-            }
-          ],
-          "linkedId": "slice-031"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Compatibility Engineer",
-          "authzRequired": true
-        },
-        {
-          "name": "Governance Reviewer",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "CompatibilityRule"
-      ]
-    },
-    {
-      "id": "slice-view-031",
-      "status": "Created",
-      "index": 62,
-      "title": "Compatibility Rule State View",
-      "context": "Compatibility Rules API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-deactivate-compatibility-rule-state",
@@ -5671,26 +4216,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-031-view",
-          "title": "Given Compatibility Rule Deactivated then Compatibility Rule State is updated",
+          "id": "spec-slice-031",
+          "title": "Given prior state when Deactivate Rule From Active Use then Compatibility Rule Deactivated",
           "given": [
             {
-              "title": "Compatibility Rule Deactivated",
-              "id": "spec-slice-031-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-compatibility-rule-deactivated"
+              "title": "Prior Compatibility Rule state exists",
+              "id": "spec-slice-031-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Deactivate Rule From Active Use",
+              "id": "spec-slice-031-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-deactivate-compatibility-rule"
+            }
+          ],
           "then": [
             {
+              "title": "Compatibility Rule Deactivated",
+              "id": "spec-slice-031-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-compatibility-rule-deactivated"
+            },
+            {
               "title": "Compatibility Rule State",
-              "id": "spec-slice-031-view-t1",
+              "id": "spec-slice-031-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-deactivate-compatibility-rule-state"
             }
           ],
-          "linkedId": "slice-view-031"
+          "linkedId": "slice-031"
         }
       ],
       "actors": [
@@ -5710,7 +4267,7 @@
     {
       "id": "slice-032",
       "status": "Created",
-      "index": 63,
+      "index": 32,
       "title": "Create Component Grouping Baseline",
       "context": "Compatibility Rules API",
       "sliceType": "STATE_CHANGE",
@@ -5758,73 +4315,16 @@
               "type": "INBOUND",
               "title": "Create Component Grouping Baseline",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-create-component-group-state",
+              "type": "OUTBOUND",
+              "title": "Component Group State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-032",
-          "title": "Given authorization and valid business preconditions when Create Component Grouping Baseline then Component Group Created is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Compatibility Engineer) can execute this command.",
-              "id": "spec-slice-032-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "No conflicting active ComponentGroup violates uniqueness or policy constraints.",
-              "id": "spec-slice-032-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: group metadata and initial members.",
-              "id": "spec-slice-032-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Create Component Grouping Baseline",
-              "id": "spec-slice-032-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-create-component-group"
-            }
-          ],
-          "then": [
-            {
-              "title": "Component Group Created",
-              "id": "spec-slice-032-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-component-group-created"
-            }
-          ],
-          "linkedId": "slice-032"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Compatibility Engineer",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "ComponentGroup"
-      ]
-    },
-    {
-      "id": "slice-view-032",
-      "status": "Created",
-      "index": 64,
-      "title": "Component Group State View",
-      "context": "Compatibility Rules API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-create-component-group-state",
@@ -5856,26 +4356,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-032-view",
-          "title": "Given Component Group Created then Component Group State is updated",
+          "id": "spec-slice-032",
+          "title": "Given prior state when Create Component Grouping Baseline then Component Group Created",
           "given": [
             {
-              "title": "Component Group Created",
-              "id": "spec-slice-032-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-component-group-created"
+              "title": "Prior Component Group state exists",
+              "id": "spec-slice-032-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Create Component Grouping Baseline",
+              "id": "spec-slice-032-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-create-component-group"
+            }
+          ],
           "then": [
             {
+              "title": "Component Group Created",
+              "id": "spec-slice-032-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-component-group-created"
+            },
+            {
               "title": "Component Group State",
-              "id": "spec-slice-032-view-t1",
+              "id": "spec-slice-032-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-create-component-group-state"
             }
           ],
-          "linkedId": "slice-view-032"
+          "linkedId": "slice-032"
         }
       ],
       "actors": [
@@ -5891,7 +4403,7 @@
     {
       "id": "slice-033",
       "status": "Created",
-      "index": 65,
+      "index": 33,
       "title": "Update Component Group Membership",
       "context": "Compatibility Rules API",
       "sliceType": "STATE_CHANGE",
@@ -5939,73 +4451,16 @@
               "type": "INBOUND",
               "title": "Update Component Group Membership",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-update-component-group-state",
+              "type": "OUTBOUND",
+              "title": "Component Group State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-033",
-          "title": "Given authorization and valid business preconditions when Update Component Group Membership then Component Group Updated is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Compatibility Engineer) can execute this command.",
-              "id": "spec-slice-033-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Target ComponentGroup exists and is eligible for mutation.",
-              "id": "spec-slice-033-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: componentGroupId, member changes.",
-              "id": "spec-slice-033-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Update Component Group Membership",
-              "id": "spec-slice-033-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-update-component-group"
-            }
-          ],
-          "then": [
-            {
-              "title": "Component Group Updated",
-              "id": "spec-slice-033-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-component-group-updated"
-            }
-          ],
-          "linkedId": "slice-033"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Compatibility Engineer",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "ComponentGroup"
-      ]
-    },
-    {
-      "id": "slice-view-033",
-      "status": "Created",
-      "index": 66,
-      "title": "Component Group State View",
-      "context": "Compatibility Rules API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-update-component-group-state",
@@ -6037,26 +4492,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-033-view",
-          "title": "Given Component Group Updated then Component Group State is updated",
+          "id": "spec-slice-033",
+          "title": "Given prior state when Update Component Group Membership then Component Group Updated",
           "given": [
             {
-              "title": "Component Group Updated",
-              "id": "spec-slice-033-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-component-group-updated"
+              "title": "Prior Component Group state exists",
+              "id": "spec-slice-033-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Update Component Group Membership",
+              "id": "spec-slice-033-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-update-component-group"
+            }
+          ],
           "then": [
             {
+              "title": "Component Group Updated",
+              "id": "spec-slice-033-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-component-group-updated"
+            },
+            {
               "title": "Component Group State",
-              "id": "spec-slice-033-view-t1",
+              "id": "spec-slice-033-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-update-component-group-state"
             }
           ],
-          "linkedId": "slice-view-033"
+          "linkedId": "slice-033"
         }
       ],
       "actors": [
@@ -6072,7 +4539,7 @@
     {
       "id": "slice-034",
       "status": "Created",
-      "index": 67,
+      "index": 34,
       "title": "Submit High-risk Change For Review",
       "context": "Catalog Governance API",
       "sliceType": "STATE_CHANGE",
@@ -6120,81 +4587,16 @@
               "type": "INBOUND",
               "title": "Submit High-risk Change For Review",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-submit-approval-case-state",
+              "type": "OUTBOUND",
+              "title": "Governance State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-034",
-          "title": "Given authorization and valid business preconditions when Submit High-risk Change For Review then Governance Approval Case Submitted is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Product Lifecycle Manager, Pricing Analyst, Compatibility Engineer) can execute this command.",
-              "id": "spec-slice-034-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "No conflicting active ApprovalCase violates uniqueness or policy constraints.",
-              "id": "spec-slice-034-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: change type, source reference, risk level, rationale.",
-              "id": "spec-slice-034-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Submit High-risk Change For Review",
-              "id": "spec-slice-034-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-submit-approval-case"
-            }
-          ],
-          "then": [
-            {
-              "title": "Governance Approval Case Submitted",
-              "id": "spec-slice-034-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-governance-approval-case-submitted"
-            }
-          ],
-          "linkedId": "slice-034"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Product Lifecycle Manager",
-          "authzRequired": true
-        },
-        {
-          "name": "Pricing Analyst",
-          "authzRequired": true
-        },
-        {
-          "name": "Compatibility Engineer",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "ApprovalCase"
-      ]
-    },
-    {
-      "id": "slice-view-034",
-      "status": "Created",
-      "index": 68,
-      "title": "Governance State View",
-      "context": "Catalog Governance API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-submit-approval-case-state",
@@ -6226,26 +4628,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-034-view",
-          "title": "Given Governance Approval Case Submitted then Governance State is updated",
+          "id": "spec-slice-034",
+          "title": "Given prior state when Submit High-risk Change For Review then Governance Approval Case Submitted",
           "given": [
             {
-              "title": "Governance Approval Case Submitted",
-              "id": "spec-slice-034-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-governance-approval-case-submitted"
+              "title": "Prior Governance state exists",
+              "id": "spec-slice-034-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Submit High-risk Change For Review",
+              "id": "spec-slice-034-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-submit-approval-case"
+            }
+          ],
           "then": [
             {
+              "title": "Governance Approval Case Submitted",
+              "id": "spec-slice-034-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-governance-approval-case-submitted"
+            },
+            {
               "title": "Governance State",
-              "id": "spec-slice-034-view-t1",
+              "id": "spec-slice-034-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-submit-approval-case-state"
             }
           ],
-          "linkedId": "slice-view-034"
+          "linkedId": "slice-034"
         }
       ],
       "actors": [
@@ -6269,7 +4683,7 @@
     {
       "id": "slice-035",
       "status": "Created",
-      "index": 69,
+      "index": 35,
       "title": "Assign Reviewer To Approval Case",
       "context": "Catalog Governance API",
       "sliceType": "STATE_CHANGE",
@@ -6317,73 +4731,16 @@
               "type": "INBOUND",
               "title": "Assign Reviewer To Approval Case",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-assign-approval-reviewer-state",
+              "type": "OUTBOUND",
+              "title": "Governance State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-035",
-          "title": "Given authorization and valid business preconditions when Assign Reviewer To Approval Case then Governance Reviewer Assigned is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Governance Reviewer) can execute this command.",
-              "id": "spec-slice-035-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Target ApprovalCase exists and is eligible for mutation.",
-              "id": "spec-slice-035-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: approvalCaseId, reviewerId.",
-              "id": "spec-slice-035-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Assign Reviewer To Approval Case",
-              "id": "spec-slice-035-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-assign-approval-reviewer"
-            }
-          ],
-          "then": [
-            {
-              "title": "Governance Reviewer Assigned",
-              "id": "spec-slice-035-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-governance-reviewer-assigned"
-            }
-          ],
-          "linkedId": "slice-035"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Governance Reviewer",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "ApprovalCase"
-      ]
-    },
-    {
-      "id": "slice-view-035",
-      "status": "Created",
-      "index": 70,
-      "title": "Governance State View",
-      "context": "Catalog Governance API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-assign-approval-reviewer-state",
@@ -6415,26 +4772,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-035-view",
-          "title": "Given Governance Reviewer Assigned then Governance State is updated",
+          "id": "spec-slice-035",
+          "title": "Given prior state when Assign Reviewer To Approval Case then Governance Reviewer Assigned",
           "given": [
             {
-              "title": "Governance Reviewer Assigned",
-              "id": "spec-slice-035-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-governance-reviewer-assigned"
+              "title": "Prior Governance state exists",
+              "id": "spec-slice-035-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Assign Reviewer To Approval Case",
+              "id": "spec-slice-035-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-assign-approval-reviewer"
+            }
+          ],
           "then": [
             {
+              "title": "Governance Reviewer Assigned",
+              "id": "spec-slice-035-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-governance-reviewer-assigned"
+            },
+            {
               "title": "Governance State",
-              "id": "spec-slice-035-view-t1",
+              "id": "spec-slice-035-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-assign-approval-reviewer-state"
             }
           ],
-          "linkedId": "slice-view-035"
+          "linkedId": "slice-035"
         }
       ],
       "actors": [
@@ -6450,7 +4819,7 @@
     {
       "id": "slice-036",
       "status": "Created",
-      "index": 71,
+      "index": 36,
       "title": "Approve Or Reject Proposed Change",
       "context": "Catalog Governance API",
       "sliceType": "STATE_CHANGE",
@@ -6498,74 +4867,16 @@
               "type": "INBOUND",
               "title": "Approve Or Reject Proposed Change",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-record-approval-decision-state",
+              "type": "OUTBOUND",
+              "title": "Governance State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-036",
-          "title": "Given authorization and valid business preconditions when Approve Or Reject Proposed Change then Governance Decision Recorded is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Governance Reviewer) can execute this command.",
-              "id": "spec-slice-036-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Target ApprovalDecision / ApprovalCase exists and is eligible for mutation.",
-              "id": "spec-slice-036-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: approvalCaseId, decision, rationale.",
-              "id": "spec-slice-036-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Approve Or Reject Proposed Change",
-              "id": "spec-slice-036-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-record-approval-decision"
-            }
-          ],
-          "then": [
-            {
-              "title": "Governance Decision Recorded",
-              "id": "spec-slice-036-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-governance-decision-recorded"
-            }
-          ],
-          "linkedId": "slice-036"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Governance Reviewer",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "ApprovalDecision",
-        "ApprovalCase"
-      ]
-    },
-    {
-      "id": "slice-view-036",
-      "status": "Created",
-      "index": 72,
-      "title": "Governance State View",
-      "context": "Catalog Governance API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-record-approval-decision-state",
@@ -6597,26 +4908,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-036-view",
-          "title": "Given Governance Decision Recorded then Governance State is updated",
+          "id": "spec-slice-036",
+          "title": "Given prior state when Approve Or Reject Proposed Change then Governance Decision Recorded",
           "given": [
             {
-              "title": "Governance Decision Recorded",
-              "id": "spec-slice-036-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-governance-decision-recorded"
+              "title": "Prior Governance state exists",
+              "id": "spec-slice-036-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Approve Or Reject Proposed Change",
+              "id": "spec-slice-036-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-record-approval-decision"
+            }
+          ],
           "then": [
             {
+              "title": "Governance Decision Recorded",
+              "id": "spec-slice-036-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-governance-decision-recorded"
+            },
+            {
               "title": "Governance State",
-              "id": "spec-slice-036-view-t1",
+              "id": "spec-slice-036-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-record-approval-decision-state"
             }
           ],
-          "linkedId": "slice-view-036"
+          "linkedId": "slice-036"
         }
       ],
       "actors": [
@@ -6633,7 +4956,7 @@
     {
       "id": "slice-037",
       "status": "Created",
-      "index": 73,
+      "index": 37,
       "title": "Release Approved Change For Publication",
       "context": "Catalog Governance API",
       "sliceType": "STATE_CHANGE",
@@ -6681,73 +5004,16 @@
               "type": "INBOUND",
               "title": "Release Approved Change For Publication",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-release-publication-gate-state",
+              "type": "OUTBOUND",
+              "title": "Governance State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-037",
-          "title": "Given authorization and valid business preconditions when Release Approved Change For Publication then Governance Publication Gate Released is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Governance Reviewer) can execute this command.",
-              "id": "spec-slice-037-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Target PublicationGate exists and is eligible for mutation.",
-              "id": "spec-slice-037-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: approvalCaseId.",
-              "id": "spec-slice-037-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Release Approved Change For Publication",
-              "id": "spec-slice-037-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-release-publication-gate"
-            }
-          ],
-          "then": [
-            {
-              "title": "Governance Publication Gate Released",
-              "id": "spec-slice-037-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-governance-publication-gate-released"
-            }
-          ],
-          "linkedId": "slice-037"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Governance Reviewer",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "PublicationGate"
-      ]
-    },
-    {
-      "id": "slice-view-037",
-      "status": "Created",
-      "index": 74,
-      "title": "Governance State View",
-      "context": "Catalog Governance API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-release-publication-gate-state",
@@ -6779,26 +5045,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-037-view",
-          "title": "Given Governance Publication Gate Released then Governance State is updated",
+          "id": "spec-slice-037",
+          "title": "Given prior state when Release Approved Change For Publication then Governance Publication Gate Released",
           "given": [
             {
-              "title": "Governance Publication Gate Released",
-              "id": "spec-slice-037-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-governance-publication-gate-released"
+              "title": "Prior Governance state exists",
+              "id": "spec-slice-037-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Release Approved Change For Publication",
+              "id": "spec-slice-037-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-release-publication-gate"
+            }
+          ],
           "then": [
             {
+              "title": "Governance Publication Gate Released",
+              "id": "spec-slice-037-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-governance-publication-gate-released"
+            },
+            {
               "title": "Governance State",
-              "id": "spec-slice-037-view-t1",
+              "id": "spec-slice-037-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-release-publication-gate-state"
             }
           ],
-          "linkedId": "slice-view-037"
+          "linkedId": "slice-037"
         }
       ],
       "actors": [
@@ -6814,7 +5092,7 @@
     {
       "id": "slice-038",
       "status": "Created",
-      "index": 75,
+      "index": 38,
       "title": "Submit Import Batch For Processing",
       "context": "Bulk Ingestion API",
       "sliceType": "STATE_CHANGE",
@@ -6862,73 +5140,16 @@
               "type": "INBOUND",
               "title": "Submit Import Batch For Processing",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-submit-import-batch-state",
+              "type": "OUTBOUND",
+              "title": "Import Batch State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-038",
-          "title": "Given authorization and valid business preconditions when Submit Import Batch For Processing then Import Batch Submitted is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Product Lifecycle Manager) can execute this command.",
-              "id": "spec-slice-038-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "No conflicting active ImportBatch violates uniqueness or policy constraints.",
-              "id": "spec-slice-038-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: source info, batch payload reference/checksum.",
-              "id": "spec-slice-038-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Submit Import Batch For Processing",
-              "id": "spec-slice-038-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-submit-import-batch"
-            }
-          ],
-          "then": [
-            {
-              "title": "Import Batch Submitted",
-              "id": "spec-slice-038-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-import-batch-submitted"
-            }
-          ],
-          "linkedId": "slice-038"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Product Lifecycle Manager",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "ImportBatch"
-      ]
-    },
-    {
-      "id": "slice-view-038",
-      "status": "Created",
-      "index": 76,
-      "title": "Import Batch State View",
-      "context": "Bulk Ingestion API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-submit-import-batch-state",
@@ -6960,26 +5181,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-038-view",
-          "title": "Given Import Batch Submitted then Import Batch State is updated",
+          "id": "spec-slice-038",
+          "title": "Given prior state when Submit Import Batch For Processing then Import Batch Submitted",
           "given": [
             {
-              "title": "Import Batch Submitted",
-              "id": "spec-slice-038-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-import-batch-submitted"
+              "title": "Prior Import Batch state exists",
+              "id": "spec-slice-038-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Submit Import Batch For Processing",
+              "id": "spec-slice-038-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-submit-import-batch"
+            }
+          ],
           "then": [
             {
+              "title": "Import Batch Submitted",
+              "id": "spec-slice-038-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-import-batch-submitted"
+            },
+            {
               "title": "Import Batch State",
-              "id": "spec-slice-038-view-t1",
+              "id": "spec-slice-038-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-submit-import-batch-state"
             }
           ],
-          "linkedId": "slice-view-038"
+          "linkedId": "slice-038"
         }
       ],
       "actors": [
@@ -6995,7 +5228,7 @@
     {
       "id": "slice-039",
       "status": "Created",
-      "index": 77,
+      "index": 39,
       "title": "Replay Failed Subset Of Import Items",
       "context": "Bulk Ingestion API",
       "sliceType": "STATE_CHANGE",
@@ -7043,74 +5276,16 @@
               "type": "INBOUND",
               "title": "Replay Failed Subset Of Import Items",
               "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-replay-failed-import-items-state",
+              "type": "OUTBOUND",
+              "title": "Import Batch State",
+              "elementType": "READMODEL"
             }
           ]
         }
       ],
-      "readmodels": [],
-      "screens": [],
-      "processors": [],
-      "tables": [],
-      "specifications": [
-        {
-          "id": "spec-slice-039",
-          "title": "Given authorization and valid business preconditions when Replay Failed Subset Of Import Items then Import Batch Replay Requested is produced",
-          "given": [
-            {
-              "title": "Authorized participants (Product Lifecycle Manager) can execute this command.",
-              "id": "spec-slice-039-g1",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Target ImportReplayRequest / ImportItemResult exists and is eligible for mutation.",
-              "id": "spec-slice-039-g2",
-              "type": "SPEC_EVENT"
-            },
-            {
-              "title": "Request contract is satisfied: importBatchId, list of failed source item keys.",
-              "id": "spec-slice-039-g3",
-              "type": "SPEC_EVENT"
-            }
-          ],
-          "when": [
-            {
-              "title": "Replay Failed Subset Of Import Items",
-              "id": "spec-slice-039-w1",
-              "type": "SPEC_COMMAND",
-              "linkedId": "cmd-replay-failed-import-items"
-            }
-          ],
-          "then": [
-            {
-              "title": "Import Batch Replay Requested",
-              "id": "spec-slice-039-t1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-import-batch-replay-requested"
-            }
-          ],
-          "linkedId": "slice-039"
-        }
-      ],
-      "actors": [
-        {
-          "name": "Product Lifecycle Manager",
-          "authzRequired": true
-        }
-      ],
-      "aggregates": [
-        "ImportReplayRequest",
-        "ImportItemResult"
-      ]
-    },
-    {
-      "id": "slice-view-039",
-      "status": "Created",
-      "index": 78,
-      "title": "Import Batch State View",
-      "context": "Bulk Ingestion API",
-      "sliceType": "STATE_VIEW",
-      "commands": [],
-      "events": [],
       "readmodels": [
         {
           "id": "rm-replay-failed-import-items-state",
@@ -7142,26 +5317,38 @@
       "tables": [],
       "specifications": [
         {
-          "id": "spec-slice-039-view",
-          "title": "Given Import Batch Replay Requested then Import Batch State is updated",
+          "id": "spec-slice-039",
+          "title": "Given prior state when Replay Failed Subset Of Import Items then Import Batch Replay Requested",
           "given": [
             {
-              "title": "Import Batch Replay Requested",
-              "id": "spec-slice-039-view-g1",
-              "type": "SPEC_EVENT",
-              "linkedId": "evt-import-batch-replay-requested"
+              "title": "Prior Import Batch state exists",
+              "id": "spec-slice-039-g1",
+              "type": "SPEC_EVENT"
             }
           ],
-          "when": [],
+          "when": [
+            {
+              "title": "Replay Failed Subset Of Import Items",
+              "id": "spec-slice-039-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-replay-failed-import-items"
+            }
+          ],
           "then": [
             {
+              "title": "Import Batch Replay Requested",
+              "id": "spec-slice-039-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-import-batch-replay-requested"
+            },
+            {
               "title": "Import Batch State",
-              "id": "spec-slice-039-view-t1",
+              "id": "spec-slice-039-t2",
               "type": "SPEC_READMODEL",
               "linkedId": "rm-replay-failed-import-items-state"
             }
           ],
-          "linkedId": "slice-view-039"
+          "linkedId": "slice-039"
         }
       ],
       "actors": [
