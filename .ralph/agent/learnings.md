@@ -146,3 +146,15 @@
 - **Context:** Catalog Management v2 needed progress while Event Storming remained temporarily deferred, creating uncertainty about when Align can be considered complete.
 - **Learning:** Align can be closed without Event Storming when temporary deferral is explicit and replacement artifacts are complete: unifying job stories, command-focused activity steps, a boundary map, EventModel mapping, and a validation report.
 - **Action:** When deferring Event Storming, require the boundary-map and eventmodel-mapping artifacts plus validation before moving to Define.
+
+## LRN-023 (2026-02-26)
+- **Category:** Event Modeling / ADDR Integration
+- **Context:** EventModel generation was initially done with a legacy-system-oriented skill, which risks underusing ADDR artifacts and drifting from API profile intent.
+- **Learning:** For ADDR-first projects, EventModel should be generated from ADDR artifacts (`align`, `define/api-profiles.md`, `design/api-design.md`, `refine/*-api.yaml`) with operation classification driving slice creation. Do not hardcode expected slice counts.
+- **Action:** Use `.cursor/skills/addr-2-eventmodel/SKILL.md` for EventModel regeneration and derive `STATE_CHANGE`/`STATE_VIEW` inventory from artifacts each run.
+
+## LRN-024 (2026-02-26)
+- **Category:** Event Modeling / Tool Interoperability
+- **Context:** EventModel imports into visualization tooling did not render expected command-event-readmodel flows reliably when read models were embedded in the same slice as state changes.
+- **Learning:** A split topology (`STATE_CHANGE` slice for command+event, separate `STATE_VIEW` slice for event-derived read model) is more interoperable for downstream tools and easier to inspect.
+- **Action:** Prefer split `STATE_CHANGE` + `STATE_VIEW` slices for write-side flows, then validate graph connectivity and schema compatibility after generation.

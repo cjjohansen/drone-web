@@ -200,6 +200,16 @@ Both validate collision constraints after each piece placement and throw on ille
 **Decision:** For Catalog Management v2 Refine, generate one OpenAPI 3.1 file per write-side boundary (8 files total), one AsyncAPI 3.0 integration-event contract, and a single consolidated Postman collection grouped by boundary.
 **Rationale:** Per-boundary OpenAPI files preserve bounded-context ownership and make validation/debugging localized, while one consolidated Postman collection simplifies exploratory testing across cross-boundary admin workflows.
 
+### D-032: Add a dedicated ADDR-to-EventModel skill and derive slice inventory from artifacts
+**Date:** 2026-02-26
+**Decision:** Added `.cursor/skills/addr-2-eventmodel/SKILL.md` and made ADDR artifacts (`align/*`, `define/api-profiles.md`, `design/api-design.md`, `refine/*-api.yaml`) the source of truth for EventModel generation. Slice counts are derived from operation classification during generation, not hardcoded.
+**Rationale:** The legacy-system EventModel skill is code-first and does not align with this ADDR-first workflow. A dedicated skill prevents mixing integration transport contracts with domain event modeling and keeps generation reproducible from design artifacts.
+
+### D-033: Use split EventModel topology for write-side flows (STATE_CHANGE then STATE_VIEW)
+**Date:** 2026-02-26
+**Decision:** For Catalog Management v2 EventModel, represent each mutating operation as a `STATE_CHANGE` slice containing command+event only, followed by a separate `STATE_VIEW` slice for event-derived read model projection.
+**Rationale:** Split topology better matches Event Modeling semantics for event-to-projection flow and improves interoperability with visualization/import tools that expect state changes and views as distinct slices.
+
 ---
 
 ## Open Questions

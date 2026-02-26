@@ -13,23 +13,22 @@
 
 ## Current Phase
 
-**Phase:** ADDR Catalog Management v2 — Refine (completed, local only)
-**Status:** Define v2, Design v2, and Refine v2 are complete and validated under `design/catalog-management-v2/addr/{define,design,refine}/`. Post-ADDR EventModel outputs are generated in `design/catalog-management-v2/eventmodel/`. Push is intentionally deferred until the full process wrap-up.
+**Phase:** ADDR Catalog Management v2 — Post-ADDR wrap-up (local only)
+**Status:** Define v2, Design v2, Refine v2, and post-ADDR EventModel outputs are complete and validated under `design/catalog-management-v2/addr/{define,design,refine}/` and `design/catalog-management-v2/eventmodel/`. EventModel was regenerated from ADDR artifacts using the new ADDR-native skill, enriched with detailed GWT, then reshaped to split `STATE_CHANGE` and `STATE_VIEW` slices. Push remains intentionally deferred.
 **Blockers:** None
 
 ## What Was Just Completed (this session)
 
-- [x] Created Refine v2 deliverables under `design/catalog-management-v2/addr/refine/`:
-  - 8 OpenAPI 3.1 specs (`*-api.yaml`) covering all 42 write-side operations
-  - 1 AsyncAPI 3.0 spec (`integration-events.yaml`) for command-side integration events
-  - `README.md`, `api-examples.md`, `sequence-diagrams.md`, `validation.md`, and consolidated Postman collection
-- [x] Validated all 8 OpenAPI specs with `@redocly/cli lint` (clean)
-- [x] Validated AsyncAPI spec with `@asyncapi/cli validate` (clean)
-- [x] Generated EventModel outputs in `design/catalog-management-v2/eventmodel/`:
-  - `config.json`
-  - `high-level-analysis.json`
-- [x] Recorded Refine packaging decision D-031 in `.ralph/agent/decisions.md`
-- [x] Updated v2 task tracker to mark Refine and EventModel content tasks complete (git commit/push still pending by choice)
+- [x] Added ADDR-native EventModel skill at `.cursor/skills/addr-2-eventmodel/SKILL.md`
+- [x] Regenerated `design/catalog-management-v2/eventmodel/config.json` and `high-level-analysis.json` from ADDR artifacts (`align/*`, `define/api-profiles.md`, `design/api-design.md`, `refine/*-api.yaml`) with operation-derived inventory
+- [x] Enriched all 39 `STATE_CHANGE` slices with more detailed GIVEN/WHEN/THEN (authorization context, mutation preconditions, request/response contract references)
+- [x] Backed up the prior EventModel run as:
+  - `design/catalog-management-v2/eventmodel/config.backup-2026-02-26.json`
+  - `design/catalog-management-v2/eventmodel/high-level-analysis.backup-2026-02-26.json`
+- [x] Restructured EventModel topology to split slices for tooling compatibility:
+  - 39 `STATE_CHANGE` slices (command + domain event)
+  - 39 `STATE_VIEW` slices (event-derived read models)
+- [x] Validated final `config.json` against `.cursor/skills/legacy-system-2-eventmodel/schema.json` (`ajv-cli` pass)
 
 ## ADDR Catalog Storefront Summary (COMPLETE)
 
@@ -58,10 +57,10 @@
 
 ## What Comes Next
 
-1. **Review artifacts end-to-end** and decide whether to make any final refinements to examples/diagrams/Postman requests
-2. **Prepare a local commit sequence** for Align/Define/Design/Refine/EventModel updates
-3. **Push all pending commits together** when explicitly approved
-4. **Open/update PR** for Catalog Management v2 once push occurs
+1. **Verify downstream import/render behavior** (Miro tooling) on the split-slice EventModel and adjust edge directionality only if required by importer behavior
+2. **Run a final end-to-end local review** across ADDR + EventModel artifacts for naming and consistency polish
+3. **Finalize local commit hygiene** so the branch is ready for a later push/PR window
+4. **Wait for explicit approval** before any push or PR actions
 
 ## Decision Source
 
@@ -85,8 +84,8 @@ All formal decisions are recorded only in `.ralph/agent/decisions.md`.
 | File | Purpose |
 |------|---------|
 | `.ralph/STATE.md` | This file — session handoff |
-| `.ralph/agent/decisions.md` | Decision log (D-001 through D-031) |
-| `.ralph/agent/learnings.md` | Persistent memory — mistakes and patterns (LRN-001 through LRN-022) |
+| `.ralph/agent/decisions.md` | Decision log (D-001 through D-033) |
+| `.ralph/agent/learnings.md` | Persistent memory — mistakes and patterns (LRN-001 through LRN-024) |
 | `.ralph/tasks/addr-process.md` | ADDR Catalog Storefront task tracking (complete) |
 | `.ralph/tasks/addr-catalog-management.md` | ADDR Catalog Management v1 task tracking (baseline preserved) |
 | `.ralph/tasks/addr-catalog-management-v2.md` | ADDR Catalog Management v2 task tracking (active) |
@@ -104,4 +103,5 @@ All formal decisions are recorded only in `.ralph/agent/decisions.md`.
 | `.cursor/skills/event-storming/SKILL.md` | Event Storming domain knowledge skill |
 | `.cursor/skills/event-storming-drawio/SKILL.md` | Event Storming draw.io generation skill |
 | `.cursor/skills/legacy-system-2-eventmodel/SKILL.md` | Event Modeling skill — generate Event Model JSON |
+| `.cursor/skills/addr-2-eventmodel/SKILL.md` | ADDR-native EventModel generation skill (artifacts-first) |
 | `.cursor/skills/ralph-loop-governance/SKILL.md` | Ralph file governance skill — single-source decision logging |

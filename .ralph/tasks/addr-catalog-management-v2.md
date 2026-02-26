@@ -67,3 +67,9 @@ The existing storefront artifacts inform this work:
 - [x] Generate `high-level-analysis.json`
 - [x] Validate slice/dependency rules against EventModel schema expectations
 - [x] Package EventModel outputs and references
+- [x] Add ADDR-native EventModel generation skill (`.cursor/skills/addr-2-eventmodel/SKILL.md`)
+- [x] Regenerate EventModel from ADDR artifacts (derive operation inventory, no hardcoded slice counts)
+- [x] Create backup snapshot before restructuring (`config.backup-2026-02-26.json`, `high-level-analysis.backup-2026-02-26.json`)
+- [x] Enrich `STATE_CHANGE` Given/When/Then with operation-specific preconditions and request/response contract detail
+- [x] Restructure to split topology: 39 `STATE_CHANGE` + 39 `STATE_VIEW` slices
+- [x] Re-validate `config.json` against EventModel schema after split
