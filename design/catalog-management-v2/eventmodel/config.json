@@ -1,0 +1,491 @@
+{
+  "slices": [
+    {
+      "id": "slice-01",
+      "status": "Created",
+      "index": 1,
+      "title": "Product Summary",
+      "context": "View product records before mutation",
+      "sliceType": "STATE_VIEW",
+      "commands": [],
+      "events": [],
+      "readmodels": [
+        {
+          "id": "rm-product-summary",
+          "title": "Product Summary",
+          "fields": [
+            { "name": "productId", "type": "UUID" },
+            { "name": "sku", "type": "String" },
+            { "name": "name", "type": "String" },
+            { "name": "lifecycleState", "type": "String" }
+          ],
+          "type": "READMODEL",
+          "description": "Built from Product Created and Product Lifecycle State Changed events.",
+          "dependencies": []
+        }
+      ],
+      "screens": [
+        {
+          "id": "screen-product-summary",
+          "title": "Product Summary Screen",
+          "fields": [],
+          "type": "SCREEN",
+          "description": "Product lifecycle manager list view.",
+          "dependencies": [
+            {
+              "id": "rm-product-summary",
+              "type": "INBOUND",
+              "title": "Product Summary",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-01",
+          "title": "Given lifecycle events then product summary is visible",
+          "given": [
+            {
+              "title": "Product Created",
+              "id": "spec-slice-01-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [],
+          "then": [
+            {
+              "title": "Product Summary",
+              "id": "spec-slice-01-t1",
+              "type": "SPEC_READMODEL"
+            }
+          ],
+          "linkedId": "slice-01"
+        }
+      ],
+      "actors": [
+        { "name": "Product Lifecycle Manager", "authzRequired": true }
+      ],
+      "aggregates": ["Product"]
+    },
+    {
+      "id": "slice-02",
+      "status": "Created",
+      "index": 2,
+      "title": "Create Product",
+      "context": "Create product master record",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-create-product",
+          "title": "Create Product",
+          "fields": [
+            { "name": "sku", "type": "String" },
+            { "name": "name", "type": "String" },
+            { "name": "brand", "type": "String" }
+          ],
+          "type": "COMMAND",
+          "description": "POST /product-lifecycle/v1/products",
+          "dependencies": [
+            {
+              "id": "evt-product-created",
+              "type": "OUTBOUND",
+              "title": "Product Created",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-product-created",
+          "title": "Product Created",
+          "fields": [
+            { "name": "productId", "type": "UUID" },
+            { "name": "occurredAt", "type": "DateTime" }
+          ],
+          "type": "EVENT",
+          "description": "Published as integration event product.created.",
+          "dependencies": [
+            {
+              "id": "cmd-create-product",
+              "type": "INBOUND",
+              "title": "Create Product",
+              "elementType": "COMMAND"
+            }
+          ]
+        }
+      ],
+      "readmodels": [],
+      "screens": [
+        {
+          "id": "screen-create-product",
+          "title": "Create Product Form",
+          "fields": [],
+          "type": "SCREEN",
+          "description": "Admin form for product creation.",
+          "dependencies": [
+            {
+              "id": "cmd-create-product",
+              "type": "OUTBOUND",
+              "title": "Create Product",
+              "elementType": "COMMAND"
+            }
+          ]
+        }
+      ],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-02",
+          "title": "Given manager input when create product then product created",
+          "given": [],
+          "when": [
+            {
+              "title": "Create Product",
+              "id": "spec-slice-02-w1",
+              "type": "SPEC_COMMAND"
+            }
+          ],
+          "then": [
+            {
+              "title": "Product Created",
+              "id": "spec-slice-02-t1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "linkedId": "slice-02"
+        }
+      ],
+      "actors": [
+        { "name": "Product Lifecycle Manager", "authzRequired": true }
+      ],
+      "aggregates": ["Product"]
+    },
+    {
+      "id": "slice-03",
+      "status": "Created",
+      "index": 3,
+      "title": "Publish Document Version",
+      "context": "Publish new version of product technical documentation",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-publish-document-version",
+          "title": "Publish Document Version",
+          "fields": [
+            { "name": "documentId", "type": "UUID" },
+            { "name": "storageReference", "type": "String" }
+          ],
+          "type": "COMMAND",
+          "description": "POST /technical-docs/v1/documents/{documentId}/versions",
+          "dependencies": [
+            {
+              "id": "evt-document-version-published",
+              "type": "OUTBOUND",
+              "title": "Document Version Published",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-document-version-published",
+          "title": "Document Version Published",
+          "fields": [
+            { "name": "documentId", "type": "UUID" },
+            { "name": "documentVersionId", "type": "UUID" }
+          ],
+          "type": "EVENT",
+          "description": "Published as integration event document.version-published.",
+          "dependencies": [
+            {
+              "id": "cmd-publish-document-version",
+              "type": "INBOUND",
+              "title": "Publish Document Version",
+              "elementType": "COMMAND"
+            }
+          ]
+        }
+      ],
+      "readmodels": [],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-03",
+          "title": "Given active document when publish version then version published",
+          "given": [],
+          "when": [
+            {
+              "title": "Publish Document Version",
+              "id": "spec-slice-03-w1",
+              "type": "SPEC_COMMAND"
+            }
+          ],
+          "then": [
+            {
+              "title": "Document Version Published",
+              "id": "spec-slice-03-t1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "linkedId": "slice-03"
+        }
+      ],
+      "actors": [
+        { "name": "Documentation Steward", "authzRequired": true }
+      ],
+      "aggregates": ["Document"]
+    },
+    {
+      "id": "slice-04",
+      "status": "Created",
+      "index": 4,
+      "title": "Repricing Results",
+      "context": "View queued repricing jobs and outcomes",
+      "sliceType": "STATE_VIEW",
+      "commands": [],
+      "events": [],
+      "readmodels": [
+        {
+          "id": "rm-repricing-results",
+          "title": "Repricing Results",
+          "fields": [
+            { "name": "repricingJobId", "type": "UUID" },
+            { "name": "status", "type": "String" },
+            { "name": "updatedAt", "type": "DateTime" }
+          ],
+          "type": "READMODEL",
+          "description": "Built from repricing request and processing events.",
+          "dependencies": [
+            {
+              "id": "evt-price-group-repricing-requested",
+              "type": "INBOUND",
+              "title": "Price Group Repricing Requested",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-04",
+          "title": "Given repricing events then repricing results view is updated",
+          "given": [
+            {
+              "title": "Price Group Repricing Requested",
+              "id": "spec-slice-04-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [],
+          "then": [
+            {
+              "title": "Repricing Results",
+              "id": "spec-slice-04-t1",
+              "type": "SPEC_READMODEL"
+            }
+          ],
+          "linkedId": "slice-04"
+        }
+      ],
+      "actors": [
+        { "name": "Pricing Analyst", "authzRequired": true }
+      ],
+      "aggregates": ["RepricingJob"]
+    },
+    {
+      "id": "slice-05",
+      "status": "Created",
+      "index": 5,
+      "title": "Apply Group Repricing",
+      "context": "Automation triggers asynchronous repricing execution",
+      "sliceType": "AUTOMATION",
+      "commands": [
+        {
+          "id": "cmd-apply-group-repricing",
+          "title": "Apply Group Repricing",
+          "fields": [
+            { "name": "repricingJobId", "type": "UUID" }
+          ],
+          "type": "COMMAND",
+          "description": "Background command triggered by repricing queue.",
+          "dependencies": [
+            {
+              "id": "evt-products-repriced",
+              "type": "OUTBOUND",
+              "title": "Products Repriced",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-products-repriced",
+          "title": "Products Repriced",
+          "fields": [
+            { "name": "repricingJobId", "type": "UUID" },
+            { "name": "processedItems", "type": "Int" }
+          ],
+          "type": "EVENT",
+          "description": "Automation completion event.",
+          "dependencies": [
+            {
+              "id": "cmd-apply-group-repricing",
+              "type": "INBOUND",
+              "title": "Apply Group Repricing",
+              "elementType": "COMMAND"
+            }
+          ]
+        }
+      ],
+      "readmodels": [],
+      "screens": [],
+      "processors": [
+        {
+          "id": "auto-repricing-processor",
+          "title": "Repricing Processor",
+          "fields": [],
+          "type": "AUTOMATION",
+          "description": "Consumes Price Group Repricing Requested and issues Apply Group Repricing command.",
+          "dependencies": [
+            {
+              "id": "rm-repricing-results",
+              "type": "INBOUND",
+              "title": "Repricing Results",
+              "elementType": "READMODEL"
+            },
+            {
+              "id": "cmd-apply-group-repricing",
+              "type": "OUTBOUND",
+              "title": "Apply Group Repricing",
+              "elementType": "COMMAND"
+            }
+          ]
+        }
+      ],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-05",
+          "title": "Given queued repricing when processor runs then products repriced",
+          "given": [
+            {
+              "title": "Price Group Repricing Requested",
+              "id": "spec-slice-05-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Repricing Processor",
+              "id": "spec-slice-05-w1",
+              "type": "SPEC_COMMAND"
+            }
+          ],
+          "then": [
+            {
+              "title": "Products Repriced",
+              "id": "spec-slice-05-t1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "linkedId": "slice-05"
+        }
+      ],
+      "actors": [
+        { "name": "System Scheduler", "authzRequired": false }
+      ],
+      "aggregates": ["RepricingJob"]
+    },
+    {
+      "id": "slice-06",
+      "status": "Created",
+      "index": 6,
+      "title": "Record Approval Decision",
+      "context": "Governance reviewer records approval outcome",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-record-approval-decision",
+          "title": "Record Approval Decision",
+          "fields": [
+            { "name": "approvalCaseId", "type": "UUID" },
+            { "name": "decision", "type": "String" },
+            { "name": "rationale", "type": "String" }
+          ],
+          "type": "COMMAND",
+          "description": "POST /catalog-governance/v1/approval-cases/{approvalCaseId}/decisions",
+          "dependencies": [
+            {
+              "id": "evt-governance-decision-recorded",
+              "type": "OUTBOUND",
+              "title": "Governance Decision Recorded",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-governance-decision-recorded",
+          "title": "Governance Decision Recorded",
+          "fields": [
+            { "name": "approvalCaseId", "type": "UUID" },
+            { "name": "decision", "type": "String" }
+          ],
+          "type": "EVENT",
+          "description": "Published as integration event governance.decision-recorded.",
+          "dependencies": [
+            {
+              "id": "cmd-record-approval-decision",
+              "type": "INBOUND",
+              "title": "Record Approval Decision",
+              "elementType": "COMMAND"
+            }
+          ]
+        }
+      ],
+      "readmodels": [],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-06",
+          "title": "Given approval case when reviewer records decision then decision recorded",
+          "given": [],
+          "when": [
+            {
+              "title": "Record Approval Decision",
+              "id": "spec-slice-06-w1",
+              "type": "SPEC_COMMAND"
+            }
+          ],
+          "then": [
+            {
+              "title": "Governance Decision Recorded",
+              "id": "spec-slice-06-t1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "linkedId": "slice-06"
+        }
+      ],
+      "actors": [
+        { "name": "Governance Reviewer", "authzRequired": true }
+      ],
+      "aggregates": ["ApprovalCase"]
+    }
+  ]
+}

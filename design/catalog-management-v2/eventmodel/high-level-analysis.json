@@ -1,0 +1,116 @@
+{
+  "domain": "Catalog Management v2",
+  "analysisType": "high-level",
+  "generatedAt": "2026-02-26T00:00:00Z",
+  "boundedContexts": [
+    "Product Lifecycle",
+    "Technical Documentation",
+    "Pricing and Promotions",
+    "Inventory and Availability",
+    "Category and Faceting",
+    "Compatibility Rules",
+    "Catalog Governance",
+    "Bulk Ingestion"
+  ],
+  "useCases": [
+    {
+      "id": "UC-01",
+      "title": "Create and maintain product master records",
+      "primaryActors": ["Product Lifecycle Manager"],
+      "sliceCandidates": [
+        "Create Product (STATE_CHANGE)",
+        "Update Product Specifications (STATE_CHANGE)",
+        "Product Summary (STATE_VIEW)"
+      ]
+    },
+    {
+      "id": "UC-02",
+      "title": "Manage technical documentation lifecycle",
+      "primaryActors": ["Documentation Steward"],
+      "sliceCandidates": [
+        "Publish Document Version (STATE_CHANGE)",
+        "Retire Document (STATE_CHANGE)",
+        "Product Documents (STATE_VIEW)"
+      ]
+    },
+    {
+      "id": "UC-03",
+      "title": "Apply catalog pricing and promotions",
+      "primaryActors": ["Pricing Analyst", "Governance Reviewer"],
+      "sliceCandidates": [
+        "Set Base Price (STATE_CHANGE)",
+        "Start Promotion (STATE_CHANGE)",
+        "Apply Group Repricing (AUTOMATION)",
+        "Repricing Results (STATE_VIEW)"
+      ]
+    },
+    {
+      "id": "UC-04",
+      "title": "Maintain inventory and availability posture",
+      "primaryActors": ["Inventory Controller"],
+      "sliceCandidates": [
+        "Update Stock Position (STATE_CHANGE)",
+        "Update Availability Policy (STATE_CHANGE)",
+        "Availability View (STATE_VIEW)"
+      ]
+    },
+    {
+      "id": "UC-05",
+      "title": "Manage taxonomy and facets",
+      "primaryActors": ["Taxonomy Manager"],
+      "sliceCandidates": [
+        "Create Category (STATE_CHANGE)",
+        "Move Category (STATE_CHANGE)",
+        "Assign Product Category (STATE_CHANGE)",
+        "Category Tree (STATE_VIEW)"
+      ]
+    },
+    {
+      "id": "UC-06",
+      "title": "Author and evolve compatibility rules",
+      "primaryActors": ["Compatibility Engineer", "Governance Reviewer"],
+      "sliceCandidates": [
+        "Create Compatibility Rule (STATE_CHANGE)",
+        "Update Component Group (STATE_CHANGE)",
+        "Compatibility Rule Catalog (STATE_VIEW)"
+      ]
+    },
+    {
+      "id": "UC-07",
+      "title": "Execute governance approvals",
+      "primaryActors": ["Governance Reviewer"],
+      "sliceCandidates": [
+        "Submit Approval Case (STATE_CHANGE)",
+        "Record Approval Decision (STATE_CHANGE)",
+        "Release Publication Gate (STATE_CHANGE)"
+      ]
+    },
+    {
+      "id": "UC-08",
+      "title": "Process bulk imports and replay failures",
+      "primaryActors": ["Product Lifecycle Manager"],
+      "sliceCandidates": [
+        "Submit Import Batch (STATE_CHANGE)",
+        "Process Import Batch (AUTOMATION)",
+        "Import Batch Results (STATE_VIEW)",
+        "Replay Failed Import Items (STATE_CHANGE)"
+      ]
+    }
+  ],
+  "integrationEvents": [
+    "product.created",
+    "product.lifecycle-state-changed",
+    "document.version-published",
+    "price.group-repricing-requested",
+    "inventory.quantity-updated",
+    "category.facets-defined",
+    "compatibility-rule.updated",
+    "governance.decision-recorded",
+    "import-batch.submitted",
+    "import-batch.replay-requested"
+  ],
+  "notes": [
+    "This analysis is generated from Align eventmodel mapping and Refine API/event artifacts.",
+    "Event Storming remains deferred in v2 Align; slice modeling is boundary-first and command-oriented."
+  ]
+}

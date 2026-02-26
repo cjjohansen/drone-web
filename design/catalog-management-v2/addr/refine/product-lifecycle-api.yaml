@@ -1,0 +1,360 @@
+openapi: 3.1.0
+info:
+  title: Product Lifecycle API
+  description: Write-side product master and lifecycle state management.
+  version: 1.0.0
+  contact:
+    name: Drone Web API Team
+  license:
+    name: Proprietary
+    url: https://droneparts.com/terms
+servers:
+  - url: https://api.droneparts.com/product-lifecycle/v1
+    description: Production
+security:
+  - apiKey: []
+  - oauth2: []
+tags:
+  - name: ProductLifecycle
+    description: Product creation, updates, and lifecycle transitions
+paths:
+  /products:
+    get:
+      operationId: searchProductsForManagement
+      summary: Query products for management workflows
+      tags: [ProductLifecycle]
+      parameters:
+        - name: query
+          in: query
+          schema: { type: string }
+        - name: lifecycleState
+          in: query
+          schema: { type: string, enum: [draft, active, retired, discontinued] }
+        - name: brand
+          in: query
+          schema: { type: string }
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/limit'
+        - name: sort
+          in: query
+          schema: { type: string, example: updatedDate }
+      responses:
+        '200':
+          description: Paged product results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductSearchResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    post:
+      operationId: createProduct
+      summary: Create product master record
+      tags: [ProductLifecycle]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductRequest'
+      responses:
+        '201':
+          description: Product created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /products/{productId}/specifications:
+    patch:
+      operationId: updateProductSpecifications
+      summary: Update technical specifications
+      tags: [ProductLifecycle]
+      parameters:
+        - $ref: '#/components/parameters/productId'
+        - $ref: '#/components/parameters/ifMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpecificationPatch'
+      responses:
+        '200':
+          description: Product updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '412':
+          $ref: '#/components/responses/PreconditionFailed'
+  /products/{productId}/lifecycle-transitions:
+    post:
+      operationId: setProductLifecycleState
+      summary: Transition lifecycle state
+      tags: [ProductLifecycle]
+      parameters:
+        - $ref: '#/components/parameters/productId'
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LifecycleTransitionRequest'
+      responses:
+        '201':
+          description: Transition recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LifecycleTransitionResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /products/{productId}:
+    patch:
+      operationId: updateProductAttributes
+      summary: Update non-spec product attributes
+      tags: [ProductLifecycle]
+      parameters:
+        - $ref: '#/components/parameters/productId'
+        - $ref: '#/components/parameters/ifMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductAttributesPatch'
+      responses:
+        '200':
+          description: Product updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '412':
+          $ref: '#/components/responses/PreconditionFailed'
+  /products/{productId}/discontinuations:
+    post:
+      operationId: discontinueProduct
+      summary: Mark product as discontinued
+      tags: [ProductLifecycle]
+      parameters:
+        - $ref: '#/components/parameters/productId'
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason:
+                  type: string
+      responses:
+        '201':
+          description: Product discontinued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LifecycleTransitionResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /products/{productId}/replacement:
+    put:
+      operationId: linkReplacementProduct
+      summary: Set replacement product
+      tags: [ProductLifecycle]
+      parameters:
+        - $ref: '#/components/parameters/productId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [replacementProductId, reasonCode]
+              properties:
+                replacementProductId:
+                  type: string
+                  format: uuid
+                reasonCode:
+                  type: string
+      responses:
+        '200':
+          description: Replacement linked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductReplacementLink'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    oauth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.droneparts.com/oauth/token
+          scopes:
+            product-lifecycle:write: Manage product lifecycle resources
+  parameters:
+    productId:
+      name: productId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    offset:
+      name: offset
+      in: query
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    ifMatch:
+      name: If-Match
+      in: header
+      required: true
+      schema:
+        type: string
+    idempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 8
+  responses:
+    BadRequest:
+      description: Invalid request payload or filters
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    NotFound:
+      description: Resource not found
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    Conflict:
+      description: Business rule conflict
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    PreconditionFailed:
+      description: If-Match does not match current version
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+  schemas:
+    Product:
+      type: object
+      required: [productId, sku, name, lifecycleState]
+      properties:
+        productId: { type: string, format: uuid }
+        sku: { type: string }
+        name: { type: string }
+        brand: { type: string }
+        lifecycleState: { type: string }
+        updatedDate: { type: string, format: date-time }
+    ProductSearchResult:
+      type: object
+      required: [totalResults, products, offset, limit]
+      properties:
+        totalResults: { type: integer }
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+        offset: { type: integer }
+        limit: { type: integer }
+    CreateProductRequest:
+      type: object
+      required: [sku, name, brand]
+      properties:
+        sku: { type: string }
+        name: { type: string }
+        brand: { type: string }
+        baselineSpecifications:
+          type: object
+          additionalProperties: true
+    SpecificationPatch:
+      type: object
+      description: Partial specification attributes
+      additionalProperties: true
+    ProductAttributesPatch:
+      type: object
+      description: Partial product attribute update
+      additionalProperties: true
+    LifecycleTransitionRequest:
+      type: object
+      required: [targetState, reason]
+      properties:
+        targetState: { type: string }
+        reason: { type: string }
+    LifecycleTransitionResult:
+      type: object
+      required: [transitionId, product]
+      properties:
+        transitionId:
+          type: string
+          format: uuid
+        product:
+          $ref: '#/components/schemas/Product'
+    ProductReplacementLink:
+      type: object
+      required: [productId, replacementProductId, reasonCode]
+      properties:
+        productId: { type: string, format: uuid }
+        replacementProductId: { type: string, format: uuid }
+        reasonCode: { type: string }
+    ProblemDetails:
+      type: object
+      required: [type, title, status]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string }

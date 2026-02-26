@@ -1,0 +1,222 @@
+openapi: 3.1.0
+info:
+  title: Category and Faceting API
+  description: Write-side taxonomy hierarchy and facet configuration.
+  version: 1.0.0
+  contact: { name: Drone Web API Team }
+  license: { name: Proprietary, url: https://droneparts.com/terms }
+servers:
+  - url: https://api.droneparts.com/taxonomy/v1
+security:
+  - apiKey: []
+  - oauth2: []
+tags:
+  - name: Taxonomy
+    description: Category hierarchy, assignments, and facet definition
+paths:
+  /categories:
+    post:
+      summary: Create category
+      operationId: createCategory
+      tags: [Taxonomy]
+      parameters: [ { $ref: '#/components/parameters/idempotencyKey' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateCategoryRequest' }
+      responses:
+        '201': { description: Category created, content: { application/json: { schema: { $ref: '#/components/schemas/Category' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /categories/{categoryId}:
+    patch:
+      summary: Update category
+      operationId: updateCategory
+      tags: [Taxonomy]
+      parameters:
+        - $ref: '#/components/parameters/categoryId'
+        - $ref: '#/components/parameters/ifMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: true }
+      responses:
+        '200': { description: Category updated, content: { application/json: { schema: { $ref: '#/components/schemas/Category' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+  /categories/{categoryId}/moves:
+    post:
+      summary: Move category
+      operationId: moveCategory
+      tags: [Taxonomy]
+      parameters:
+        - $ref: '#/components/parameters/categoryId'
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [newParentCategoryId, newPosition]
+              properties:
+                newParentCategoryId: { type: string }
+                newPosition: { type: integer, minimum: 0 }
+      responses:
+        '201': { description: Category moved, content: { application/json: { schema: { $ref: '#/components/schemas/Category' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /categories/{categoryId}/retirements:
+    post:
+      summary: Retire category
+      operationId: retireCategory
+      tags: [Taxonomy]
+      parameters:
+        - $ref: '#/components/parameters/categoryId'
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string }
+      responses:
+        '201': { description: Category retired, content: { application/json: { schema: { $ref: '#/components/schemas/Category' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /categories/{categoryId}/products/{productId}:
+    put:
+      summary: Assign product to category
+      operationId: assignProductToCategory
+      tags: [Taxonomy]
+      parameters:
+        - $ref: '#/components/parameters/categoryId'
+        - $ref: '#/components/parameters/productId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [assignmentType]
+              properties:
+                assignmentType: { type: string, enum: [primary, secondary] }
+      responses:
+        '200': { description: Assignment created, content: { application/json: { schema: { $ref: '#/components/schemas/CategoryAssignment' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    delete:
+      summary: Remove product from category
+      operationId: removeProductFromCategory
+      tags: [Taxonomy]
+      parameters:
+        - $ref: '#/components/parameters/categoryId'
+        - $ref: '#/components/parameters/productId'
+      responses:
+        '204': { description: Assignment removed }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /categories/{categoryId}/facets:
+    put:
+      summary: Define category facets
+      operationId: defineCategoryFacets
+      tags: [Taxonomy]
+      parameters:
+        - $ref: '#/components/parameters/categoryId'
+        - $ref: '#/components/parameters/ifMatchOptional'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [facets]
+              properties:
+                facets:
+                  type: array
+                  items: { $ref: '#/components/schemas/FacetDefinition' }
+      responses:
+        '200': { description: Facets defined, content: { application/json: { schema: { type: object, required: [categoryId, facets], properties: { categoryId: { type: string }, facets: { type: array, items: { $ref: '#/components/schemas/FacetDefinition' } } } } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+components:
+  securitySchemes:
+    apiKey: { type: apiKey, in: header, name: X-API-Key }
+    oauth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.droneparts.com/oauth/token
+          scopes: { taxonomy:write: Manage categories and facets }
+  parameters:
+    categoryId: { name: categoryId, in: path, required: true, schema: { type: string } }
+    productId: { name: productId, in: path, required: true, schema: { type: string, format: uuid } }
+    ifMatch: { name: If-Match, in: header, required: true, schema: { type: string } }
+    ifMatchOptional: { name: If-Match, in: header, required: false, schema: { type: string } }
+    idempotencyKey: { name: Idempotency-Key, in: header, required: true, schema: { type: string, minLength: 8 } }
+  responses:
+    BadRequest:
+      description: Invalid request payload
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+    NotFound:
+      description: Resource not found
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+    Conflict:
+      description: Business rule conflict
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+    PreconditionFailed:
+      description: If-Match does not match current version
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+  schemas:
+    Category:
+      type: object
+      required: [categoryId, name, slug]
+      properties:
+        categoryId: { type: string }
+        name: { type: string }
+        slug: { type: string }
+        parentCategoryId: { type: string }
+        sortOrder: { type: integer }
+    CreateCategoryRequest:
+      type: object
+      required: [name, slug]
+      properties:
+        parentCategoryId: { type: string }
+        name: { type: string }
+        slug: { type: string }
+        sortOrder: { type: integer }
+    CategoryAssignment:
+      type: object
+      required: [categoryId, productId, assignmentType]
+      properties:
+        categoryId: { type: string }
+        productId: { type: string, format: uuid }
+        assignmentType: { type: string }
+    FacetDefinition:
+      type: object
+      required: [facetKey, displayName]
+      properties:
+        facetKey: { type: string }
+        displayName: { type: string }
+        dataType: { type: string, enum: [string, number, boolean] }
+    ProblemDetails:
+      type: object
+      required: [type, title, status]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string }
