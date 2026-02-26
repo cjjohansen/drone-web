@@ -1,0 +1,239 @@
+asyncapi: 3.0.0
+info:
+  title: Catalog Management v2 Integration Events
+  version: 1.0.0
+  description: Integration events emitted by write-side catalog management boundaries.
+  contact:
+    name: Drone Web API Team
+  license:
+    name: Proprietary
+servers:
+  production:
+    host: kafka.droneparts.com:9092
+    protocol: kafka
+channels:
+  product.created:
+    address: product.created
+    messages:
+      productCreated:
+        $ref: '#/components/messages/ProductCreated'
+  product.lifecycle-state-changed:
+    address: product.lifecycle-state-changed
+    messages:
+      productLifecycleStateChanged:
+        $ref: '#/components/messages/ProductLifecycleStateChanged'
+  document.version-published:
+    address: document.version-published
+    messages:
+      documentVersionPublished:
+        $ref: '#/components/messages/DocumentVersionPublished'
+  price.group-repricing-requested:
+    address: price.group-repricing-requested
+    messages:
+      priceGroupRepricingRequested:
+        $ref: '#/components/messages/PriceGroupRepricingRequested'
+  inventory.quantity-updated:
+    address: inventory.quantity-updated
+    messages:
+      inventoryQuantityUpdated:
+        $ref: '#/components/messages/InventoryQuantityUpdated'
+  category.facets-defined:
+    address: category.facets-defined
+    messages:
+      categoryFacetsDefined:
+        $ref: '#/components/messages/CategoryFacetsDefined'
+  compatibility-rule.updated:
+    address: compatibility-rule.updated
+    messages:
+      compatibilityRuleUpdated:
+        $ref: '#/components/messages/CompatibilityRuleUpdated'
+  governance.decision-recorded:
+    address: governance.decision-recorded
+    messages:
+      governanceDecisionRecorded:
+        $ref: '#/components/messages/GovernanceDecisionRecorded'
+  import-batch.submitted:
+    address: import-batch.submitted
+    messages:
+      importBatchSubmitted:
+        $ref: '#/components/messages/ImportBatchSubmitted'
+  import-batch.replay-requested:
+    address: import-batch.replay-requested
+    messages:
+      importBatchReplayRequested:
+        $ref: '#/components/messages/ImportBatchReplayRequested'
+operations:
+  publishProductCreated:
+    action: send
+    channel:
+      $ref: '#/channels/product.created'
+    messages:
+      - $ref: '#/channels/product.created/messages/productCreated'
+  publishProductLifecycleStateChanged:
+    action: send
+    channel:
+      $ref: '#/channels/product.lifecycle-state-changed'
+    messages:
+      - $ref: '#/channels/product.lifecycle-state-changed/messages/productLifecycleStateChanged'
+  publishDocumentVersionPublished:
+    action: send
+    channel:
+      $ref: '#/channels/document.version-published'
+    messages:
+      - $ref: '#/channels/document.version-published/messages/documentVersionPublished'
+  publishPriceGroupRepricingRequested:
+    action: send
+    channel:
+      $ref: '#/channels/price.group-repricing-requested'
+    messages:
+      - $ref: '#/channels/price.group-repricing-requested/messages/priceGroupRepricingRequested'
+  publishInventoryQuantityUpdated:
+    action: send
+    channel:
+      $ref: '#/channels/inventory.quantity-updated'
+    messages:
+      - $ref: '#/channels/inventory.quantity-updated/messages/inventoryQuantityUpdated'
+  publishCategoryFacetsDefined:
+    action: send
+    channel:
+      $ref: '#/channels/category.facets-defined'
+    messages:
+      - $ref: '#/channels/category.facets-defined/messages/categoryFacetsDefined'
+  publishCompatibilityRuleUpdated:
+    action: send
+    channel:
+      $ref: '#/channels/compatibility-rule.updated'
+    messages:
+      - $ref: '#/channels/compatibility-rule.updated/messages/compatibilityRuleUpdated'
+  publishGovernanceDecisionRecorded:
+    action: send
+    channel:
+      $ref: '#/channels/governance.decision-recorded'
+    messages:
+      - $ref: '#/channels/governance.decision-recorded/messages/governanceDecisionRecorded'
+  publishImportBatchSubmitted:
+    action: send
+    channel:
+      $ref: '#/channels/import-batch.submitted'
+    messages:
+      - $ref: '#/channels/import-batch.submitted/messages/importBatchSubmitted'
+  publishImportBatchReplayRequested:
+    action: send
+    channel:
+      $ref: '#/channels/import-batch.replay-requested'
+    messages:
+      - $ref: '#/channels/import-batch.replay-requested/messages/importBatchReplayRequested'
+components:
+  messages:
+    ProductCreated:
+      payload:
+        $ref: '#/components/schemas/ProductCreatedEvent'
+    ProductLifecycleStateChanged:
+      payload:
+        $ref: '#/components/schemas/ProductLifecycleStateChangedEvent'
+    DocumentVersionPublished:
+      payload:
+        $ref: '#/components/schemas/DocumentVersionPublishedEvent'
+    PriceGroupRepricingRequested:
+      payload:
+        $ref: '#/components/schemas/PriceGroupRepricingRequestedEvent'
+    InventoryQuantityUpdated:
+      payload:
+        $ref: '#/components/schemas/InventoryQuantityUpdatedEvent'
+    CategoryFacetsDefined:
+      payload:
+        $ref: '#/components/schemas/CategoryFacetsDefinedEvent'
+    CompatibilityRuleUpdated:
+      payload:
+        $ref: '#/components/schemas/CompatibilityRuleUpdatedEvent'
+    GovernanceDecisionRecorded:
+      payload:
+        $ref: '#/components/schemas/GovernanceDecisionRecordedEvent'
+    ImportBatchSubmitted:
+      payload:
+        $ref: '#/components/schemas/ImportBatchSubmittedEvent'
+    ImportBatchReplayRequested:
+      payload:
+        $ref: '#/components/schemas/ImportBatchReplayRequestedEvent'
+  schemas:
+    BaseEvent:
+      type: object
+      required: [eventId, occurredAt]
+      properties:
+        eventId: { type: string, format: uuid }
+        occurredAt: { type: string, format: date-time }
+    ProductCreatedEvent:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          required: [productId]
+          properties:
+            productId: { type: string, format: uuid }
+    ProductLifecycleStateChangedEvent:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          required: [productId, lifecycleState]
+          properties:
+            productId: { type: string, format: uuid }
+            lifecycleState: { type: string }
+    DocumentVersionPublishedEvent:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          required: [documentId, documentVersionId]
+          properties:
+            documentId: { type: string, format: uuid }
+            documentVersionId: { type: string, format: uuid }
+    PriceGroupRepricingRequestedEvent:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          required: [repricingJobId]
+          properties:
+            repricingJobId: { type: string, format: uuid }
+    InventoryQuantityUpdatedEvent:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          required: [inventoryId, productId]
+          properties:
+            inventoryId: { type: string, format: uuid }
+            productId: { type: string, format: uuid }
+    CategoryFacetsDefinedEvent:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          required: [categoryId]
+          properties:
+            categoryId: { type: string }
+    CompatibilityRuleUpdatedEvent:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          required: [ruleId]
+          properties:
+            ruleId: { type: string, format: uuid }
+    GovernanceDecisionRecordedEvent:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          required: [approvalCaseId, decision]
+          properties:
+            approvalCaseId: { type: string, format: uuid }
+            decision: { type: string, enum: [approved, rejected] }
+    ImportBatchSubmittedEvent:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          required: [importBatchId]
+          properties:
+            importBatchId: { type: string, format: uuid }
+    ImportBatchReplayRequestedEvent:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          required: [replayRequestId, importBatchId]
+          properties:
+            replayRequestId: { type: string, format: uuid }
+            importBatchId: { type: string, format: uuid }

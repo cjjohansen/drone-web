@@ -53,17 +53,17 @@ The existing storefront artifacts inform this work:
 - [ ] Git commit + push Design phase (commit done, push pending)
 
 ### Refine Phase
-- [ ] Generate OpenAPI 3.1 specs for admin APIs (validate with Redocly CLI)
-- [ ] Generate AsyncAPI 3.0 specs for command-side events (validate with @asyncapi/cli)
-- [ ] Generate request/response examples for admin job stories
-- [ ] Generate Mermaid sequence diagrams with HTTP semantics
-- [ ] Generate Postman collections for admin APIs
-- [ ] Validate all specs — zero warnings
-- [ ] Package Refine deliverable
+- [x] Generate OpenAPI 3.1 specs for admin APIs (validate with Redocly CLI)
+- [x] Generate AsyncAPI 3.0 specs for command-side events (validate with @asyncapi/cli)
+- [x] Generate request/response examples for admin job stories
+- [x] Generate Mermaid sequence diagrams with HTTP semantics
+- [x] Generate Postman collections for admin APIs
+- [x] Validate all specs — zero warnings
+- [x] Package Refine deliverable
 - [ ] Git commit + push Refine phase
 
 ### Event Modeling (Post-ADDR)
-- [ ] Generate EventModel `config.json` from Align v2 + refined API flows
-- [ ] Generate `high-level-analysis.json`
-- [ ] Validate slice/dependency rules against EventModel schema expectations
-- [ ] Package EventModel outputs and references
+- [x] Generate EventModel `config.json` from Align v2 + refined API flows
+- [x] Generate `high-level-analysis.json`
+- [x] Validate slice/dependency rules against EventModel schema expectations
+- [x] Package EventModel outputs and references

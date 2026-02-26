@@ -1,0 +1,244 @@
+openapi: 3.1.0
+info:
+  title: Inventory and Availability API
+  description: Write-side inventory posture and availability policy management.
+  version: 1.0.0
+  contact: { name: Drone Web API Team }
+  license: { name: Proprietary, url: https://droneparts.com/terms }
+servers:
+  - url: https://api.droneparts.com/inventory/v1
+security:
+  - apiKey: []
+  - oauth2: []
+tags:
+  - name: Inventory
+    description: Inventory position and availability policy operations
+paths:
+  /inventory-positions/search:
+    post:
+      summary: Query inventory status
+      operationId: queryInventoryStatus
+      tags: [Inventory]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                productId: { type: string, format: uuid }
+                locationCode: { type: string }
+                status: { type: string }
+                offset: { type: integer, minimum: 0, default: 0 }
+                limit: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        '200':
+          description: Inventory results
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/InventorySearchResult' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+  /inventory-positions/{inventoryId}/quantity:
+    put:
+      summary: Update stock quantity
+      operationId: updateStockQuantity
+      tags: [Inventory]
+      parameters:
+        - $ref: '#/components/parameters/inventoryId'
+        - $ref: '#/components/parameters/ifMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [onHandQuantity, reason]
+              properties:
+                onHandQuantity: { type: integer, minimum: 0 }
+                reason: { type: string }
+      responses:
+        '200':
+          description: Quantity updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/InventoryPosition' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+  /restock-plans/{productId}:
+    put:
+      summary: Set restock date
+      operationId: setRestockDate
+      tags: [Inventory]
+      parameters:
+        - $ref: '#/components/parameters/productId'
+        - $ref: '#/components/parameters/ifMatchOptional'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RestockPlan'
+      responses:
+        '200':
+          description: Restock plan set
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RestockPlan' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+  /availability-policies/{productId}/lead-time:
+    patch:
+      summary: Update lead time
+      operationId: updateLeadTime
+      tags: [Inventory]
+      parameters:
+        - $ref: '#/components/parameters/productId'
+        - $ref: '#/components/parameters/ifMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [leadTimeDays]
+              properties:
+                leadTimeDays: { type: integer, minimum: 0 }
+      responses:
+        '200':
+          description: Lead time updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AvailabilityPolicy' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+  /availability-policies/{productId}/backorder-state:
+    patch:
+      summary: Set backorder state
+      operationId: setBackorderState
+      tags: [Inventory]
+      parameters:
+        - $ref: '#/components/parameters/productId'
+        - $ref: '#/components/parameters/ifMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [backorderEnabled, reason]
+              properties:
+                backorderEnabled: { type: boolean }
+                reason: { type: string }
+      responses:
+        '200':
+          description: Backorder state updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AvailabilityPolicy' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+  /availability-policies/{productId}/suspensions:
+    post:
+      summary: Suspend product availability
+      operationId: suspendProductAvailability
+      tags: [Inventory]
+      parameters:
+        - $ref: '#/components/parameters/productId'
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string }
+      responses:
+        '201':
+          description: Availability suspended
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AvailabilityPolicy' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+components:
+  securitySchemes:
+    apiKey: { type: apiKey, in: header, name: X-API-Key }
+    oauth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.droneparts.com/oauth/token
+          scopes: { inventory:write: Manage inventory and availability }
+  parameters:
+    inventoryId: { name: inventoryId, in: path, required: true, schema: { type: string, format: uuid } }
+    productId: { name: productId, in: path, required: true, schema: { type: string, format: uuid } }
+    ifMatch: { name: If-Match, in: header, required: true, schema: { type: string } }
+    ifMatchOptional: { name: If-Match, in: header, required: false, schema: { type: string } }
+    idempotencyKey: { name: Idempotency-Key, in: header, required: true, schema: { type: string, minLength: 8 } }
+  responses:
+    BadRequest:
+      description: Invalid request payload
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+    NotFound:
+      description: Resource not found
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+    Conflict:
+      description: Business rule conflict
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+    PreconditionFailed:
+      description: If-Match does not match current version
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+  schemas:
+    InventoryPosition:
+      type: object
+      required: [inventoryId, productId, onHandQuantity]
+      properties:
+        inventoryId: { type: string, format: uuid }
+        productId: { type: string, format: uuid }
+        locationCode: { type: string }
+        onHandQuantity: { type: integer }
+    InventorySearchResult:
+      type: object
+      required: [totalResults, inventoryPositions, offset, limit]
+      properties:
+        totalResults: { type: integer }
+        inventoryPositions:
+          type: array
+          items: { $ref: '#/components/schemas/InventoryPosition' }
+        offset: { type: integer }
+        limit: { type: integer }
+    RestockPlan:
+      type: object
+      required: [productId, expectedDate, expectedQuantity]
+      properties:
+        productId: { type: string, format: uuid }
+        expectedDate: { type: string, format: date-time }
+        expectedQuantity: { type: integer }
+        supplierReference: { type: string }
+    AvailabilityPolicy:
+      type: object
+      required: [productId, backorderEnabled, leadTimeDays]
+      properties:
+        productId: { type: string, format: uuid }
+        backorderEnabled: { type: boolean }
+        leadTimeDays: { type: integer }
+        status: { type: string, enum: [available, suspended] }
+    ProblemDetails:
+      type: object
+      required: [type, title, status]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string }

@@ -1,0 +1,152 @@
+openapi: 3.1.0
+info:
+  title: Catalog Governance API
+  description: Approval cases, decisions, and publication gate release.
+  version: 1.0.0
+  contact: { name: Drone Web API Team }
+  license: { name: Proprietary, url: https://droneparts.com/terms }
+servers:
+  - url: https://api.droneparts.com/catalog-governance/v1
+security:
+  - apiKey: []
+  - oauth2: []
+tags:
+  - name: Governance
+    description: Approval case workflow and publication gate control
+paths:
+  /approval-cases:
+    post:
+      summary: Submit approval case
+      operationId: submitApprovalCase
+      tags: [Governance]
+      parameters: [ { $ref: '#/components/parameters/idempotencyKey' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ApprovalCaseSubmission' }
+      responses:
+        '201': { description: Approval case submitted, content: { application/json: { schema: { $ref: '#/components/schemas/ApprovalCase' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /approval-cases/{approvalCaseId}/reviewer-assignment:
+    put:
+      summary: Assign approval reviewer
+      operationId: assignApprovalReviewer
+      tags: [Governance]
+      parameters: [ { $ref: '#/components/parameters/approvalCaseId' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reviewerId]
+              properties:
+                reviewerId: { type: string, format: uuid }
+      responses:
+        '200': { description: Reviewer assigned, content: { application/json: { schema: { $ref: '#/components/schemas/ApprovalCase' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /approval-cases/{approvalCaseId}/decisions:
+    post:
+      summary: Record approval decision
+      operationId: recordApprovalDecision
+      tags: [Governance]
+      parameters:
+        - $ref: '#/components/parameters/approvalCaseId'
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decision, rationale]
+              properties:
+                decision: { type: string, enum: [approved, rejected] }
+                rationale: { type: string }
+      responses:
+        '201': { description: Decision recorded, content: { application/json: { schema: { $ref: '#/components/schemas/ApprovalDecisionResult' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /approval-cases/{approvalCaseId}/publication-gate-releases:
+    post:
+      summary: Release publication gate
+      operationId: releasePublicationGate
+      tags: [Governance]
+      parameters:
+        - $ref: '#/components/parameters/approvalCaseId'
+        - $ref: '#/components/parameters/idempotencyKey'
+      responses:
+        '201': { description: Publication gate released, content: { application/json: { schema: { $ref: '#/components/schemas/PublicationGate' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+components:
+  securitySchemes:
+    apiKey: { type: apiKey, in: header, name: X-API-Key }
+    oauth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.droneparts.com/oauth/token
+          scopes: { catalog-governance:write: Manage approval workflow }
+  parameters:
+    approvalCaseId: { name: approvalCaseId, in: path, required: true, schema: { type: string, format: uuid } }
+    idempotencyKey: { name: Idempotency-Key, in: header, required: true, schema: { type: string, minLength: 8 } }
+  responses:
+    BadRequest:
+      description: Invalid request payload
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+    NotFound:
+      description: Resource not found
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+    Conflict:
+      description: Business rule conflict
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+  schemas:
+    ApprovalCase:
+      type: object
+      required: [approvalCaseId, status]
+      properties:
+        approvalCaseId: { type: string, format: uuid }
+        changeType: { type: string }
+        sourceReferenceId: { type: string }
+        riskLevel: { type: string, enum: [low, medium, high] }
+        status: { type: string, enum: [pending, approved, rejected, released] }
+    ApprovalCaseSubmission:
+      type: object
+      required: [changeType, boundarySource, sourceReferenceId, riskLevel, rationale]
+      properties:
+        changeType: { type: string }
+        boundarySource: { type: string }
+        sourceReferenceId: { type: string }
+        riskLevel: { type: string, enum: [low, medium, high] }
+        rationale: { type: string }
+    ApprovalDecisionResult:
+      type: object
+      required: [approvalCaseId, decisionId, status]
+      properties:
+        approvalCaseId: { type: string, format: uuid }
+        decisionId: { type: string, format: uuid }
+        status: { type: string, enum: [approved, rejected] }
+    PublicationGate:
+      type: object
+      required: [publicationGateId, approvalCaseId, releasedAt]
+      properties:
+        publicationGateId: { type: string, format: uuid }
+        approvalCaseId: { type: string, format: uuid }
+        releasedAt: { type: string, format: date-time }
+    ProblemDetails:
+      type: object
+      required: [type, title, status]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string }

@@ -195,6 +195,11 @@ Both validate collision constraints after each piece placement and throw on ille
 **Decision:** Extend `design/style-guide.md` with write-side conventions requiring `Idempotency-Key` on retry-prone command POST operations, `If-Match` for optimistic concurrency on mutable resources, and `202 Accepted` for asynchronous command submissions with trackable job/request resources.
 **Rationale:** Catalog Management v2 is command-heavy with long-running and retry-prone operations (repricing, ingestion replay, lifecycle and governance transitions). A shared reliability contract reduces duplicate per-API decisions and keeps behavior consistent across all write-side boundaries.
 
+### D-031: Refine v2 packaging uses per-boundary OpenAPI specs and a consolidated admin Postman collection
+**Date:** 2026-02-26
+**Decision:** For Catalog Management v2 Refine, generate one OpenAPI 3.1 file per write-side boundary (8 files total), one AsyncAPI 3.0 integration-event contract, and a single consolidated Postman collection grouped by boundary.
+**Rationale:** Per-boundary OpenAPI files preserve bounded-context ownership and make validation/debugging localized, while one consolidated Postman collection simplifies exploratory testing across cross-boundary admin workflows.
+
 ---
 
 ## Open Questions

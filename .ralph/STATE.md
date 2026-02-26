@@ -13,19 +13,23 @@
 
 ## Current Phase
 
-**Phase:** ADDR Catalog Management v2 — Refine (ready to start)
-**Status:** Define v2 and Design v2 are complete and validated in `design/catalog-management-v2/addr/{define,design}/`. Catalog Storefront ADDR is complete (PR #6 pending merge). Catalog Management v1 is baseline-only. Catalog Management v2 remains the single active plan.
+**Phase:** ADDR Catalog Management v2 — Refine (completed, local only)
+**Status:** Define v2, Design v2, and Refine v2 are complete and validated under `design/catalog-management-v2/addr/{define,design,refine}/`. Post-ADDR EventModel outputs are generated in `design/catalog-management-v2/eventmodel/`. Push is intentionally deferred until the full process wrap-up.
 **Blockers:** None
 
 ## What Was Just Completed (this session)
 
-- [x] Completed Design v2 deliverables under `design/catalog-management-v2/addr/design/`:
-  - `README.md`, `api-design.md`, `validation.md`
-- [x] Extended shared style guidance in `design/style-guide.md` with write-side conventions:
-  - idempotency keys, optimistic concurrency (`If-Match`), async command submission (`202 Accepted`)
-- [x] Mapped all 42 Define operations to high-level HTTP designs across 8 write-side boundaries
-- [x] Recorded Design decision D-030 in `.ralph/agent/decisions.md`
-- [x] Updated v2 task tracker to mark Design content tasks complete (commit complete, push pending)
+- [x] Created Refine v2 deliverables under `design/catalog-management-v2/addr/refine/`:
+  - 8 OpenAPI 3.1 specs (`*-api.yaml`) covering all 42 write-side operations
+  - 1 AsyncAPI 3.0 spec (`integration-events.yaml`) for command-side integration events
+  - `README.md`, `api-examples.md`, `sequence-diagrams.md`, `validation.md`, and consolidated Postman collection
+- [x] Validated all 8 OpenAPI specs with `@redocly/cli lint` (clean)
+- [x] Validated AsyncAPI spec with `@asyncapi/cli validate` (clean)
+- [x] Generated EventModel outputs in `design/catalog-management-v2/eventmodel/`:
+  - `config.json`
+  - `high-level-analysis.json`
+- [x] Recorded Refine packaging decision D-031 in `.ralph/agent/decisions.md`
+- [x] Updated v2 task tracker to mark Refine and EventModel content tasks complete (git commit/push still pending by choice)
 
 ## ADDR Catalog Storefront Summary (COMPLETE)
 
@@ -54,10 +58,10 @@
 
 ## What Comes Next
 
-1. **Start Refine v2:** generate OpenAPI 3.1 specs for the 8 write-side APIs from `design/catalog-management-v2/addr/design/api-design.md`
-2. **Generate AsyncAPI 3.0 specs** for write-side integration events emitted by command operations
-3. **Create usage artifacts** (request/response examples, mermaid sequence diagrams, Postman collections) and validate with Redocly + AsyncAPI CLI
-4. **Generate EventModel outputs** (`config.json`, `high-level-analysis.json`) after Refine packaging
+1. **Review artifacts end-to-end** and decide whether to make any final refinements to examples/diagrams/Postman requests
+2. **Prepare a local commit sequence** for Align/Define/Design/Refine/EventModel updates
+3. **Push all pending commits together** when explicitly approved
+4. **Open/update PR** for Catalog Management v2 once push occurs
 
 ## Decision Source
 
@@ -81,7 +85,7 @@ All formal decisions are recorded only in `.ralph/agent/decisions.md`.
 | File | Purpose |
 |------|---------|
 | `.ralph/STATE.md` | This file — session handoff |
-| `.ralph/agent/decisions.md` | Decision log (D-001 through D-029) |
+| `.ralph/agent/decisions.md` | Decision log (D-001 through D-031) |
 | `.ralph/agent/learnings.md` | Persistent memory — mistakes and patterns (LRN-001 through LRN-022) |
 | `.ralph/tasks/addr-process.md` | ADDR Catalog Storefront task tracking (complete) |
 | `.ralph/tasks/addr-catalog-management.md` | ADDR Catalog Management v1 task tracking (baseline preserved) |
