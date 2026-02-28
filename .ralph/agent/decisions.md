@@ -122,9 +122,8 @@
 
 ### D-019: UUID standardization for example IDs
 **Date:** 2026-02-20
-**Decision:** Replaced human-readable example IDs (`prod-001`, `rev-001`, `doc-001`, `chk-001`, `evt-001`, etc.) with valid UUID v4 values across all OpenAPI, AsyncAPI, Postman, and documentation artifacts. Kept `categoryId` as human-readable slugs (`cat-motors-brushless`) and `feedId` as composite strings (`feed-20260215-001`).
-**Rationale:** Redocly CLI linting flagged 15+ warnings because example values like `"prod-001"` didn't conform to the `format: uuid` declared in schemas. The fix aligns examples with their schemas and sets realistic expectations for API consumers. The UUID/string split follows a natural boundary: system-generated opaque identifiers (products, reviews, documents, checks, events) use UUIDs, while admin-curated or composite identifiers (categories, feeds) remain human-readable strings.
-**Scope:** 166 replacements across 8 files (3 OpenAPI specs, 1 AsyncAPI spec, 3 Postman collections, api-examples.md). Sequence diagrams retain abbreviated IDs for readability with a note.
+**Decision:** Replaced human-readable example IDs (`prod-001`, `rev-001`, `doc-001`, etc.) with valid UUID v4 values across all OpenAPI, AsyncAPI, Postman, and documentation artifacts. Kept `categoryId` as human-readable slugs and `feedId` as composite strings.
+**Rationale:** Redocly CLI linting flagged 15+ warnings because example values didn't conform to the `format: uuid` declared in schemas. The UUID/string split follows a natural boundary: system-generated opaque identifiers use UUIDs, admin-curated or composite identifiers remain human-readable strings. 166 replacements across 8 files.
 
 ### D-020: Added license and missing example fields
 **Date:** 2026-02-20
@@ -133,8 +132,102 @@
 
 ### D-021: Redocly CLI adopted for OpenAPI validation
 **Date:** 2026-02-20
-**Decision:** Installed `@redocly/cli` globally for ongoing OpenAPI linting and validation, replacing the one-time `swagger-cli validate` used during initial Refine validation.
-**Rationale:** Redocly provides deeper linting (300+ rules including example validation, security best practices, and style enforcement) compared to swagger-cli's basic schema validation. Runs fully locally, no sign-in required.
+**Decision:** Adopted `@redocly/cli` as the primary OpenAPI linter, replacing `swagger-cli validate`.
+**Rationale:** Redocly provides deeper linting (300+ rules including example validation, security best practices, and style enforcement) compared to swagger-cli's basic schema validation. swagger-cli missed 19 warnings that Redocly caught.
+
+---
+
+## Folder Structure Decisions
+
+### D-022: Domain-scoped ADDR folder structure
+**Date:** 2026-02-20
+**Decision:** Restructured `design/addr/` into domain-specific folders: `design/catalog-storefront/addr/` and `design/catalog-management/addr/`. Promoted `addr-ai-prompts.md` to `design/` as a shared methodology reference.
+**Rationale:** With multiple ADDR runs (storefront read side, admin write side), artifacts would collide in a flat `design/addr/` structure (duplicate filenames like `personas.md`, `validation.md`). Each domain gets its own folder with `addr/` inside containing the 4 phase folders, keeping the methodology explicit while isolating each run's deliverables. The shared prompts file sits at `design/` level since it's used across all runs.
+
+### D-023: Shared API style guide
+**Date:** 2026-02-20
+**Decision:** Promoted `style-guide.md` from `design/catalog-storefront/addr/design/` to `design/style-guide.md` as a shared, platform-wide style guide.
+**Rationale:** The style guide contains platform-level conventions (URL structure, pagination, error handling, data formatting, security) that must be consistent across all API boundaries. Allowing per-domain copies would risk drift. The admin ADDR Design phase will extend the shared guide with write-side patterns (idempotency, optimistic concurrency, bulk operations) rather than forking it.
+
+---
+
+## Railway DrawIO Decisions
+
+### D-024: Piece-list DSL with fail-fast collision checks
+**Date:** 2026-02-20
+**Decision:** Added a reusable piece-list DSL to `.cursor/skills/railway-drawio/_railway-engine.js`:
+- `dsl(x, y, heading).add(...).build(options)`
+- `buildTrackFromList(x, y, heading, pieces, options)`
+Both validate collision constraints after each piece placement and throw on illegal layouts.
+**Rationale:** Users requested a LEGO-like workflow where tracks are laid in sequence from a known start pose and each placement can be accepted/rejected immediately as legal/illegal. A list DSL makes layouts declarative and reusable, while fail-fast collision checks enforce geometric validity during construction.
+
+---
+
+## Catalog Management v2 Decisions
+
+### D-025: Preserve v1 run and temporarily defer Event Storming in sibling v2 Align
+**Date:** 2026-02-25
+**Decision:** Keep `design/catalog-management/addr/` as the baseline historical run and create a new sibling run at `design/catalog-management-v2/addr/` for revised work. For v2 Align, temporarily defer Event Storming and use a boundary-first decomposition (`boundary-map.md`) plus explicit EventModel slice mapping (`eventmodel-mapping.md`).
+**Rationale:** Preserving v1 avoids loss of context and supports auditability/comparison. Temporary deferral allows progress while Event Storming approach/tooling matures; Event Storming remains the intended long-term Align artifact and will be reintroduced when mature.
+
+### D-026: `STATE.md` tracks exactly one active plan
+**Date:** 2026-02-25
+**Decision:** Treat `.ralph/STATE.md` as a single-agent handoff document that tracks one active plan at a time. Historical or parallel initiatives are listed as baseline/reference only unless an explicit manager/coordinator layer is introduced.
+**Rationale:** Single-plan tracking reduces ambiguity, avoids conflicting "current" directives, and keeps handoff context crisp for the next session.
+
+### D-027: Split Product Lifecycle, Documentation, and Category Management in v2 Align
+**Date:** 2026-02-25
+**Decision:** In Catalog Management v2 Align, explicitly separate Product Lifecycle Management, Technical Documentation Management, and Category/Faceting Management into distinct boundaries, with additional explicit boundaries for Catalog Governance Workflow and Bulk Ingestion.
+**Rationale:** Each area has distinct invariants, ownership, and change cadence. Explicit separation improves API boundary definition and creates a cleaner mapping to EventModel slice types.
+
+### D-028: Close Align v2 using boundary-first artifacts and move to Define
+**Date:** 2026-02-25
+**Decision:** Accept the Align v2 deliverable set in `design/catalog-management-v2/addr/align/` (`README.md`, `personas.md`, `job-stories.md`, `activity-steps.md`, `boundary-map.md`, `eventmodel-mapping.md`, `validation.md`) as complete and transition the active plan to Define.
+**Rationale:** The artifacts provide sufficient boundary clarity, command/state-change mapping, and validation coverage to proceed into API boundary profiling without blocking on Event Storming maturity.
+
+### D-029: Keep Governance and Bulk Ingestion as explicit Define boundaries in v2
+**Date:** 2026-02-25
+**Decision:** In Catalog Management v2 Define, retain `Catalog Governance API` and `Bulk Ingestion API` as explicit first-class boundaries instead of merging them into Product Lifecycle or domain-specific admin APIs.
+**Rationale:** Governance and ingestion both carry distinct invariants and reliability requirements (approval policy consistency, batch replay/idempotency, operational scaling) that would be diluted and duplicated if embedded in other boundaries. Keeping them explicit improves autonomy, auditability, and clearer event contracts to read-side consumers.
+
+### D-030: Standardize write-side command reliability conventions in shared style guide
+**Date:** 2026-02-25
+**Decision:** Extend `design/style-guide.md` with write-side conventions requiring `Idempotency-Key` on retry-prone command POST operations, `If-Match` for optimistic concurrency on mutable resources, and `202 Accepted` for asynchronous command submissions with trackable job/request resources.
+**Rationale:** Catalog Management v2 is command-heavy with long-running and retry-prone operations (repricing, ingestion replay, lifecycle and governance transitions). A shared reliability contract reduces duplicate per-API decisions and keeps behavior consistent across all write-side boundaries.
+
+### D-031: Refine v2 packaging uses per-boundary OpenAPI specs and a consolidated admin Postman collection
+**Date:** 2026-02-26
+**Decision:** For Catalog Management v2 Refine, generate one OpenAPI 3.1 file per write-side boundary (8 files total), one AsyncAPI 3.0 integration-event contract, and a single consolidated Postman collection grouped by boundary.
+**Rationale:** Per-boundary OpenAPI files preserve bounded-context ownership and make validation/debugging localized, while one consolidated Postman collection simplifies exploratory testing across cross-boundary admin workflows.
+
+### D-032: Add a dedicated ADDR-to-EventModel skill and derive slice inventory from artifacts
+**Date:** 2026-02-26
+**Decision:** Added `.cursor/skills/addr-2-eventmodel/SKILL.md` and made ADDR artifacts (`align/*`, `define/api-profiles.md`, `design/api-design.md`, `refine/*-api.yaml`) the source of truth for EventModel generation. Slice counts are derived from operation classification during generation, not hardcoded.
+**Rationale:** The legacy-system EventModel skill is code-first and does not align with this ADDR-first workflow. A dedicated skill prevents mixing integration transport contracts with domain event modeling and keeps generation reproducible from design artifacts.
+
+### D-033: Use split EventModel topology for write-side flows (STATE_CHANGE then STATE_VIEW)
+**Date:** 2026-02-26
+**Decision:** For Catalog Management v2 EventModel, represent each mutating operation as a `STATE_CHANGE` slice containing command+event only, followed by a separate `STATE_VIEW` slice for event-derived read model projection.
+**Rationale:** Split topology better matches Event Modeling semantics for event-to-projection flow and improves interoperability with visualization/import tools that expect state changes and views as distinct slices.
+
+---
+
+## Ralph Loop / JTBD Drone Web Decisions
+
+### D-034: Switch single active plan to JTBD Drone Web
+**Date:** 2026-02-26
+**Decision:** Set the active Ralph Loop workstream to JTBD Drone Web and retargeting for Drone Web, tracked in `.ralph/tasks/jtbd-droneweb.md` and `.ralph/specs/jtbd-droneweb.md`. Treat Catalog Management v2 work as baseline/reference until explicitly re-activated.
+**Rationale:** Ralph governance requires exactly one active plan in `STATE.md`. The current user directive prioritizes anonymized JTBD deliverables and mapping quality over further ADDR/EventModel progression.
+
+### D-035: Use realistic pseudonyms instead of generic persona labels
+**Date:** 2026-02-26
+**Decision:** Replace direct personal names with stable placeholder tokens and mapped pseudonyms using the canonical dictionary (for example, `source-persona-name` -> `mapped-persona-name`) rather than ad hoc labels.
+**Rationale:** Placeholder-token mapping preserves anonymity, traceability, and consistency across all artifacts while avoiding exposure of source case identifiers.
+
+### D-036: Include producer-informed domain enrichment in mapping design
+**Date:** 2026-02-26
+**Decision:** Extend mapping work beyond strict anonymization to include generic producer-informed terminology (portfolio, business unit, product family, and related catalog/ERP concepts) expressed through source placeholders (for example, `source-portfolio-name`).
+**Rationale:** Enrichment improves cross-domain reuse while placeholder tokens prevent leaking source-case specifics.
 
 ---
 

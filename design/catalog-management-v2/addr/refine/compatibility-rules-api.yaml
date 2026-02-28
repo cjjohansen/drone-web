@@ -1,0 +1,177 @@
+openapi: 3.1.0
+info:
+  title: Compatibility Rules API
+  description: Write-side compatibility rule and component group management.
+  version: 1.0.0
+  contact: { name: Drone Web API Team }
+  license: { name: Proprietary, url: https://droneparts.com/terms }
+servers:
+  - url: https://api.droneparts.com/compatibility-rules/v1
+security:
+  - apiKey: []
+  - oauth2: []
+tags:
+  - name: CompatibilityRules
+    description: Compatibility rule definitions and component group maintenance
+paths:
+  /compatibility-rules:
+    post:
+      summary: Create compatibility rule
+      operationId: createCompatibilityRule
+      tags: [CompatibilityRules]
+      parameters: [ { $ref: '#/components/parameters/idempotencyKey' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CompatibilityRuleInput' }
+      responses:
+        '201': { description: Rule created, content: { application/json: { schema: { $ref: '#/components/schemas/CompatibilityRule' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /compatibility-rules/{ruleId}:
+    patch:
+      summary: Update compatibility rule
+      operationId: updateCompatibilityRule
+      tags: [CompatibilityRules]
+      parameters:
+        - $ref: '#/components/parameters/ruleId'
+        - $ref: '#/components/parameters/ifMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: true }
+      responses:
+        '200': { description: Rule updated, content: { application/json: { schema: { $ref: '#/components/schemas/CompatibilityRule' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+  /compatibility-rules/{ruleId}/deactivations:
+    post:
+      summary: Deactivate compatibility rule
+      operationId: deactivateCompatibilityRule
+      tags: [CompatibilityRules]
+      parameters:
+        - $ref: '#/components/parameters/ruleId'
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string }
+      responses:
+        '201': { description: Rule deactivated, content: { application/json: { schema: { $ref: '#/components/schemas/CompatibilityRule' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /component-groups:
+    post:
+      summary: Create component group
+      operationId: createComponentGroup
+      tags: [CompatibilityRules]
+      parameters: [ { $ref: '#/components/parameters/idempotencyKey' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ComponentGroupInput' }
+      responses:
+        '201': { description: Component group created, content: { application/json: { schema: { $ref: '#/components/schemas/ComponentGroup' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /component-groups/{componentGroupId}:
+    patch:
+      summary: Update component group
+      operationId: updateComponentGroup
+      tags: [CompatibilityRules]
+      parameters:
+        - $ref: '#/components/parameters/componentGroupId'
+        - $ref: '#/components/parameters/ifMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: true }
+      responses:
+        '200': { description: Component group updated, content: { application/json: { schema: { $ref: '#/components/schemas/ComponentGroup' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+components:
+  securitySchemes:
+    apiKey: { type: apiKey, in: header, name: X-API-Key }
+    oauth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.droneparts.com/oauth/token
+          scopes: { compatibility-rules:write: Manage compatibility rules }
+  parameters:
+    ruleId: { name: ruleId, in: path, required: true, schema: { type: string, format: uuid } }
+    componentGroupId: { name: componentGroupId, in: path, required: true, schema: { type: string, format: uuid } }
+    ifMatch: { name: If-Match, in: header, required: true, schema: { type: string } }
+    idempotencyKey: { name: Idempotency-Key, in: header, required: true, schema: { type: string, minLength: 8 } }
+  responses:
+    BadRequest:
+      description: Invalid request payload
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+    NotFound:
+      description: Resource not found
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+    Conflict:
+      description: Business rule conflict
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+    PreconditionFailed:
+      description: If-Match does not match current version
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+  schemas:
+    CompatibilityRule:
+      type: object
+      required: [ruleId, status, severity]
+      properties:
+        ruleId: { type: string, format: uuid }
+        status: { type: string, enum: [active, inactive] }
+        severity: { type: string, enum: [warning, error] }
+        expression: { type: string }
+    CompatibilityRuleInput:
+      type: object
+      required: [expression, severity]
+      properties:
+        expression: { type: string }
+        severity: { type: string, enum: [warning, error] }
+        componentTypes:
+          type: array
+          items: { type: string }
+    ComponentGroup:
+      type: object
+      required: [componentGroupId, name, members]
+      properties:
+        componentGroupId: { type: string, format: uuid }
+        name: { type: string }
+        members:
+          type: array
+          items: { type: string, format: uuid }
+    ComponentGroupInput:
+      type: object
+      required: [name, members]
+      properties:
+        name: { type: string }
+        members:
+          type: array
+          items: { type: string, format: uuid }
+    ProblemDetails:
+      type: object
+      required: [type, title, status]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string }

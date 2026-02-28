@@ -1,0 +1,75 @@
+# Task: ADDR Catalog Management API v2 (write side)
+
+**Status:** in_progress
+**Priority:** high
+**Created:** 2026-02-25
+**Branch:** `addr-catalog-management-v2`
+**Prompts:** `design/addr-ai-prompts.md`
+**Depends on:** ADDR Catalog Storefront (complete — see `addr-process.md`), ADDR Catalog Management v1 (kept as baseline)
+
+## Context
+
+The Catalog Storefront ADDR run designed the read-side APIs (search, browse, evaluate, compare, partner syndication). This v2 task covers the write-side: catalog management commands, approval workflows, pricing rules, inventory management, and the admin operations that feed the storefront.
+
+This run preserves the original Catalog Management ADDR artifacts as a baseline and executes a new sibling run focused on clearer service boundaries/subdomains and practical real-life workflow tradeoffs.
+
+The existing storefront artifacts inform this work:
+- 3 read-side API boundaries already defined (Catalog Storefront, Component Compatibility, Partner Catalog)
+- 7 integration events already specified in AsyncAPI
+- Style guide established in `design/style-guide.md`
+
+## Subtasks
+
+### Align Phase (COMPLETE; EVENT STORMING TEMPORARILY DEFERRED)
+- [x] Read ADDR prompts for Align phase (`design/addr-ai-prompts.md`)
+- [x] Review storefront Align artifacts for reusable context
+- [x] Review Catalog Management v1 Align artifacts as baseline/reference
+- [x] Define/refine write-side personas for v2
+- [x] Compose/refine unifying job stories (JS1–JS6)
+- [x] Expand job stories into activities and activity steps (command intent and business outcomes)
+- [x] Map job stories and activities to candidate subdomains/service boundaries
+- [x] Create `boundary-map.md` (ownership, interfaces, invariants, overlap/gap checks)
+- [x] Create `eventmodel-mapping.md` (STATE_CHANGE / STATE_VIEW / AUTOMATION candidates)
+- [x] Validate Align v2 artifacts and package deliverable
+- [x] Git commit Align phase
+- [ ] Git push Align phase
+
+### Define Phase
+- [x] Identify candidate admin API boundaries (may extend or add to existing 3)
+- [x] Assess boundary consolidation with existing storefront boundaries
+- [x] Identify API resources per admin boundary
+- [x] Generate API profiles per boundary (command operations, state-changing events)
+- [x] Validate API profiles
+- [x] Generate sequence diagrams for admin job stories
+- [x] Package Define deliverable
+- [ ] Git commit + push Define phase
+
+### Design Phase
+- [x] Reuse/extend existing style guide for write operations (idempotency, optimistic concurrency, etc.)
+- [x] Produce API design tables for admin boundaries
+- [x] Record design decisions
+- [x] Validate Design artifacts
+- [x] Package Design deliverable
+- [ ] Git commit + push Design phase (commit done, push pending)
+
+### Refine Phase
+- [x] Generate OpenAPI 3.1 specs for admin APIs (validate with Redocly CLI)
+- [x] Generate AsyncAPI 3.0 specs for command-side events (validate with @asyncapi/cli)
+- [x] Generate request/response examples for admin job stories
+- [x] Generate Mermaid sequence diagrams with HTTP semantics
+- [x] Generate Postman collections for admin APIs
+- [x] Validate all specs — zero warnings
+- [x] Package Refine deliverable
+- [ ] Git commit + push Refine phase
+
+### Event Modeling (Post-ADDR)
+- [x] Generate EventModel `config.json` from Align v2 + refined API flows
+- [x] Generate `high-level-analysis.json`
+- [x] Validate slice/dependency rules against EventModel schema expectations
+- [x] Package EventModel outputs and references
+- [x] Add ADDR-native EventModel generation skill (`.cursor/skills/addr-2-eventmodel/SKILL.md`)
+- [x] Regenerate EventModel from ADDR artifacts (derive operation inventory, no hardcoded slice counts)
+- [x] Create backup snapshot before restructuring (`config.backup-2026-02-26.json`, `high-level-analysis.backup-2026-02-26.json`)
+- [x] Enrich `STATE_CHANGE` Given/When/Then with operation-specific preconditions and request/response contract detail
+- [x] Restructure to split topology: 39 `STATE_CHANGE` + 39 `STATE_VIEW` slices
+- [x] Re-validate `config.json` against EventModel schema after split

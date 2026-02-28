@@ -1,9 +1,9 @@
 # Task: ADDR API Design Process
 
-**Status:** in_progress
+**Status:** complete (Catalog Storefront read side)
 **Priority:** high
 **Created:** 2026-02-14
-**Prompts:** `design/addr/addr-ai-prompts.md`
+**Prompts:** `design/addr-ai-prompts.md`
 
 ## Subtasks
 
@@ -27,7 +27,7 @@
 - [x] Git commit + push Define phase
 
 ### Design Phase (VALIDATED + COMMITTED)
-- [x] Establish design style guidelines (`design/addr/design/style-guide.md`)
+- [x] Establish design style guidelines (`design/style-guide.md`)
 - [x] Produce API design — Catalog API (14 operations)
 - [x] Produce API design — Compatibility API (2 operations)
 - [x] Produce API design — Partner Catalog API (3 operations)
@@ -36,8 +36,8 @@
 - [x] Package Design deliverable (README + api-design.md + style-guide.md + validation.md)
 - [x] Git commit + push Design phase
 
-### Refine Phase (RE-VALIDATED WITH REDOCLY)
-- [x] Generate OpenAPI 3.1 spec — Catalog Storefront API (14 ops, validated with swagger-cli)
+### Refine Phase (VALIDATED + PUSHED via PR #6)
+- [x] Generate OpenAPI 3.1 spec — Catalog Storefront API (14 ops, validated with Redocly CLI)
 - [x] Generate OpenAPI 3.1 spec — Component Compatibility API (2 ops, validated)
 - [x] Generate OpenAPI 3.1 spec — Partner Catalog Syndication API (3 ops, validated)
 - [x] Generate AsyncAPI 3.0 spec — 7 integration events (validated with @asyncapi/cli)
@@ -45,8 +45,8 @@
 - [x] Generate Mermaid sequence diagrams with HTTP semantics (sequence-diagrams.md)
 - [x] Generate Postman collections for all 3 APIs
 - [x] Validate Refine artifacts — all specs pass CLI validation
-- [x] Package Refine deliverable (README + validation.md)
 - [x] Redocly re-validation — 19 warnings found and resolved (D-019, D-020, D-021)
 - [x] UUID standardization — 166 replacements across 8 files
 - [x] Cursor rules + Event Modeling skill created
-- [ ] Git commit + push Refine phase
+- [x] Package Refine deliverable (README + validation.md)
+- [x] Git commit + push Refine phase (PR #6 to main)

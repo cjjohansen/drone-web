@@ -1,0 +1,139 @@
+{
+  "domain": "Catalog Management v2",
+  "analysisType": "high-level",
+  "generatedAt": "2026-02-26T00:00:00Z",
+  "generationSource": "ADDR artifacts",
+  "inputs": [
+    "design/catalog-management-v2/addr/align/job-stories.md",
+    "design/catalog-management-v2/addr/align/activity-steps.md",
+    "design/catalog-management-v2/addr/align/boundary-map.md",
+    "design/catalog-management-v2/addr/align/eventmodel-mapping.md",
+    "design/catalog-management-v2/addr/define/api-profiles.md",
+    "design/catalog-management-v2/addr/design/api-design.md",
+    "design/catalog-management-v2/addr/refine/*-api.yaml"
+  ],
+  "boundedContexts": [
+    "Product Lifecycle",
+    "Technical Documentation",
+    "Pricing and Promotions",
+    "Inventory and Availability",
+    "Category and Faceting",
+    "Compatibility Rules",
+    "Catalog Governance",
+    "Bulk Ingestion"
+  ],
+  "operationInventory": {
+    "stateChangeOperationCount": 39,
+    "viewOperationCount": 3,
+    "automationCandidates": [
+      "applyPriceAdjustment",
+      "submitImportBatch",
+      "replayFailedImportItems"
+    ]
+  },
+  "useCases": [
+    {
+      "id": "UC-01",
+      "title": "Maintain product lifecycle records",
+      "domain": "Product Lifecycle",
+      "sliceCandidates": [
+        "createProduct (STATE_CHANGE)",
+        "updateProductSpecifications (STATE_CHANGE)",
+        "setProductLifecycleState (STATE_CHANGE)",
+        "updateProductAttributes (STATE_CHANGE)",
+        "discontinueProduct (STATE_CHANGE)",
+        "linkReplacementProduct (STATE_CHANGE)",
+        "searchProductsForManagement (STATE_VIEW)"
+      ]
+    },
+    {
+      "id": "UC-02",
+      "title": "Manage technical documentation",
+      "domain": "Technical Documentation",
+      "sliceCandidates": [
+        "uploadDocument (STATE_CHANGE)",
+        "associateDocumentToProduct (STATE_CHANGE)",
+        "updateDocumentMetadata (STATE_CHANGE)",
+        "publishDocumentVersion (STATE_CHANGE)",
+        "retireDocument (STATE_CHANGE)"
+      ]
+    },
+    {
+      "id": "UC-03",
+      "title": "Administer pricing and promotions",
+      "domain": "Pricing and Promotions",
+      "sliceCandidates": [
+        "setBasePrice (STATE_CHANGE)",
+        "setVolumeDiscountTiers (STATE_CHANGE)",
+        "startPromotion (STATE_CHANGE)",
+        "cancelPromotion (STATE_CHANGE)",
+        "applyPriceAdjustment (STATE_CHANGE, AUTOMATION_CANDIDATE)"
+      ]
+    },
+    {
+      "id": "UC-04",
+      "title": "Control inventory and availability",
+      "domain": "Inventory and Availability",
+      "sliceCandidates": [
+        "updateStockQuantity (STATE_CHANGE)",
+        "setRestockDate (STATE_CHANGE)",
+        "updateLeadTime (STATE_CHANGE)",
+        "setBackorderState (STATE_CHANGE)",
+        "suspendProductAvailability (STATE_CHANGE)",
+        "queryInventoryStatus (STATE_VIEW)"
+      ]
+    },
+    {
+      "id": "UC-05",
+      "title": "Maintain taxonomy and facets",
+      "domain": "Category and Faceting",
+      "sliceCandidates": [
+        "createCategory (STATE_CHANGE)",
+        "updateCategory (STATE_CHANGE)",
+        "moveCategory (STATE_CHANGE)",
+        "retireCategory (STATE_CHANGE)",
+        "assignProductToCategory (STATE_CHANGE)",
+        "removeProductFromCategory (STATE_CHANGE)",
+        "defineCategoryFacets (STATE_CHANGE)"
+      ]
+    },
+    {
+      "id": "UC-06",
+      "title": "Manage compatibility rules",
+      "domain": "Compatibility Rules",
+      "sliceCandidates": [
+        "createCompatibilityRule (STATE_CHANGE)",
+        "updateCompatibilityRule (STATE_CHANGE)",
+        "deactivateCompatibilityRule (STATE_CHANGE)",
+        "createComponentGroup (STATE_CHANGE)",
+        "updateComponentGroup (STATE_CHANGE)"
+      ]
+    },
+    {
+      "id": "UC-07",
+      "title": "Execute governance workflow",
+      "domain": "Catalog Governance",
+      "sliceCandidates": [
+        "submitApprovalCase (STATE_CHANGE)",
+        "assignApprovalReviewer (STATE_CHANGE)",
+        "recordApprovalDecision (STATE_CHANGE)",
+        "releasePublicationGate (STATE_CHANGE)"
+      ]
+    },
+    {
+      "id": "UC-08",
+      "title": "Run bulk import lifecycle",
+      "domain": "Bulk Ingestion",
+      "sliceCandidates": [
+        "submitImportBatch (STATE_CHANGE, AUTOMATION_CANDIDATE)",
+        "replayFailedImportItems (STATE_CHANGE, AUTOMATION_CANDIDATE)",
+        "getImportBatchResults (STATE_VIEW)"
+      ]
+    }
+  ],
+  "notes": [
+    "Derived from ADDR artifacts and OpenAPI operation inventory.",
+    "State-change slice count is deduced from operations classified as mutating in API profiles/OpenAPI.",
+    "Domain events are modeled from emitted operation events in Define artifacts, not from integration transport topics."
+  ]
+}

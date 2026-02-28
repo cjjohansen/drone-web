@@ -8,33 +8,33 @@
 
 ## LRN-001 (2026-02-14)
 - **Category:** Git / Auth
-- **Context:** Attempted to push to GitHub using HTTPS URL. Failed with "could not read Username." SSH also failed (no key configured). The user has a fine-grained personal access token set as `GITHUB_PERSONAL_ACCESS_TOKEN` env var.
-- **Learning:** On this WSL2 environment, git push requires token-based auth embedded in the remote URL. Set remote as `https://cjjohansen:${GITHUB_PERSONAL_ACCESS_TOKEN}@github.com/cjjohansen/drone-web.git`.
-- **Action:** Always use token-embedded HTTPS URL for git push. Check env var is set before pushing.
+- **Context:** Push via default auth flow failed in this environment.
+- **Learning:** Use approved credential handling for remote operations; never store or document raw credential material in governance notes.
+- **Action:** Keep auth guidance generic and reference secure environment configuration only.
 
 ## LRN-002 (2026-02-14)
 - **Category:** GitHub / Permissions
-- **Context:** Tried to create a repo via the GitHub MCP plugin (`create_repository`). Got 403 "Resource not accessible by personal access token." The token has Contents permission but not Administration.
-- **Learning:** Fine-grained GitHub tokens need Administration (write) permission to create repos. Contents permission only covers file/commit operations. Fine-grained tokens cannot be edited after creation — a new token must be created to add permissions.
-- **Action:** For repo creation, either add Administration permission to a new token or create repos manually on GitHub.
+- **Context:** Attempted repository creation via automation failed with insufficient scope.
+- **Learning:** Repository-creation operations require elevated repository-administration scope, and scope changes may require credential rotation.
+- **Action:** Validate required scope before repo-administration actions and use secure credential workflows.
 
 ## LRN-003 (2026-02-14)
 - **Category:** ADDR / Process
 - **Context:** Started driving ADDR phases without referencing the official ADDR prompts. User pointed to launchany/addr-ai-prompts repo with comprehensive phase-by-phase prompts.
-- **Learning:** Always check for and follow the ADDR prompt guide at `design/addr/addr-ai-prompts.md`. These prompts encode the methodology correctly and ensure consistent, high-quality artifacts.
-- **Action:** Read `design/addr/addr-ai-prompts.md` before starting any ADDR phase. Follow the prompts sequentially.
+- **Learning:** Always check for and follow the ADDR prompt guide at `design/addr-ai-prompts.md`. These prompts encode the methodology correctly and ensure consistent, high-quality artifacts.
+- **Action:** Read `design/addr-ai-prompts.md` before starting any ADDR phase. Follow the prompts sequentially.
 
 ## LRN-004 (2026-02-14)
 - **Category:** Workspace / Documentation
 - **Context:** Initially placed decision log in `design/addr/decision-log.md` mixed with design artifacts. User wanted operational/agent files separate from deliverables.
-- **Learning:** Agent operational files (state, decisions, learnings, tasks) belong in `.ralph/`. Design deliverables belong in `design/addr/`. Keep them separate — `.ralph/` is the agent's workspace, `design/` is the deliverable.
+- **Learning:** Agent operational files (state, decisions, learnings, tasks) belong in `.ralph/`. Design deliverables belong in `design/{domain}/addr/`. Keep them separate — `.ralph/` is the agent's workspace, `design/` is the deliverable.
 - **Action:** Never put agent operational files in the design directory. Use `.ralph/` structure: STATE.md, agent/, tasks/, specs/.
 
 ## LRN-005 (2026-02-14)
 - **Category:** ADDR / Methodology
 - **Context:** Read all 9 chapters of user's Principles of Web API Design series. Event Storming was initially placed as a supplementary artifact but it's actually a core Align phase activity per Higginbotham Ch. 4-5.
-- **Learning:** The ADDR Align phase flow is: Job Stories → Event Storming → Activities & Steps. Event Storming is the bridge between job stories and API boundaries. Pivotal events on the canvas directly indicate bounded context boundaries (Define phase input). The API Profile (Define phase) is implementation-agnostic — REST/GraphQL/gRPC choices come in Design phase only.
-- **Action:** Always run Event Storming as part of Align, before Define. Use pivotal events to validate boundary decisions.
+- **Learning:** The ADDR Align phase flow is typically: Job Stories → Event Storming → Activities & Steps. Event Storming is normally the bridge between job stories and API boundaries, and pivotal events often inform boundary splits for Define.
+- **Action:** Default to Event Storming during Align unless the user explicitly requests a different decomposition artifact (for example, a boundary map plus EventModel mapping). When overridden, record the rationale as an explicit decision.
 
 ## LRN-006 (2026-02-14)
 - **Category:** ADDR / Async APIs
@@ -64,7 +64,7 @@
 - **Category:** Event Storming / Visual Layout
 - **Context:** Multiple iterations to get Brandolini-style layout right. Initial attempts used full-width swimlane dividers, stacked horizontal rows, and explicit async arrows — all non-Brandolini.
 - **Learning:** Brandolini's Big Picture layout is **organic**, not grid-based. Key principles: (1) **Spatial proximity** communicates dependency — place dependent subdomains directly below their trigger. (2) **Red separator lines are local** — only span the split area, not the full canvas. (3) **No arrows** — positioning alone conveys causality. (4) Subdomain ellipses can sit at varied Y-positions. (5) Pivotal events sit in the **gap between** subdomains, never inside.
-- **Action:** When generating Event Storming layouts, follow organic Brandolini principles. Use the reference file `design/addr/align/big-picture-event-storming.drawio` for visual guidance.
+- **Action:** When generating Event Storming layouts, follow organic Brandolini principles. Use the reference file `design/catalog-storefront/addr/align/big-picture-event-storming.drawio` for visual guidance.
 
 ## LRN-011 (2026-02-14)
 - **Category:** Event Storming / Split Patterns
@@ -80,7 +80,7 @@
 
 ## LRN-013 (2026-02-15, updated 2026-02-20)
 - **Category:** Tooling / API Spec Validation
-- **Context:** Initially used `@redocly/cli` for OpenAPI validation — it works but is a third-party opinionated linter, not the official tool. Then used `swagger-cli` which validated correctly but is deprecated and abandoned. User wanted the official tools from the OpenAPI and AsyncAPI organizations. On 2026-02-20, re-validated with Redocly CLI and found 19 warnings that `swagger-cli` had missed entirely (example format mismatches, missing required fields in examples, missing error responses, missing license metadata).
+- **Context:** Initially used `@redocly/cli` for OpenAPI validation — it works but is a third-party opinionated linter, not the official tool. Then used `swagger-cli` which validated correctly but is deprecated and abandoned. On 2026-02-20, re-validated with Redocly CLI and found 19 warnings that `swagger-cli` had missed entirely (example format mismatches, missing required fields in examples, missing error responses, missing license metadata).
 - **Learning:** `swagger-cli validate` only checks structural schema validity — it does **not** validate that examples conform to their schemas, that required fields appear in inline examples, or that operations have error responses. `@redocly/cli lint` catches all of these with its recommended ruleset. Use Redocly as the primary validation tool, not swagger-cli.
 - **Action:** Use `@redocly/cli lint` (not `swagger-cli`) for OpenAPI validation. Use `@asyncapi/cli validate` for AsyncAPI. Run validation **iteratively during authoring**, not just once at the end — catching example mismatches early avoids bulk rework.
 
@@ -116,3 +116,57 @@
 - **Context:** OpenAPI specs declared `format: uuid` on ID fields but used human-readable example values like `"prod-001"`. `swagger-cli validate` passed clean. Redocly caught 15+ warnings for example/schema mismatch, plus missing required fields in nested examples.
 - **Learning:** When declaring a `format` constraint (uuid, date-time, uri, email, etc.), examples **must** use values that conform to that format. Decide the ID format strategy (UUID vs slug vs composite) **before** writing examples, not after. Also: nested/inline examples must include all `required` properties from the referenced schema — it's easy to omit fields like `productId` on sub-resources when the ID feels implied by context.
 - **Action:** At the start of Refine phase, establish an ID format convention (which entities get UUIDs, which get slugs) and create a mapping table. Reference the table when writing all examples. Run `redocly lint` after each spec file is written, not just at the end.
+
+## LRN-018 (2026-02-20)
+- **Category:** Diagram Tooling / Geometry Validation
+- **Context:** Iterative track layout changes repeatedly introduced subtle overlaps and illegal closeness between inner and outer loops. Manual visual inspection alone was insufficient and cache/reload behavior in draw.io made feedback noisy.
+- **Learning:** For piece-based track builders, collision checks must run **during placement** (piece-by-piece), not only as a final pass. A declarative piece list + per-piece validation gives deterministic, reusable layout behavior and immediate error location (`index`, `piece name`, `distance`).
+- **Action:** Keep collision checks in engine-level DSL (`buildTrackFromList` / `dsl().build`) with configurable clearance and sampling density. Use fail-fast errors to guide layout tuning.
+
+## LRN-019 (2026-02-25)
+- **Category:** ADDR / Workflow Strategy
+- **Context:** Reworking Catalog Management after an initial full run raised a process question: replace prior artifacts or preserve them as historical baseline while iterating.
+- **Learning:** For methodology iteration and realistic delivery tradeoffs, preserve the original ADDR run and create a sibling v2 run instead of overwriting. This keeps auditability and enables side-by-side comparison of assumptions, boundaries, and outputs.
+- **Action:** When a redesign is requested after substantial progress, keep prior run artifacts intact and create a new domain/run folder (for example, `catalog-management-v2`) with explicit rationale in decisions and state files. If Event Storming is deferred, mark the deferral as temporary and capture reintroduction intent.
+
+## LRN-020 (2026-02-25)
+- **Category:** Ralph Loop / Documentation Governance
+- **Context:** Decisions were duplicated in `STATE.md` and `.ralph/agent/decisions.md`, creating drift risk and unnecessary synchronization work.
+- **Learning:** Use a strict single source of truth: all decisions live only in `.ralph/agent/decisions.md`. `STATE.md` should summarize status, progress, blockers, and next steps, but never duplicate decision content.
+- **Action:** When updating Ralph files, add decisions only in `decisions.md` and reference that file from `STATE.md` via a short pointer section.
+
+## LRN-021 (2026-02-25)
+- **Category:** Ralph Loop / Plan Coordination
+- **Context:** While preserving v1 and executing v2, it became easy to describe multiple active tracks in `STATE.md`, which can confuse single-agent execution.
+- **Learning:** `STATE.md` should carry one active plan only. Additional tracks should be labeled baseline/reference unless there is an explicit manager-agent coordination layer.
+- **Action:** Keep one active plan in `STATE.md` and move alternatives/history into task files and decisions.
+
+## LRN-022 (2026-02-25)
+- **Category:** ADDR / Align Exit Criteria
+- **Context:** Catalog Management v2 needed progress while Event Storming remained temporarily deferred, creating uncertainty about when Align can be considered complete.
+- **Learning:** Align can be closed without Event Storming when temporary deferral is explicit and replacement artifacts are complete: unifying job stories, command-focused activity steps, a boundary map, EventModel mapping, and a validation report.
+- **Action:** When deferring Event Storming, require the boundary-map and eventmodel-mapping artifacts plus validation before moving to Define.
+
+## LRN-023 (2026-02-26)
+- **Category:** Event Modeling / ADDR Integration
+- **Context:** EventModel generation was initially done with a legacy-system-oriented skill, which risks underusing ADDR artifacts and drifting from API profile intent.
+- **Learning:** For ADDR-first projects, EventModel should be generated from ADDR artifacts (`align`, `define/api-profiles.md`, `design/api-design.md`, `refine/*-api.yaml`) with operation classification driving slice creation. Do not hardcode expected slice counts.
+- **Action:** Use `.cursor/skills/addr-2-eventmodel/SKILL.md` for EventModel regeneration and derive `STATE_CHANGE`/`STATE_VIEW` inventory from artifacts each run.
+
+## LRN-024 (2026-02-26)
+- **Category:** Event Modeling / Tool Interoperability
+- **Context:** EventModel imports into visualization tooling did not render expected command-event-readmodel flows reliably when read models were embedded in the same slice as state changes.
+- **Learning:** A split topology (`STATE_CHANGE` slice for command+event, separate `STATE_VIEW` slice for event-derived read model) is more interoperable for downstream tools and easier to inspect.
+- **Action:** Prefer split `STATE_CHANGE` + `STATE_VIEW` slices for write-side flows, then validate graph connectivity and schema compatibility after generation.
+
+## LRN-025 (2026-02-26)
+- **Category:** Anonymization / Research Quality
+- **Context:** During JTBD anonymization planning, placeholder labels like "Business Unit A" and "Persona B/C" were judged too generic for practical reuse.
+- **Learning:** Effective anonymization should preserve business realism. Use stable, realistic pseudonyms and domain-credible replacement terms informed by producer research (for example, drone portfolio naming), instead of abstract placeholders.
+- **Action:** For anonymization tasks, define a canonical mapping dictionary that includes: (1) realistic person pseudonyms, (2) domain-specific unit/portfolio replacements, and (3) consistency checks across all files before completion.
+
+## LRN-026 (2026-02-26)
+- **Category:** Governance / Redaction
+- **Context:** Governance files may accidentally carry source-case identifiers or overly specific references during active work.
+- **Learning:** `STATE.md`, `decisions.md`, and `learnings.md` should avoid source-case specifics and use placeholder tokens for any sensitive concept.
+- **Action:** Prefer these tokens in governance notes: `source-persona-name`, `source-organization-name`, `source-system-name`, `source-business-unit-name`, `source-portfolio-name`.
