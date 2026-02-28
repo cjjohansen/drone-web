@@ -1,0 +1,257 @@
+openapi: 3.1.0
+info:
+  title: Pricing and Promotions API
+  description: Write-side pricing policy and promotion lifecycle.
+  version: 1.0.0
+  contact:
+    name: Drone Web API Team
+  license:
+    name: Proprietary
+    url: https://droneparts.com/terms
+servers:
+  - url: https://api.droneparts.com/pricing/v1
+    description: Production
+security:
+  - apiKey: []
+  - oauth2: []
+tags:
+  - name: Pricing
+    description: Base pricing, promotions, and repricing jobs
+paths:
+  /price-book-entries/{productId}/base-price:
+    put:
+      summary: Set base price
+      operationId: setBasePrice
+      tags: [Pricing]
+      parameters:
+        - $ref: '#/components/parameters/productId'
+        - $ref: '#/components/parameters/ifMatchOptional'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [basePrice, currency, effectiveFrom]
+              properties:
+                basePrice: { type: number }
+                currency: { type: string, minLength: 3, maxLength: 3 }
+                effectiveFrom: { type: string, format: date-time }
+                effectiveTo: { type: string, format: date-time }
+      responses:
+        '200':
+          description: Base price set
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PriceBookEntry' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+  /price-book-entries/{productId}/volume-tiers:
+    put:
+      summary: Set volume discount tiers
+      operationId: setVolumeDiscountTiers
+      tags: [Pricing]
+      parameters:
+        - $ref: '#/components/parameters/productId'
+        - $ref: '#/components/parameters/ifMatchOptional'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tiers]
+              properties:
+                tiers:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/VolumeTier'
+      responses:
+        '200':
+          description: Volume tiers set
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PriceBookEntry' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+  /promotions:
+    post:
+      summary: Start promotion
+      operationId: startPromotion
+      tags: [Pricing]
+      parameters:
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StartPromotionRequest' }
+      responses:
+        '201':
+          description: Promotion started
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PromotionWindow' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /promotions/{promotionId}/cancellations:
+    post:
+      summary: Cancel promotion
+      operationId: cancelPromotion
+      tags: [Pricing]
+      parameters:
+        - $ref: '#/components/parameters/promotionId'
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string }
+      responses:
+        '201':
+          description: Promotion cancelled
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PromotionWindow' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /repricing-jobs:
+    post:
+      summary: Apply price adjustment
+      operationId: applyPriceAdjustment
+      tags: [Pricing]
+      parameters:
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RepricingRequest' }
+      responses:
+        '202':
+          description: Repricing job queued
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RepricingJob' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+components:
+  securitySchemes:
+    apiKey: { type: apiKey, in: header, name: X-API-Key }
+    oauth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.droneparts.com/oauth/token
+          scopes: { pricing:write: Manage pricing and promotions }
+  parameters:
+    productId:
+      name: productId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    promotionId:
+      name: promotionId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    ifMatchOptional:
+      name: If-Match
+      in: header
+      required: false
+      schema: { type: string }
+    idempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: { type: string, minLength: 8 }
+  responses:
+    BadRequest:
+      description: Invalid request payload
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/ProblemDetails' }
+    NotFound:
+      description: Resource not found
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/ProblemDetails' }
+    Conflict:
+      description: Business rule conflict
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/ProblemDetails' }
+    PreconditionFailed:
+      description: If-Match does not match current version
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/ProblemDetails' }
+  schemas:
+    PriceBookEntry:
+      type: object
+      required: [productId, basePrice, currency]
+      properties:
+        productId: { type: string, format: uuid }
+        basePrice: { type: number }
+        currency: { type: string }
+        tiers:
+          type: array
+          items: { $ref: '#/components/schemas/VolumeTier' }
+    VolumeTier:
+      type: object
+      required: [minQuantity, price]
+      properties:
+        minQuantity: { type: integer, minimum: 1 }
+        price: { type: number }
+    PromotionWindow:
+      type: object
+      required: [promotionId, status]
+      properties:
+        promotionId: { type: string, format: uuid }
+        status: { type: string, enum: [scheduled, active, cancelled, completed] }
+        startsAt: { type: string, format: date-time }
+        endsAt: { type: string, format: date-time }
+    StartPromotionRequest:
+      type: object
+      required: [scopeType, scopeReference, promotionType, promotionValue, startsAt, endsAt]
+      properties:
+        scopeType: { type: string }
+        scopeReference: { type: string }
+        promotionType: { type: string }
+        promotionValue: { type: number }
+        startsAt: { type: string, format: date-time }
+        endsAt: { type: string, format: date-time }
+    RepricingRequest:
+      type: object
+      required: [scopeType, scopeReference, adjustmentType, adjustmentValue]
+      properties:
+        scopeType: { type: string }
+        scopeReference: { type: string }
+        adjustmentType: { type: string }
+        adjustmentValue: { type: number }
+    RepricingJob:
+      type: object
+      required: [repricingJobId, status]
+      properties:
+        repricingJobId: { type: string, format: uuid }
+        status: { type: string, enum: [queued, running, completed, failed] }
+    ProblemDetails:
+      type: object
+      required: [type, title, status]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string }

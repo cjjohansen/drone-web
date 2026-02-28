@@ -1,0 +1,2055 @@
+AI-Assisted API Design
+
+Reducing API design efforts without sacrificing developer experience
+
+December 2025
+James Higginbotham
+james@launchany.com
+Table of Contents                            Page 3   3 AI-Powered API Design In Action      Page 25
+                                             Page 6                                          Page 62
+Executive Summary                            Page 12    An Annotated API Design Walkthrough  Page 76
+
+  Inside the Report                                   4 Choosing Your AI Assistant
+
+1 Introduction                                           LLM Capability Matrix
+
+  Why Is Modern API Design Still Difficult?           5 Taking the First Step
+
+2 Your Time Multiplier                                   Try it Yourself
+
+  Using AI as an API Design Assistant
+Executive Summary                                          Key Findings
+
+Making the Strategic Shift to AI as an API Design Coach    · Drastic Time Reduction: AI-assisted workflows reduce API
+                                                               design time by 60% (and up to 20x faster in some phases) while
+The traditional API design process today is bottlenecked       improving consistency.
+by limited time and budgets, forcing teams to choose
+between delivery speed and design quality. This "rush to   · High-Fidelity Artifacts: Critical deliverables--such as Job
+code" introduces significant technical debt and fails to       Stories and OpenAPI specifications--can now be auto-
+support the agility required for modern AI strategies.         generated with >95% accuracy.
+
+This report outlines a transformational shift: leveraging  · Human-Centric Design: AI handles the heavy lifting of artifact
+Large Language Models (LLMs) not merely as code                creation, allowing the API designers to focus on aligning
+assistants, but as API Design Coaches. By pairing the          business goals with user outcomes. ("AI in the loop")
+ADDR process with AI, teams can move from manual
+drafting to strategic oversight.                           · The Competitive Edge: Organizations that adopt AI-assisted API
+                                                               design in 2026 will outpace competitors not by writing code
+                                                               faster, but by making better architectural decisions faster..
+Inside the Report                                   After reading this report, you will be able to:
+
+Who should read this report?                        · Identify the challenges facing API designers in today's
+                                                        fast-paced, AI-driven landscape.
+Practitioners looking for a way to speed their API
+design efforts without sacrificing a great          · Apply the ADDR API design process within the context
+developer experience.                                   of an AI-assisted session that acts as an API design
+API program leaders tired of low reuse and              coach.
+duplicate API efforts.
+AI transformation leaders that wish to expand       · Experience a walkthrough of an API design session that
+their AI value creation beyond GenAI co-                includes prompting tips, guardrails, and example
+development.                                            outputs.
+
+                                                    · Select an LLM model that best fits your needs and is
+                                                        trained to solve API design challenges.
+
+                                                    · Explore additional resources to get you started quickly
+                                                        with an AI-assisted API design coach.
+Get the most out of this report  After reading the report, be sure to go
+                                 to our GitHub repository where you GitHubLogomark
+Get the Prompt                   can find provide starter prompts,
+Starters                         guiderails, and tips.
+
+                                 https://bit.ly/addr-ai-prompts
+
+                                 Plus, check out the additional
+                                 resources, including the ADDR book
+                                 and training materials, at the end of
+                                 the report.
+1 Introduction
+
+Why Is Modern API
+Design Still Difficult?
+
+                         Let's Explore:
+
+                          The Challenges of API Design
+                          Common API Design Challenges
+                          Can We Do Better?
+                          3 Steps to Get Started
+
+                         www.launchany.com              6
+Limited Time. Limited Budgets.
+
+The last time you tried to design a great API, how did it go?
+
+You are being told to do more with less. Great API requires
+time, but your time to design APIs is shrinking every day.
+The last time you tried to design a great API, you were
+stuck in so many meetings. By the end of the meetings,
+things still weren't clear.
+Yet, without a clear set of requirements, last-minute
+changes will be required. This will introduce bugs and
+technical debt that will be hard to address in the future.
+The challenges of great API design can be summarized as
+limited time and limited budget.
+
+                                                                                                                                                                                                                                                                                                          7
+Speeding Up the API Design Process
+
+Spend less time typing and more time thinking.
+
+For over a decade, I have been exploring ways to                                                      44 hours (Traditional ADDR)
+confidently and thoughtfully design APIs that developers                   2.8 hours (AI-Assisted ADDR is 8-20x faster)
+will love while ensuring that they are reusable across
+today's emerging opportunities.                            AI-Assisted API design allows teams to spend less time typing and
+                                                          more time thinking, while aligning business decisions with reusable,
+LLMs are now becoming mature enough that API designers
+can leverage them to do more than write code. They can                                  AI-enabled APIs.
+use them as an API design assistant.
+                                                                                                                                                                                            8
+What we have now found is that teams are able to
+leverage a repeatable, scalable API design process in
+conjunction with today's LLM capabilities.
+
+The result: More time for architectural decisions and
+faster feedback loops due to reduced manual effort.
+Speeding Up the API Design Process
+
+Spend less time typing and more time thinking.
+
+For over a decade, I have been exploring ways to          44 hours  2.8 hours (AI-
+confidently and thoughtfully design APIs that developers            Assisted ADDR is
+will love while ensuring that they are reusable across              8-20x faster)
+today's emerging opportunities.
+                                                                                                  2.8 hours
+LLMs are now becoming mature enough that API designers
+can leverage them to do more than write code. They can     AI-Assisted API design allows teams to spend less time typing and
+use them as an API design assistant.                      more time thinking, while aligning business decisions with reusable,
+
+What we have now found is that teams are able to                                        AI-enabled APIs.
+leverage a repeatable, scalable API design process in
+conjunction with today's LLM capabilities.
+
+The result: More time for architectural decisions and
+faster feedback loops due to reduced manual effort.
+
+                                                                                      9
+The ADDR Process at a Glance
+
+The four phases of the ADDR process transform requirements into a business-aligned API design.
+
+A book cover of a book                  Align ­ "Outcomes before endpoints"
+AI-generated content may be incorrect.
+                                        Ensure alignment between your business architecture, the
+                                        desired outcomes of your users, and your APIs.
+
+                                        Define ­ "Model first to build fast"
+
+                                        Map desired outcomes to an API profile that will manage
+                                        resources and support the intended workflow
+
+                                        Design ­ "Collaborate around the contract"
+
+                                        Transform your API profile into a high-level API design that
+                                        complies with your style guide.
+
+                                        Refine ­ "Feedback loops create confidence"
+
+                                        Incorporate feedback to finalize your production-ready
+                                        decisions and documentation.
+
+                                                                                                      10
+4 Steps to Faster API Design
+
+Leverage today's LLM capabilities to speed API design without sacrificing quality.
+
+1. Learn about the ADDR API design process.                  3. Select an LLM as your AI Design Coach.
+
+If you aren't familiar with the ADDR API design process, we  Not all LLMs are best for API design. We did the hard work
+can help. This report provides a brief overview of the       for you, evaluating the most popular LLMs that support API
+process and the artifacts that help you go from              design efforts. No external tool requirements or add-ons
+requirements to a transformative API that delivers desired   are required, making it easy to get started.
+outcomes for humans and AI.
+                                                             4. Start Designing Great APIs.
+2. Explore how LLMs accelerate API design.
+                                                             Finally, start designing APIs with an LLM-based API design
+Find out how LLMs can help to accelerate the API design      coach. When ready, hand off your API design specification
+process, from requirements gathering to defining a clear     to your engineering teams for build out using AI code-
+API specification for REST, GraphQL, and gRPC-based APIs.    development with tools such as GitHub Copilot or Claude
+                                                             Code.
+
+Ready? Let's get started.                                                           11
+2 Your Time Multiplier
+
+Using AI as an API
+Design Assistant
+
+                        Let's Explore:
+
+                         GenAI is for more than code
+                         Why Early GenAI Wasn't Ready
+                         The ADDR Process at a Glance
+                         How LLMs accelerate the ADDR process
+
+                        www.launchany.com                      12
+GenAI is For More Than Code
+
+Too many organizations are missing out on what AI can really do.
+
+Most organizations today see GenAI as a tool to write more code
+faster. While this provides short-term gains, the full potential of
+generative AI hasn't been realized.
+
+As GenAI evolves, new capabilities are beginning to emerge.
+
+We explored whether an LLM could act as an API design coach. The
+results were impactful.
+
+AI-in-the-loop is the best way to describe this approach. Experts
+leverage prompts and LLM automation to accelerate their API design
+efforts for critical business systems.
+
+Let's explore what has changed that allows GenAI to assist in the API
+design process. We will then explore the ADDR process and how
+GenAI can help.
+
+                                                                                                                                                                                                                                                                                                         13
+Why Early GenAI Wasn't Ready
+
+Early exploration of API models weren't ready to coach someone
+through an API design process. This has recently changed.
+
+Context windows were previously too limiting.
+Now, better prompt engineering can overcome this with recent AI models. This
+results in reduced hallucinations while avoiding poor or incomplete API designs.
+
+Former LLM models couldn't break down complex workflows.
+We now have advanced models that can decompose complex problems into an
+executable plan. The plan guides practitioners effectively through the process.
+Response outputs were limited to text-based formats.
+Recent AI models have added new ways to generate output formats than in the
+past. This reduces the manual work required for generating artifacts,
+incorporating feedback, and delivering a great API specification.
+
+                                                                                                                                                                                                                                                                                                         14
+Do We Need API Design with AI and Vibe-Coding?
+
+Where this report fits in the AI transformation journey.
+
+Vibe Coding emerged in early 2025 as a new development  Business Critical AI refers to the use of AI-augmented
+style that refers to an intent-based approach to        engineering that uses a spec, prompt, test, human review
+development that uses a prompt, run, fix methodology.   methodology to produce reliable, deterministic code for
+                                                        critical systems.
+It is commonly used for rapid prototyping, creating
+disposable tools, and non-critical applications.        It is commonly used when reliability, explainability, and
+                                                        guardrail enforcement is paramount.
+
+Vibe Coding help organizations find the right idea fast.
+    Business Critical AI helps to scale the idea safely.
+
+AI-assisted API design speeds the process of transforming insights into
+
+business-critical systems.                                               15
+The ADDR Process at a Glance
+
+The four phases of the ADDR process transform requirements into a business-aligned API design.
+
+    Align                                     Align ­ "Outcomes before endpoints"
+
+1.         2.                                 Ensure alignment between your business architecture, the
+                                              desired outcomes of your users, and your APIs.
+
+Refine                                        Define ­ "Model first to build fast"
+
+      7.                                      Map desired outcomes to an API profile that will manage
+                                          .   resources and support the intended workflow
+                               Define
+                                              Design ­ "Collaborate around the contract"
+                                          3.
+                                              Transform your API profile into a high-level API design that
+6.                                            complies with your style guide.
+
+                    4                         Refine ­ "Feedback loops create confidence"
+ 5.
+                                              Incorporate feedback to finalize your production-ready
+Design                                        decisions and documentation.
+
+                                                                                                            16
+The ADDR Align Phase at a Glance
+
+"Outcomes before endpoints"
+
+    Align                                     Align
+
+1.         2.                                 Ensure alignment between your business architecture, the
+                                              desired outcomes of your users, and your APIs.
+Refine
+                                              1. Identify Digital Capabilities
+      7.
+                                          .   Capture jobs-to-be-done (JTBD) to better understand any
+                               Define         problems/situations, the job, and the desired outcome. This
+                                              will frame all future API design work.
+                                          3.
+                                              2. Capture Activity Steps
+6.
+                                              Break down the jobs into activity steps, including any specific
+                    4                         workflow steps required to be completed.
+ 5.
+
+Design
+
+                                                                                                               17
+   AI Assistance in the Align Phase
+
+   How to leverage LLMs in the Align Phase of ADDR
+
+    Use LLMs to dig deeper into                     Align
+
+1 requirements, look for gaps, and                  Ensure alignment between your business architecture, the
+                                                    desired outcomes of your users, and your APIs.
+    surface missing outcomes.
+                                                    1. Identify Digital Capabilities
+   Let the LLM turn your insights into
+                                                    Capture jobs-to-be-done (JTBD) to better understand any
+2  job stories that capture problems                problems/situations, the job, and the desired outcome. This
+   and desired outcomes your API                    will frame all future API design work.
+
+   will solve.
+
+   Break your job stories into activity             2. Capture Activity Steps
+
+3  steps with the help of the LLM.                  Break down the jobs into activity steps, including any specific
+   Look for gaps that need to be                    workflow steps required to be completed.
+
+   addressed.
+
+                                                                                                                     18
+The ADDR Define Phase at a Glance
+
+"Model first to build fast"
+
+                 Define                     Define
+
+                    3.                      Map desired outcomes to an API profile that will manage
+                                            resources and support the intended workflow
+
+Align                               Design  3. Identify API Ecosystem Boundaries
+
+      1.                          5.        Assess how the API will be used and what digital ecosystems
+         2.                  4.             it will belong.
+
+             7.          6.                 4. Model API Profiles
+
+                 Refine                     Create a sketch of the API details, including the name,
+                                            description, resources, and operations needed. This
+                                            information will provide a better assessment of new builds vs.
+                                            existing API reuse vs. enhancements.
+
+                                                                                                            19
+   AI Assistance in the Define Phase
+
+   How to leverage LLMs in the Define Phase of ADDR
+
+    Quickly turn job stories into API  Define
+
+4 profiles quickly with LLMs,          Map desired outcomes to an API profile that will manage
+                                       resources and support the intended workflow
+    spotting gaps along the way.
+
+   LLMs help to identify your API      3. Identify API Ecosystem Boundaries
+
+5  boundaries, including service       Assess how the API will be used and what digital ecosystems
+   decomposition or modular            that it will belong.
+
+   monolith options.
+
+    Let the LLM profile your API       4. Model API Profiles
+    operations, resources, and events
+                                       Create a sketch of the API details, including the name,
+6 that will satisfy the desired        description, resources, and operations needed. This
+                                       information will provide a better assessment of new builds vs.
+    outcomes from your job story.      existing API reuse vs. enhancements.
+
+                                                                                                       20
+The ADDR Design Phase at a Glance
+
+"Collaborate around the contract"
+
+     Design                                                    Design
+
+                5.                                             Transform your API profile into a high-level API design that
+                                                               enables feedback to be incorporated quickly.
+.
+Define                                                         5. High-level Design
+                                                       Refine
+      3.                                                       Select one or more API design styles that fit the needs of your
+            4                                      6.          API consumer, apply style guide preferences, and produce a
+                                                               high-level API design for feedback.
+                                                 7.
+
+2.
+                   1.
+
+      Align
+
+                                                                                                                                                                                                                                                                              21
+   AI Assistance in the Design Phase
+
+   How to leverage LLMs in the Design Phase of ADDR
+
+    Import your API style guidelines     Design
+
+7 into the LLM and avoid                 Transform your API profile into a high-level API design that
+                                         enables feedback to be incorporated quickly.
+    dependence on a linter during
+    design.                              5. High-level Design
+
+    Select the best API design style(s)  Select one or more API design styles that fit the needs of your
+                                         API consumer, apply style guide preferences, and produce a
+8 that your API will expose.             high-level API design for feedback.
+
+   Then, transform your API profiles
+
+9  into a high-level API design in
+   seconds using an LLM.
+
+                                                                                                          22
+The ADDR Refine Phase at a Glance
+
+    Refine                                         Refine
+
+6.          7.                                     Finalize your production-ready decisions and documentation
+                                                   based on additional feedback.
+Design
+                                                   6. Refine the Design
+      5.
+                                               2.  Expand the artifacts to communicate more complex use cases
+                              Align                using README-based scenarios, identify any gaps, surface any
+                                                   additional insights, and revise the API design now, when the
+                                       1.          cost of change is lower.
+
+4                                                  7. Document the API
+.
+                 3.                                Finalize the documentation that will be used by API
+                                                   consumers.
+      Define
+                                                                                                                                                                                                 23
+AI Assistance in the Refine Phase
+
+How to leverage LLMs in the Refine Phase of ADDR
+
+     Let LLMs take care of the most       Refine
+
+10 time-consuming part of API             Finalize your production-ready decisions and documentation
+                                          based on additional feedback.
+     ownership - documentation.
+                                          6. Refine the Design
+    In just a few minutes, generate
+                                          Expand the artifacts to communicate more complex use cases
+11  and deliver valuable artifacts that   using README-based scenarios, identify any gaps, surface any
+    facilitate fast feedback using LLMs.  additional insights, and revise the API design now, when the
+                                          cost of change is lower.
+    Produce human and machine-
+                                          7. Document the API
+12  ready documentation for your API
+    based on your LLM session and         Finalize the documentation that will be used by API
+                                          consumers.
+    other artifacts.
+
+                                                                                                        24
+3 AI-Powered API Design In Action
+
+An Annotated API
+Design Walkthrough
+
+                                   Let's Explore:
+
+                                    See a step-by-step walkthrough of using LLMs to deliver an API design
+                                    Identify potential issues and how to overcome them
+                                    Explore prompt engineering tips for effective API design with LLMs
+
+                                   www.launchany.com                                                       25
+About the Walkthrough
+
+The scope of the walkthrough example.
+
+Bookstore Shopping API                 We will explore how to refine your requirements, followed by the
+                                       ADDR API design process :
+We are designing an ecommerce
+bookstore API. For this example, we    1. Requirements clarification ­ Preparing the requirements for ADDR.
+will constrain the API design work to  2. ADDR Align Phase ­ Turning requirements into job stories + activities.
+shopping and order placement.          3. ADDR Define Phase ­ Identifying the API(s) with scope + operations.
+                                       4. ADDR Design Phase ­ Producing high-level API design artifacts.
+                                       5. ADDR Refine Phase ­ Generating artifacts for fast feedback+ docs.
+
+                                                                                                                  26
+Understanding the Annotated LLM Interactions
+
+How to get the most out of this walkthrough.
+
+There are two personas involved in the  These two personas will interact via an LLM chat session. Below is an example of
+walkthrough:                            how it will look in the walkthrough:
+
+Human Prompt Engineer                   Prompt text provided by the human operator  #  Explanation and insights to get the
+                                                   Response text from the LLM
+Enters a prompt into the chat                                                          most out of your AI-assisted design
+session                                 Prompt text provided by the human operator
+                                                   Response text from the LLM
+LLM Response
+
+Performs the work and responds
+back in the chat session
+
+                                                                                       session.
+
+                                                                                                 27
+Reviewing the Requirements                                                                                                                                                           Coach's Notes
+
+Leverage the LLM to identify gaps or unknowns in your specification.                                                                                                       Establish the role of the LLM,
+                                                                                                                                                                           along with the use of ADDR for the
+Human Prompt Engineer                                                                                                                                                      API design process.
+
+You are an API architect that needs to translate requirements into an API design. First, I will ask you to review and help me to refine the requirements. Then we will  1  First, we start with a clear set of
+                                                                                                                                                                           requirements based on what is
+use ADDR for the API design first methodology.                                                                                                                             currently known. We then ask that
+                                                                                                                                                                           the LLM to review and ask
+We will be designing a bookstore API.                                                                                                                                      clarifying questions.
+
+However, before we start ADDR, I need some help refining the requirements. Once we validate that the requirements are suffici ent, then we will start the ADDR             In this example, we permit the
+process.                                                                                                                                                                   LLM to ask 3 sets of 5 questions
+                                                                                                                                                                           each. This will help us dig a bit
+Here are the initial requirements:                                                                                                                                         deeper into the problem to ensure
+                                                                                                                                                                           we have a more complete set of
+* Online ecommerce store that only sells books                                                                                                                             requirements from which to
+* Called JSON's Bookstore                                                                                                                                                  design our API.
+* Must design a series of APIs to support online commerce that includes shopping and checkout capabilities
+* We will also need order fulfillment, order tracking, inventory management, and catalog management capabilities in the future                                                                                                               28
+* The API also needs to support integration with partners and customers.
+* The API will support a web interface, mobile app, and third-party API consumers
+* Initial Scope: Design APIs to support online shopping and checkout.
+* Future Scope: Order fulfillment, order tracking, inventory management, and catalog management.
+
+Let's hold off on non-functional and technical requirements and focus on the business requirements for now.
+
+Ask me up to 5 questions that will help to expand and clarify the requirements before we proceed with API design. You may ask two more sets of 5 questions each, if
+they will help you. If you have everything you need, you may stop asking questions prior to the end of the three sets of questions.
+
+Once all questions have been answered, summarize the business requirements. however, before we start ADDR, I need some help refining the requirements. Once we
+validate that the requirements are sufficient, then we will start the ADDR process.
+
+I will provide initial requirements below:
+
+<truncated for space>.
+Reviewing the Requirements                                                                                                                                                              Coach's Notes
+
+Leverage the LLM to identify gaps or unknowns in your specification.                                                                                                          The LLM will analyze your
+                                                                                                                                                                              requirements and determine what
+          LLM Response                                                                                                                                                        kind of questions need to be
+                                                                                                                                                                              asked.
+                                                                                                     2
+                                                                                                                                                                              These questions may be answered
+             Of course. Clarifying business requirements is the crucial first step in the ADDR methodology. Here are five questions to hepl refine the requirements for the   by you, or it may provide a concise
+             JSON's Bookstore API.                                                                                                                                            way to gather requirements from
+                                                                                                                                                                              subject matter experts.
+             Clarifying Questions: Set 1
+                                                                                                                                                                              In this example, the LLM did a nice
+             1. User Roles & Access: What are the different types of users that will interact with the shopping and checkout process? For example, can a customer check       job of identifying gaps and
+             out as a guest, or must they create a registered account first?                                                                                                  recommending improvements,
+             2. The "Book" Entity: Besides title and author, what are the key attributes that define a book in the catalog? For instance, what information is critical for a  saving considerable time and
+             customer to see before adding a book to their cart (e.g., ISBN, genre, cover image, synopsis, user ratings)?                                                     rework.
+             3. Product Discovery: How do customers typically find books they want to purchase? Should the API primarily support searching by specific fields like title or
+             ISBN, or is browsing by categories, new releases, or curated best-seller lists just as important?                                                                Submit your answers to the LLM
+             4. Checkout Flow: Could you walk me through the specific steps of the checkout process from the customer's perspective? For example, what information is         for consideration.
+             collected (shipping address, payment details), what payment methods will be supported initially, and are there features likeapplying discount codes?
+             5. Order Confirmation: Once an order is successfully placed, what specific information constitutes an "order confirmation" for the customer? Are we                                                                                29
+             providing just an order ID, or a full summary including item details, total cost, and an estimated delivery date?
+
+Answers:                                                                                                      3
+
+1. Customers may check out as a guest or may register for an account/sign in
+
+2. Title, author, ISBN, genre, format, price, language, plus previews, reviews, ratings, and recommendations
+
+3. Search & filter by book/author details, price range, and format
+
+4. For the workflow, use the following: <truncated for space>
+
+5. Order ID
+
+          <LLM asks the second and third set of questions, truncated for space>
+Reviewing the Requirements (cont')                                                                                                                                 Coach's Notes
+
+Expand the context of the LLM through user journeys.                                                                                                     It can be helpful to ask the LLM to
+                                                                                                                                                         recommend some user journeys to
+                                                                                                  4                                                      accelerate the API design effort.
+
+   Next, propose the primary user journeys we should model based on these requirements.                                                                  In this example, the LLM
+                                                                                                                                                         recommended a total of 5 user
+Based on the refined requirements, we should model our API design around the primary user journeys. These journeys represent the key goals a user or     journeys for consideration.
+
+system will try to accomplish. Proposing these helps ensure our API endpoints are logical, intuitive, and map directly to real-world use cases.       5  Blend these with your own to
+                                                                                                                                                         ensure you consider happy and
+Here are the five primary user journeys we should model:                                                                                                 error paths. The steps in your user
+                                                                                                                                                         journeys will help to drive your API
+1. Guest Customer: Find and Purchase a Book                                                                                                              design, so spend sufficient time at
+                                                                                                                                                         this step.
+This is the fundamental "happy path" for a new customer, focusing on discovery and a frictionless checkout experience.
+                                                                                                                                                         Ask the LLM to then review
+· Goal: A new user finds a book and buys it without creating an account.                                                                                 everything one final time.
+· Journey Steps:
+1. Discover: The user searches for books using filters (e.g., genre, format).                                                                                                                                              30
+2. Evaluate: The user views the details of a specific book (description, price, reviews).
+3. Select: The user adds the book to their shopping cart.
+4. Checkout: The user initiates checkout, providing their email, shipping address, and credit card information.
+5. Confirm: The user reviews the final order total, including the flat-rate shipping, and places the order.
+6. Receive ID: The user sees a confirmation page displaying their new Order ID.
+
+2. Registered Customer: Account Creation and Management
+.... truncated for space...
+
+3. Registered Customer: Purchase with Order Management
+
+.... truncated for space...
+
+                                                                                                 6
+
+Review the requirements and identify any recommendations that should be considered before proceeding
+Reviewing the Requirements (cont')                                                                                                                                   Coach's Notes
+
+Identify remaining gaps and open questions.
+
+Based on the consolidated business profile, here are five key recommendations to consider before proceeding with the API design. These suggestions aim            7  For well-known domains, the LLM
+to improve customer experience, future-proof the system, and clarify potential ambiguities.                                                                          will likely identify some gaps or
+                                                                                                                                                                     recommendations.
+1. Offer Flexible Shipping for Mixed Carts
+                                                                                                                                                                     Notice that in this example, the
+The current requirement states that an order with both in-stock and pre-order items will be held until all items are ready to ship.                                  LLM suggests different ways to
+                                                                                                                                                                     model the domain, speeding up
+· Potential Issue: This can create a poor customer experience, as a customer might wait months for an in-stock book, leading to confusion and support                both understanding and design
+requests.                                                                                                                                                            efforts.
+
+· Recommendation: We should empower the customer by providing a choice during checkout. The API should support an option to either:                                  While not all of these will apply, it
+                                                                                                                                                                     may help you incorporate some
+1. Ship Everything Together: The current default behavior.                                                                                                           future-proofing API design
+                                                                                                                                                                     elements.
+2. Split the Shipment: Ship in-stock items now and pre-order items later. This would create two separate shipments (and potentially incur a second
+shipping fee).                                                                                                                                                       Finally, incorporate any
+                                                                                                                                                                     recommendations, as desired, and
+This approach provides flexibility and manages customer expectations upfront.                                                                                        request a fresh set of
+                                                                                                                                                                     requirements will all changes
+2. Define a Clear Product Hierarchy                                                                                                                                  incorporated.
+
+The requirements list different book formats (hardcover, paperback, ebook) but don't specify how they relate to each other.                                                                                                            31
+
+· Potential Issue: Treating each format as a completely separate, unrelated product can lead to duplicated data (e.g., the same synopsis and author info
+repeated for each format) and makes it difficult for a user to discover all available versions of a single book.
+· Recommendation: Model the catalog with a parent "Work" entity that groups multiple "Product" variations.
+o A Work would represent the book itself (title, author, genre, reviews).
+o Each Product linked to that Work would represent a specific format (e.g., the hardcover version with its own ISBN, price, and inventory).
+
+.... truncated for space...
+
+Integrate items 1,4, and 5 to the requirements and update the consolidated business profile. Then provide a summary of the fu ll set of requirements for review.
+Reviewing the Requirements (cont')                                                                                                                               Coach's Notes
+
+Reviewing the Requirements
+
+JSON's Bookstore: Updated Consolidated Business Profile                                                                                                       8  Now it is time to review
+                                                                                                                                                                 everything, compose any prompts
+1. Business Overview                                                                                                                                             needed to improve the
+                                                                                                                                                                 requirements, and then move into
+· Name: JSON's Bookstore                                                                                                                                         the ADDR process.
+· Business Model: An online e-commerce retailer specializing exclusively in the sale of physical and digital books.
+· Target Consumers: The platform serves individual online shoppers through a dedicated web interface and mobile app, as well as business partners                Notice in this example that the
+who integrate with the catalog for informational purposes.                                                                                                       requirements are far more
+                                                                                                                                                                 complete and clarify a number of
+2. Customer Profiles & Features                                                                                                                                  issues compared to the original set
+                                                                                                                                                                 of basic requirements supplied.
+The platform supports two distinct types of customers:
+· Guest Customers:                                                                                                                                               This offers a huge lift for product
+o Can browse, search, and filter the entire book catalog.                                                                                                        leaders as well as API designers, to
+o Can add items to a cart and complete a purchase by providing their information at checkout.                                                                    ensure that the problem space is
+o Do not have access to a persistent profile or order history.                                                                                                   better understood before
+· Registered Customers:                                                                                                                                          proceeding into the ADDR process.
+o Possess a secure account with login credentials.
+o Can view a complete history of their past and pending orders.
+o Can manage their profile by saving multiple shipping addresses and payment methods for a faster checkout experience.
+o Have the ability to cancel an order while it is in the RECEIVED status, before it moves to fulfillment.
+
+3. Product Catalog & Offerings
+· Core Products: Books offered in three primary formats: Hardcover, Paperback, and Ebook.
+· Product Attributes: Each book is defined by a rich set of data, including Title, Author, ISBN, Genre, Format, Price, Language, Previews, Customer
+Reviews, and Ratings.
+· Curated Bundles: The store offers pre-packaged collections of books (e.g., "Staff Picks," "Publisher Specials") that are sold as a single, unique product.
+· Product Discovery: Customers can find books by:
+o Searching on specific details (Title, Author).
+o Filtering results by criteria like Price Range and Format.
+o Browsing curated lists and categories.
+
+                                                                                                                                                                                32
+    Starting the Align Phase                                                                                                                                                               Coach's Notes
+
+Align Transform clarified requirements into job stories and activity steps                                                                                                       When beginning an ADDR
+                                                                                                                                                                                 coaching session, it is important to
+Human Prompt Engineer                                                                                                                                                            restrict the model from moving
+                                                                                                                                                                                 outside of the phase. Failing to do
+Ok, let's proceed to the Align phase of ADDR. Remember, we are API architects that need to translate requirements into an API design. Here are the rules and restrictions     9  so will result in the model
+for this effort:                                                                                                                                                                 attempting to design the API too
+                                                                                                                                                                                 soon, missing important steps and
+* Until I tell you otherwise, let's stay in the Align phase and not blend any activities from the other phases of ADDR                                                           key details.
+* By staying only in the Align phase, we will need to compose a set of unifying job stories and associated activities and activity steps
+* Job stories will use the standard format of WHEN, I WANT TO, SO I CAN                                                                                                          The initial prompt also asks for an
+* Job stories should be unifying job stories, meaning that they have a clear and broad scope sufficient to result in an outco me rather than completing a task                   explanation of the key artifacts
+* Job stories must be numbers JS1..n for easy reference between us and between artifacts                                                                                         within the Align phase.
+* Activity steps are actions that the user will perform via the API. Do not include any UI-specific actions by the user, such as scrolling, reading, paging through results.
+Focus on action-specific steps                                                                                                                                                   This will help those not familiar
+* The activity steps will be grouped into activities, which map to capabilities                                                                                                  with ADDR and serves to ensure
+* We will not consider the Align phase complete until we have both artifacts completed                                                                                           the model has full understanding
+* We will use business language that benefits the API consumer rather than any internal or operational terms                                                                     of the process.
+* We will not focus on anything related to HTTP yet
+* When we have determined that we have completed the Align phase, you will package the final Align deliverable as a single, clean reference sheet so it's ready for hand
+off to the Define phase
+
+Let's start by having you explain the phase, these artifacts, and why it is important so that we are clear.
+
+                                                                                                                                                                                 33
+    Starting the Align Phase (con't)                                                                                                                                   Coach's Notes
+
+Align Transform clarified requirements into job stories and activity steps
+
+                LLM Response
+
+The Align phase is the crucial bridge between the business requirements we've just defined and the technical API design that will follow. Its entire purpose       10  The response from the LLM shows
+is to ensure that everyone involved--architects, product managers, and developers--shares a common understanding of what the API needs to do from                      its understanding of ADDR. It
+the perspective of the consumer before we start designing how it will do it. It forces us to think "outside-in."                                                       focuses on two sets of artifacts:
+                                                                                                                                                                       job stories and activity steps.
+Unifying Job Stories
+                                                                                                                                                                       Job stories help to capture details
+A Unifying Job Story is a simple but powerful tool that shifts our focus from features to outcomes. It captures the user's motivation and desired goal, not            about each user journey, including
+just a single task. Format: We'll use the standard WHEN..., I WANT TO..., SO I CAN... structure.                                                                       the desired outcome to be
+o WHEN: This describes the context or situation that triggers the need.                                                                                                achieved. This will shape our
+o I WANT TO: This is the core action or goal the user wants to accomplish.                                                                                             acceptance tests and help us focus
+o SO I CAN: This describes the user's ultimate motivation or desired outcome.                                                                                          the scope of the effort throughout
+                                                                                                                                                                       the design process. Job stories also
+  · "Unifying" Scope: The key is that these stories are broad and outcome-driven. For example, a bad, task-focused story would be "When I'm on the                     support the delivery process.
+product page, I want to press the add to cart button, so I can put an item in my cart." A good, unifying story is "When I've decided on the books I want, I
+want to complete the purchase and confirm my order, so I can receive my books soon." The second story covers the entire checkout outcome.
+
+Activities and Activity Steps
+
+This artifact breaks down the "how" behind the job stories into concrete, API-level actions.
+
+· Activities: These are high-level capabilities that group related actions. Think of them as chapters in the API's story, like "Manage Shopping Cart" or
+"Process an Order."
+· Activity Steps: These are the specific, discrete actions a user performs through the API to complete an activity. This is the most critical part for our design
+work.
+o API-Focused: As you said, these steps must only be actions the API enables. We will completely ignore UI-specific interactions. For example, instead of
+"click the 'Apply Coupon' button," the activity step would be "Apply a discount code to the cart."
+
+                                                                                                                                                                                      34
+    Generating Job Stories                                                                                                                                                         Coach's Notes
+
+Align Produce a starting set of job stories based on the clarified requirements.
+
+Excellent. Using the requirements above, let's write one or more unifying job stories for each of the major flows. Remember that job stories capture jobs to be done rather    11  The first step is to ask the model to
+than steps in a process, so let's keep them high-level. Be sure to number the job stories using the format JS1..n, so that we can refer to them easily as we work through the      generate a set of unifying job
+ADDR process                                                                                                                                                                       stories. These are the "big picture"
+                                                                                                                                                                                   job stories that drive acceptance
+Excellent. Let's create the Unifying Job Stories. These will serve as the foundation for our API's capabilities, ensuring we're focused on the outcomes our                    12  tests, design, and documentation.
+consumers want to achieve. Here are the unifying job stories for the major flows we've identified.
+                                                                                                                                                                                   Some models may get a bit too
+JS1: Complete a One-Time Purchase                                                                                                                                                  detailed with the SO I CAN portion
+·                                                                                                                                                                                  of a job story. Be sure to check the
+· WHEN I find the book(s) I want to read,                                                                                                                                          output or ask the model to double
+· I WANT TO provide my shipping and payment information for a one-time purchase,                                                                                                   check itself to ensure that your job
+· SO I CAN confirm my order and receive my books without the friction of creating a permanent account.                                                                             stories result in a desired
+                                                                                                                                                                                   outcome.
+JS2: Manage a Persistent Customer Profile
+                                                                                                                                                                                   In some cases, generated job
+· WHEN I anticipate becoming a repeat customer,                                                                                                                                    stories might be better captured as
+· I WANT TO create and manage a secure account with my addresses and payment methods,                                                                                              workflow activities or activity
+· SO I CAN streamline future checkouts and have a consolidated view of all my orders.                                                                                              steps.
+
+JS3: Discover Relevant Books                                                                                                                                                                                                                         35
+
+· WHEN I'm looking for a new book,
+· I WANT TO easily search, filter, and browse the store's catalog and view detailed product information,
+· SO I CAN discover a title that matches my interests and make a confident purchasing decision.
+
+JS4: Manage an Order After Purchase
+
+· WHEN my plans change after making a purchase,
+· I WANT TO review my pending orders and cancel one before it ships,
+· SO I CAN manage my purchases flexibly and avoid an unwanted shipment.
+
+JS5: Synchronize Product Catalog Data
+
+· WHEN we need to display JSON's Bookstore products on our partner platform,
+· I WANT TO programmatically access their catalog and availability information,
+· SO I CAN ensure our listings are always accurate and up-to-date.
+    Improving the Job Stories                                                                                                                                           Coach's Notes
+
+Align Unify, split, or modify the generated job stories.                                                                                           13 After the job stories were
+
+                     Looks good. Let's renumber them. Change JS3 to JS1 and the current JS1 should be JS2. The current JS2 should be JS3                     generated from our requirements,
+                                                                                                                                                             we found that the flow was out of
+                                         Understood. Here is the reordered list of Unifying Job Stories with the new numbering.                              order, so we renumbered the job
+                                                                                                                                                             stories to better reflect the natural
+                                         JS1: Discover Relevant Books                                                                                        progression of the user through
+                                                                                                                                                             the process.
+                                         · WHEN I'm looking for a new book,
+                                         · I WANT TO easily search, filter, and browse the store's catalog and view detailed product information,            You may also find that some job
+                                         · SO I CAN discover a title that matches my interests and make a confident purchasing decision.                     stories may need to be removed or
+                                                                                                                                                             rephrased.
+                                         JS2: Complete a One-Time Purchase
+                                         ·                                                                                                         14 Review the changes to ensure that
+                                         · WHEN I find the book(s) I want to read,
+                                         · I WANT TO provide my shipping and payment information for a one-time purchase,                                    you have captured job stories that
+                                         · SO I CAN confirm my order and receive my books without the friction of creating a permanent account.              reflect outcomes, not just steps in
+                                                                                                                                                             a workflow.
+                                         JS3: Manage an Order After Purchase
+                                                                                                                                                             When ready, we will generate the
+                                         · WHEN my plans change after making a purchase,                                                                     final artifact of the Align phase:
+                                         · I WANT TO review my pending orders and cancel one before it ships,                                                activities and steps.
+                                         · SO I CAN manage my purchases flexibly and avoid an unwanted shipment.
+                                                                                                                                                                                                                                       36
+                                         JS4: Manage a Persistent Customer Profile
+
+                                         · WHEN I anticipate becoming a repeat customer,
+                                         · I WANT TO create and manage a secure account with my addresses and payment methods,
+                                         · SO I CAN streamline future checkouts and have a consolidated view of all my orders.
+
+                                         JS5: Synchronize Product Catalog Data
+
+                                         · WHEN we need to display JSON's Bookstore products on our partner platform,
+                                         · I WANT TO programmatically access their catalog and availability information,
+                                         · SO I CAN ensure our listings are always accurate and up-to-date.
+    Expanding Jobs Into Activity Steps                                                                                                                                                                            Coach's Notes
+
+Align Activity steps help to identify the steps required to complete each job story.                                                                                                                    With an initial set of job stories
+                                                                                                                                                                                                        established, the next step is to
+                                                                                                          15                                                                                            break down the job stories into
+                                                                                                                                                                                                        the activities and steps required to
+                     Let's break each unifying job story down into the activities and activity steps that are required to go from the situation tothe expected outcome. Avoid including steps taken in  perform the job/task.
+                     a UI such as scrolling or entering criteria, instead focusing on the action of submitting the criteria. Remember that activities represent milestones or incremental groups of
+                     work, while the activity steps represent a single action taken.                                                                                                                    The requirements and user
+                                                                                                                                                                                                        journey details we clarified at the
+Of course. Let's break down each unifying job story into its constituent Activities and Activity Steps.  16                                                                                             start will help to drive this effort.
+
+JS1: Discover Relevant Books                                                                                                                                                                            Some models stumble on this step,
+This job is about finding and evaluating books in the catalog.                                                                                                                                          as they want to mimic the user
+                                                                                                                                                                                                        clicking, scrolling, and entering
+· Activity: Discover Books in the Catalog                                                                                                                                                               data actions before submitting a
+  o Search for books based on criteria (e.g., title, author).                                                                                                                                           request.
+  o Browse a list of books by category.
+  o View a curated list of books (e.g., best-sellers).                                                                                                                                                  This prompt asks the LLM to focus
+                                                                                                                                                                                                        the model on action steps only.
+· Activity: Evaluate a Specific Book
+  o Retrieve detailed information for a book.                                                                                                                                                                                                                             37
+  o View reviews and ratings for a book.
+
+JS2: Complete a One-Time Purchase
+This job covers the entire guest checkout process from cart management to order confirmation.
+
+· Activity: Manage Shopping Cart
+  o Add a book or bundle to the cart.
+  o View the contents of the cart.
+  o Update the quantity of an item in the cart.
+  o Remove an item from the cart.
+  o Apply a discount code to the cart.
+
+· Activity: Provide Checkout Information
+  o Submit guest customer information (e.g., email).
+  o Submit a shipping address.
+  o Get available shipping options for the cart.
+  o Select a shipping option.
+  o Submit payment information.
+
+· Activity: Finalize the Order
+  o Create an order from the cart.
+  o Retrieve the order confirmation details
+
+.... truncated for space...
+    LLM-Generated Job Stories with Activities
+
+Align Example output generated by LLM.
+
+                                          Example of a generated set of job stories and activity steps that will inform our API design
+                                                                                                                                                                                                                                                                                                                            38
+Checking the Align Phase
+
+Align Run a gap analysis to ensure we didn't miss anything.                                                                                                                                    Coach's Notes
+
+Review the job stories and activity steps, looking for gaps in the artifacts due to missing or unclear requirements. Present anything you find as a numbered item to review for  17  LLMs are great at reconciling sets
+any updates                                                                                                                                                                          of data. Leverage this capability
+                                                                                                                                                                                     throughout the ADDR process to
+Here is a review of the artifacts, highlighting three potential gaps for clarification before we finalize the Align phase.                                                       18  ensure that you didn't miss
+                                                                                                                                                                                     anything along the way.
+1. Missing Step for Cart-to-User Association
+                                                                                                                                                                                     In this example, the LLM found
+Finding: In JS2 (Complete a One-Time Purchase), the Manage Shopping Cart activity has steps to add, view, and update a cart. However, there is no explicit                           three gaps outside of the original
+step to create or associate the cart with the user's session. A guest user needs a persistent cart that exists before they add the first item and remains                            requirements clarification effort.
+associated with them throughout their visit. Recommendation: Consider adding an activity step like "Create a new shopping cart for the session" to the
+Manage Shopping Cart activity to represent this initial action.                                                                                                                      Review the recommendations and
+                                                                                                                                                                                     either ignore or incorporate them
+2. Ambiguity in Handling Saved Information at Checkout                                                                                                                               into your work. In some cases, you
+                                                                                                                                                                                     may need to gather feedback from
+Finding: JS3 (Manage a Persistent Customer Profile) defines how a user saves addresses and payment methods. The associated job story mentions                                        your experts before proceeding.
+streamlining future checkouts, but there is no explicit activity step in any job story that describes using this saved information. Recommendation: We                               Better now than when the cost of
+should add activity steps to the Provide Checkout Information activity for a registered user's journey. These could include "List the customer's saved                               change is high.
+shipping addresses" and "List the customer's saved payment methods" to make it clear how the API facilitates a faster checkout.
+
+3. No Activity for Price or Promotion Details
+
+Finding: The Manage Shopping Cart activity includes a step to "Apply a discount code to the cart," and the requirements mentoi n bundles. However, there
+is no activity step that allows a user to understand the price breakdown, see the result of the discount, or view the detailsof a bundle before adding it to
+the cart. A customer needs to know the price to make a purchasing decision. Recommendation: Add a step to the Evaluate a Specific Book activity in JS1
+called "Retrieve pricing and promotion details for a book or bundle." This clarifies how a customer gets price information, which is fundamental to the
+discovery and evaluation process.
+
+s
+                                                                                                                                                                                                                                                                                                          39
+    Checking the Align Phase (con't)                                                                                                                                                                           Coach's Notes
+
+Align Run a coverage check to ensure we didn't miss anything.                                                                                                                                        (con't)
+
+                                                                                                          18                                                                                         Once we have reconciled
+                                                                                                                                                                                                     everything, perform a final cross-
+                     Run a coverage check and produce a coverage matrix so we can be confident the Align phase is airtight before moving forward. Then, review the job stories and activity steps,   check and address any remaining
+                     looking for gaps in the artifacts due to missing or unclear requirements. Present anything you find as a numbered item to review for any updates                                issues.
+
+                                       Of course. Performing a coverage check is the perfect way to validate our work in the Align phase.                                                            Then, proceed to the Define
+                                                                                                                                                                                                     phase, where we will start to map
+                                       A coverage check ensures that every business requirement we defined is covered by at least one activity step. This process confirms that our API design will  the job stories and activity steps
+                                       be complete and prevents critical gaps from being discovered late in the process.                                                                             into one or more API profiles.
+
+                                       Below is the coverage matrix mapping our key business requirements to the corresponding Job Story IDs and Activities.
+
+                                       API Coverage Matrix
+                                       Business Requirement Job Story ID Activity Status
+                                       Customer can browse and search the catalog JS1 Discover Books in the Catalog Covered
+                                       Customer can view detailed book information JS1 Evaluate a Specific Book Covered
+                                       .... truncated for space...
+                                       Analysis
+
+                                       The coverage matrix shows that all business requirements are fully covered by the job stories and activities we have defined. Every function the business
+                                       needs is mapped to a clear, consumer-focused action that the API will enable.
+                                       With this confirmation, we can confidently conclude that the Align phase is complete and we are ready to proceed to the Define phase.
+
+                                                                                                                                                                                                     40
+    Starting the Define Phase                                                                                                                                                                          Define
+
+Define Turn the Align artifacts into one or more API profiles that reflect scope and purpose.                                                                                           Coach's Notes
+
+Human Prompt Engineer                                                                                                                                                         When your job stories and activity
+                                                                                                                                                                              steps are clear, proceed to the
+The Align phase is now complete. Let's start the Define phase. Here are the rules and restrictions for this effort:                                                       19  Define phase. This is the phase
+                                                                                                                                                                              where we start to sketch out what
+* Until I tell you otherwise, let's stay in the Define phase and not blend any activities from the other phases of ADDR                                                   20  our API will need to do. We will
+* By staying only in the Define phase, we will need to identify the API boundaries and compose an API profile for each API that we have identified                            also look for any boundaries where
+* We will not consider the Define phase complete until we have identified the boundaries and composed API profile(s), API resource(s), published Event(s) for each            we may want to separate APIs.
+API operation, identified the API resource relationships, and a sequence diagram or sequence example of how the API would be used to complete each job story
+* API boundaries will be summarized in a table that contains the following columns: Boundary Name, Boundary Description, Job Story(s)                                         For the prompt, we will tell the
+* API profiles will be summarized in a table that contains the following columns: Operation Name, Description, Participants, Resource(s), Emitted Events, Operation           LLM to stay within the Define
+Characteristics, Operation Details                                                                                                                                            phase to avoid jumping too far
+ * The Operation Name will be in the format of operationName()                                                                                                                ahead. If necessary, you can
+ * The Participants include one or more roles or personas that will need access to the operation                                                                              always go back and adjust
+ * The Resource(s) include the primary and possible secondary resources involved in the operation                                                                             something from the previous
+ * Emitted Events includes one or two events that the API will publish when the operation completes successfully, allowing for future                                         phase.
+ * Operation Characteristics identifies the safe, unsafe, or idempotent design of the operation, and if the operation should be designed as synchronous (default) or
+asynchronous                                                                                                                                                                  As before, we ask the model to
+ * Operation Details include the request and response values, such as identifiers, resource representations, and filters. Keep in mind that we don't want to design the       move to the Define phase and
+HTTP details yet, so let's keep this to basic details                                                                                                                         explain the phase to us.
+* API resources will include a business-friendly name and a list of properties. Keep in mind that we aren't ready to define the schema details yet, so don't include any
+JSON schema details just model the resource independent of HTTP or design details                                                                                                                                                               41
+* Emitted Events should include at least one event in most cases using the format of ResourceName.EventName. For example, Project.Created
+* We will use business language that benefits the API consumer rather than any internal or operational terms
+* We will not focus on anything related to HTTP yet
+* We will identify boundaries that benefit the API consumer rather than the API producer, to ensure a better developer experience (DX) and cohesive API profiles
+* When we have determined that we have completed the Define phase, you will package the final Define deliverable as a single, clean reference sheet so it's ready for
+hand-off to the Design phase
+
+Let's start by having you explain the phase, these artifacts, and why it is important so that we are clear.
+    Starting the Define Phase (con't)                                                                                                                                                                                     Define
+
+Define Turn the Align artifacts into one or more API profiles that reflect scope and purpose.                                                                                                             Coach's Notes
+
+LLM Response                                                                                                                                                                               21  The model will also outline the
+                                                                                                                                                                                               artifacts that we want to produce
+   Excellent. Let's proceed to the Define phase. The goal of this phase is to translate the user-focused "what" we captured in the Align phase (our job stories and activities) into a         to ensure that our API's scope and
+   formal, structured model of the API's surface. We're creating a detailed blueprint that describes the API's capabilities, the data it handles, and its behavior, all while remaining        responsibilities are clear.
+   independent of any specific protocol like HTTP.
+                                                                                                                                                                                               As you may recall, the Define
+   Key Artifacts for the Define Phase                                                                                                                                                          phase strives to identify the API
+                                                                                                                                                                                               operations and characteristics that
+   We'll build out our API's blueprint by creating a series of connected artifacts.                                                                                                            are important to your API, before
+                                                                                                                                                                                               you begin to apply an API design
+   1. API Boundaries                                                                                                                                                                           style.
+   First, we'll identify the API Boundaries. Think of these as logical, consumer-focused groupings of related capabilities. Instead of exposing one massive, monolithic API, we define
+   distinct "products" or "domains" that are cohesive and easier for developers to understand and use. This is a critical step for creating a great developer experience (DX). We will         This step helps us to make
+   summarize these in a table with the columns: Boundary Name, Boundary Description, and the Job Story(s) it serves.                                                                           decisions later regarding HTTP
+                                                                                                                                                                                               methods, response codes, and
+   2. API Profiles                                                                                                                                                                             other elements that will ensure
+   For each boundary, we will compose one or more API Profiles. A profile is a detailed, protocol -agnostic contract that describes every operation the API offers. This is the core           your API is able to evolve over
+   artifact of the Define phase. Each operation in the profile will be detailed using the following columns:                                                                                   time.
+
+   · Operation Name: The action, named like a function (e.g., getBookDetails()).                                                                                                                                                                                   42
+   · Description: A clear explanation of what the operation does.
+   · Participants: The user roles who will use th is operation (e.g., Customer, Partner).
+   · Resource(s): The primary data entities involved.
+   · Emitted Events: Notifications published upon successful completion (e.g., Order.Created).
+   · Operation Characteristics:
+
+      o Safety: Safe (read-on ly), Unsafe (mod ifies data), or Id empotent (can b e repeated withou t ch anging the outcome).
+      o Execution: Synchronous (immediate response) or Asynchronous (response later).
+   · Operation Details: A high-level view of the request inputs (like iden tifiers or filters) and the response outputs.
+
+   3. API Resources and Events
+   To support the profiles, we'll also formally define our resources and events.
+
+   · API Resources: These are the business objects or "nouns" of our API (e.g., Book, Order, Customer). We'll give each a business-friendly name and list its properties, without
+   getting into technical schema details like data types.
+   · Emitted Events: These are the signals our API sends out to notify other systems of important occurrences. Defining these from the start allows us to build a more reactive and
+   extensible architecture.
+
+   By the end of this phase, we will have a complete, protocol-agnostic model of our API's structure and behavior, ready to be translated into a specific protocol (like REST) in the
+   final Design phase. Let's begin by identifying the API boundaries. We will use the previous job stories and activity steps fr om this session as source material for the Define phase.
+   Do not h ypothesize regard ing an y n ecessary details regardin g job stories an d activity steps.
+    Identifying Candidate Boundaries                                                                                                                                              Coach's Notes
+
+Define Request the LLM to evaluate potential boundaries, adjusting as needed with prompts.                                                                              Some models are better than
+                                                                                                                                                                        others at finding API boundaries.
+                                                                                                                                                                    22  Models trained on smaller,
+                                                                                                                                                                        microservice-based architectures
+Recommend any candidate boundaries as a first version of the boundaries table. Then, provide a summary of why the boundaries work and any additional                    tend to recommend smaller
+considerations, including overlap or boundaries that could be unnecessary based on requirements provided.                                                               boundaries.
+
+Be sure to suggest boundaries that align with a better developer experience rather than strictly aligning boundaries to domain concepts. Your goal is to determine      Note that this prompt is quite
+where one API or service boundary should end and another should begin, based on the business domain, invariants, consistency needs, and language differences            large, so it has been truncated in
+within the domain.                                                                                                                                                      this report. Refer to the Resources
+                                                                                                                                                                        page at the end of the report for a
+## **Rules for Identifying API Boundaries**                                                                                                                             link to the full prompt.
+
+### **1. Do *not* distribute a single domain model across APIs**                                                                                                        Remember: Boundaries should be
+Look for areas where splitting the model would require synchronous remote calls.                                                                                        for the benefit of the consumer,
+If so, keep them together.                                                                                                                                              not for optimizing your delivery
+                                                                                                                                                                        process.
+### **2. Each API corresponds to a single Bounded Context**
+A boundary is valid only if it represents:                                                                                                                                                                                                43
+
+* a distinct domain language
+* a cohesive responsibility
+* its own invariants
+* its own data ownership
+* independent lifecycle and scaling needs
+
+### **3. Invariants must be enforced *within* a boundary, not across them**
+If enforcing a rule requires strong consistency between two concepts, they belong together.
+
+### **4. Avoid synchronous cross-boundary calls during domain operations**
+
+Cross-boundary communication must *not* be needed for:
+* validations
+* invariant checks
+* business rules
+* transaction completion
+ If it is needed, merge the boundaries.
+
+.... truncated for space...
+    Identifying Candidate Boundaries                                                                                                                                      Coach's Notes
+
+Define Request the LLM to evaluate potential boundaries, adjusting as needed with prompts.                                                                      In this example, the boundaries
+                                                                                                                                                                match what is typically found for
+                                                                                                                                                            23  an order flow.
+
+Based on the job stories and activities from the Align phase, here are the recommended API boundaries.                                                          The Catalog API supports browsing
+                                                                                                                                                                existing inventory.
+Boundary Name Boundary Description  Job Story(s)
+                                                                                                                                                                The Orders API allows the user to
+Catalog API Provides all capabilities for discovering and evaluating books                                                                                      manage their cart and place their
+                    and bundles available for sale. JS1, JS5                                                                                                    order.
+
+Orders API Manages the entire lifecycle of a customer's purchase, from                                                                                          The Customers API supports
+   cart creation through checkout and post-purchase actions. JS2, JS4                                                                                           account creation and
+                                                                                                                                                                management.
+Customers API Handles the creation and management of persistent customer
+   profiles, including saved addresses and payment methods. JS3                                                                                                 Be prepared to rework your
+                                                                                                                                                                boundaries as you go, especially
+These three boundaries provide a clean separation of concerns based on the primary consumer goals.                                                              after evaluating the sequence
+                                                                                                                                                                diagrams that will be produced
+Summary and Considerations                                                                                                                                      later in this phase.
+
+These three boundaries provide a clean separation of concerns based on the primary consumer goals.                                                                                                                                44
+
+· Why They Work:
+  o Catalog API: This creates a single, authoritative source for all product-related information. It serves both public consumers browsing the store (JS1)
+
+and partner systems needing to synchronize data (JS5). Grouping these read-heavy discovery operations creates a cohesive and highly cacheable API
+surface.
+
+  o Orders API: This boundary logically groups the entire transactional workflow. The "shopping cart" is conceptually the first step of an "order," so
+placing cart management and order finalization together makes sense. Including post-purchase actions like cancellations (JS4) in the same boundary
+provides a complete view of the order lifecycle.
+
+  o Customers API: This boundary is focused entirely on the identity and data of a registered user (JS3). Separating customer profile managementfrom
+the ordering process allows for a clear security and privacy model. For instance, this API would require stricter authenticaiton than the public-facing
+Catalog API.
+
+· Additional Considerations:
+  o Overlap: There is a necessary and intentional overlap. The Orders API will interact with data managed by the Catalog API (e.g., adding a book to a
+
+cart) and the Customers API (e.g., associating an order with a registered customer). However, the capabilities remain distinct. The Orders API uses a
+book's ID; it does not manage the book's details.
+
+  o Necessity: All three boundaries are necessary as they map directly to distinct, high-level jobs to be done. We could have combined Orders and
+Customers, but separating them creates a better, more secure design that aligns with modern microservices principles. There do not appear to be any
+unnecessary boundaries at this stage.
+    Identifying Candidate Boundaries                                                                                                                                                     Coach's Notes
+
+Define Request the LLM to evaluate potential boundaries, adjusting as needed with prompts.                                                                          24 Once you have a preliminary set of
+
+                      Let's proceed to identifying the API resources we will need by reviewing the job stories and activity steps                                             boundaries, the next step is to ask
+                                                                                                                                                                              the model to help us craft our API
+                                          Based on the job stories and activity steps, here are the primary API resources we will need.                                       resources that our operations will
+                                                                                                                                                                              manage.
+                                          Catalog API Resources
+                                          These resources are the core entities related to product discovery and evaluation.                                        25 LLM models have a wide range of
+
+                                          · Book                                                                                                                              domain understanding, allowing
+                                             o Description: Represents a single, purchasable version of a book (e.g., the hardcover edition).                                 you to speed up this process
+                                             o Properties: bookId, workId, title, author, isbn, format, price, language, synopsis, coverImage.                                considerably.
+
+                                          · Work                                                                                                                              If you need to leverage some
+                                             o Description: Represents the abstract concept of a book, grouping all its different formats.                                    specific industry standards,
+                                             o Properties: workId, title, author, genre, averageRating.                                                                       mention this here as well.
+
+                                          · Bundle                                                                                                                            Spend as much time here as
+                                             o Description: A curated collection of books sold as a single unit.                                                              needed to ensure that your API
+                                             o Properties: bundleId, name, description, price, containedBooks.                                                                design reflects your domain
+                                                                                                                                                                              models and relationships.
+                                          · Review
+                                             o Description: A customer-submitted review and rating for a specific Work.                                                                                                                                 45
+                                             o Properties: reviewId, workId, customerName, rating, comment.
+
+                                          · Inventory
+                                             o Description: The abstracted availability status for a purchasable item.
+                                             o Properties: itemId (can be a bookId or bundleId), status (e.g., IN_STOCK, OUT_OF_STOCK)
+
+                                          Orders API Resources
+                                          These resources are involved in the entire transactional process, from shopping to post-purchase.
+
+                                          · Cart
+                                             o Description: A temporary container for items a customer intends to purchase.
+                                             o Properties: cartId, customerId (if applicable), items, subtotal, discounts, total.
+
+                                          · Order
+                                             o Description: A confirmed and placed purchase record.
+                                             o Properties: orderId, customerId (if applicable), items, shippingAddress, shippingMethod, total, status, placedDate.
+
+                                          .... truncated for space...
+    Generating API Profiles                                                                                                                                                                       Coach's Notes
+
+Define Allow the LLM to propose an API name, description, and recommended operations.                                                                                                   With our boundaries and
+                                                                                                                                                                                        resources established, ask the
+Let's generate an API profile for each boundary, proposing a business-friendly name and description for each API that denotes its scope and purpose along with the API              26  model to generate a first-pass API
+operations mapped from the related activity steps. For the characteristics column value of each operation, use "safe" if read-only, "unsafe" if the operation isn't idempotent,         profile that contains all API
+or "idempotent" if the operation should be idempotent. Also include "sync" or "async" based on whether the operation will return results or need to operate in the                      operations, the resources that will
+background. Finally add "bulk import" only if the operation is performing a bulk import of data                                                                                         be referenced, and the operational
+                                                                                                                                                                                        characteristics.
+Here are the proposed API profiles for each boundary, with operations mapped direc tly from our activity steps.
+                                                                                                                                                                                        Remember that we aren't looking
+Catalog API Profile                                                                                                                                                                     to add HTTP details yet. So, no
+                                                                                                                                                                                        POST, GET, PUT, or URL paths are
+API Name: Product Catalog                                                                                                                                                           27  needed for this step.
+API Description: Provides public access to discover, browse, and evaluate all books and bundles sold in JSON's Bookstore. It is the single source of truth for product information
+for both customers and external partners.                                                                                                                                               Review your API profiles to see if
+                                                                                                                                                                                        everything looks as expected.
+Operation Name Description   Participants Resource(s) Emitted Events Characteristics Operation Details
+                                                                                                                                                                                        Use prompts to make any
+searchBooks() Finds books matching specific query criteria. Cus tomer, P artner Book (none) safe, sync Request: searchQuery,filters                                                     adjustments as needed to your API
+                                                                                                                                                                                        profile, especially after the
+Res ponse: listOf(Book)                                                                                                                                                                 diagram in the next steps.
+
+browseByCategory() Retrieves a list of books within a given category. Customer, Partner Book (none) s afe, sync Req uest: categoryId                                                                                                                      46
+                           Res ponse: listOf(Book)
+
+getCurated List() Retrieves a specially curated list of books. Customer, Partner Book, Bundle (none) safe, sync Request: listId
+
+Res ponse: listOf(Book or    Bun dle)
+
+getBookDetails() Retrieves all detailed information for a single book. Customer, Partner Book, Work (none) safe, sync Request: bookId
+                          Res ponse: Book, W ork
+
+getBookReviews() Fetches all customer reviews for a book's work. Customer, Partner Review,Work (none) safe, sync Request: workId
+                           Res ponse: listOf(Review)
+
+getRecommendations() Retrieves a list of recommen ded books. Cu stomer, Partner Book (none) safe, sync Request: boo kId
+                           Res ponse: listOf(Book)
+
+getInven toryStatus() Gets the availability status for a product. Partner Inven tory (none) safe, sync Request: itemId
+                           Res ponse: Inventory
+
+.... truncated for space...
+    Generating Flow Diagrams                                                                                                                                                                                     Coach's Notes
+
+Define Produce flow diagrams of the API resolving each job story using Mermaid.js format.                                                                                                   28 You may notice that your API
+
+                      Generate the sequence diagrams for each job story using Mermaid format                                                                                                          profile looks complete at-a-glance.
+                                                                                                                                                                                                      However, it isn't complete until it
+                                         Here are the sequence diagrams for each job story, rendered in Mermaid format. This diagram shows a consumer first searchingthe catalog and then             can realize the outcomes of your
+                                          retrieving the specific details and reviews for a book they are interested in.                                                                              job stories.
+
+                                          JS1: Discover Relevant Books                                                                                                                                The next step is to ask the model
+                                         This diagram shows a consumer first searching the catalog and then retrieving the specific details and reviews for a book they are interested in.            to generate sequence flow
+                                                                                                                                                                                                      diagrams to demonstrate how
+                                         sequenceDiagram                                                                                                                                              your API will take a user from their
+                                            participant Consumer                                                                                                                                      problem (WHEN) to their desired
+                                            participant Catalog API                                                                                                                                   outcome (SO I CAN) for each job
+                                            Consumer->>Catalog API: searchBooks(query="API Design")                                                                                                   story.
+                                            activate Catalog API
+                                            Catalog API-->>Consumer: listOf(Book)                                                                                                           29 Manually, this can be a time-
+                                            deactivate Catalog API
+                                            Consumer->>Catalog API: getBookDetails(bookId="bk_123")                                                                                                   consuming process, but the LLM
+                                            activate Catalog API                                                                                                                                      makes it easier to quickly generate
+                                            Catalog API-->>Consumer: Book representation                                                                                                              diagrams using previous artifacts,
+                                            deactivate Catalog API                                                                                                                                    then review them for gaps.
+                                            Consumer->>Catalog API: getBookReviews(workId="wk_abc")
+                                            activate Catalog API
+                                            Catalog API-->>Consumer: listOf(Review)
+                                            deactivate Catalog API
+
+                                          JS2: Complete a One-Time Purchase
+                                         This diagram illustrates the guest checkout flow, from creating a cart to placing the final order.
+
+                                         .... truncated for space...
+
+                                                                                                                                                                                            47
+    LLM-Generated Artifact: Sequence Diagrams
+
+Define Example output generated by LLM.
+
+Example 1: JS1 Sequence  Example 2: JS2 Sequence
+         Diagram
+                         Diagram                  48
+    Checking the Define Phase                                                                                                                                                         Coach's Notes
+
+Define Ask the LLM to review all assets and identify any gaps with recommended fixes.                                                                                       Finally, perform a check of
+                                                                                                                                                                            everything to see if something is
+Look for missing operations in the flow that haven't been considered. Recommend improvements to the API profiles                                                        30  missing. This might happen if you
+                                                                                                                                                                            opted to add or remove an API
+Based on a review of the flows, here are two recommendations for new operations to improve the API profiles.                                                            31  operation after your diagrams
+                                                                                                                                                                            were initially generated.
+Recommendations for New Operations
+                                                                                                                                                                            If needed, incorporate any
+1. Add an Operation to Retrieve a Customer's Cart                                                                                                                           recommendations provided by the
+                                                                                                                                                                            model. In this example, it was
+Finding: The sequence diagrams assume a user always knows their cartId. However, a returning registered customer who added items to their cart in a                         discovered that the shopping cart
+previous session and then logged out would have no way to retrieve their persistent cart. The currentgetCart(cartId) operation in the Orders API requires                   wasn't initially created for the
+the ID, which the user would not have.                                                                                                                                      shopper before the first item was
+Recommendation: Add a getCustomerCart() operation to the Orders API.                                                                                                        added. Discuss this requirement
+                                                                                                                                                                            and user flow with your SMEs,
+· Description: Allows an authenticated user with a valid, unexpired session token to obtain a new token with a renewed expiration time.                                     then adjust if needed.
+· Participants: Customer
+· Resource(s): Customer                                                                                                                                                     Use prompts to make necessary
+· Emitted Events: Customer.SessionRefreshed                                                                                                                                 changes.
+· Characteristics: unsafe, sync
+· Benefit: This improves security by allowing for shorter token lifecycles while maintaining a seamless user experience, preventing theuser from being                                                                                        49
+logged out unexpectedly during an active session.
+
+2. Add an Operation to Retrieve a Customer's Cart
+
+Finding: The sequence diagrams assume a user always knows their cartId. However, a returning registered customer who added items to their cart in a
+previous session and then logged out would have no way to retrieve their persistent cart. The currentgetCart(cartId) operation in the Orders API requires
+the ID, which the user would not have.
+
+.... truncated for space...
+
+Add item 1. Also add support for removing an item from the cart and emptying the cart. Remove the authenticate operation as we will use OAuth2 framework and an IdP to  32
+manage the authentication flow. Update diagrams.
+     Starting the Design Phase                                                                                                                                                       Coach's Notes
+
+Design Transform the API profiles into high-level API design artifacts.                                                                                                    With the Define phase complete,
+                                                                                                                                                                           we have a better understanding of
+Human Prompt Engineer                                                                                                                                                      the APIs we need and the
+                                                                                                                                                                           operations they will offer.
+The Define phase is now complete. Let's start the Design phase. Here are the rules and restrictions for this effort:                                                   33
+                                                                                                                                                                           Next, we enter the Design phase.
+* The Align and Define phases have been completed already                                                                                                                  In this phase, we will apply our API
+* Until I tell you otherwise, let's stay in the Design phase and not blend any activities from the other phases of ADDR                                                    design style guide to a high-level
+* By staying only in the Design phase, we will be required to produce a high-level API design                                                                              API design, based upon the API
+* For this design, let's assume we will use RESTful practices and leverage the HTTP protocol, including HTTP methods, response codes, and headers, appropriately           profiles we created previously.
+* We will not consider the Design phase complete until we have the high-level API design artifact complete for each API profile provided from the Define phase
+* Each high-level API design will be summarized in a table that contains the following columns: HTTP Method, Resource Path, Operation Name, Description, Request,          We will prompt the model to
+Response (Success), and Response (Error)                                                                                                                                   transition us to the Design phase,
+ * The Request and Response columns will contain details about input and output data related to query filters, identifiers, and resources referenced                       constrain the work to only this
+ * The Response (Error) column should include the proper 2xx success code based on the operation type and any 4xx family of HTTP response codes that the operation         phase, and have the model coach
+might produce                                                                                                                                                              us on what is required.
+* API operations have already been identified in the Define phase artifacts, which will be provided
+* Be sure to select the appropriate HTTP method based on the characteristics of each operation
+* When we have determined that we have completed the Design phase, you will package the final Design deliverable as a single, clean reference sheet so it's ready for
+hand-off to the Refine phase
+
+Let's start by having you explain the phase, these artifacts, and why it is important so that we are clear.
+
+                                                                                                                                                                           50
+     Starting the Design Phase                                                                                                                                            Coach's Notes
+
+Design Transform the API profiles into high-level API design artifacts.                                                                                         The LLM demonstrates its
+                                                                                                                                                                understanding of the ADDR design
+LLM Response                                                                                                                                                    phase by reminding us that we will
+                                                                                                                                                                transform API profile(s) from the
+Excellent. Let's proceed to the Design phase. The goal of this phase is to translate the protocol-agnostic blueprint we created in the Define phase into a  34  Define phase into a high-level
+concrete, technology-specific design. We're moving from the abstract structure to the tangible details of how a developer will interact with our API over       HTTP API design using REST-based
+the network. In our case, we'll be applying RESTful principles using the HTTP protocol.                                                                         practices.
+
+The High-Level API Design Artifact                                                                                                                              Most models will generate HTTP
+The primary artifact we'll produce is a High-Level API Design for each of our three APIs (Catalog, Orders, and Customers). This document will serve as the      details, including naming
+technical contract for our API, specifying every detail an API consumer needs to know to interact with it successfully.                                         conventions and choice of URL
+                                                                                                                                                                formats, based on the data it was
+We will create a table for each API that details every operation. Here's a breakdown of the columns and what they represent:                                    trained upon.
+
+· HTTP Method: We will select the appropriate HTTP verb (GET, POST, PUT, DELETE, etc.) that best matches the characteristics of the operation we                After we review the purpose of the
+defined earlier. For example, a safe operation will map to GET, while an idempotent state-changing operation will map to PUT or DELETE.                         phase, we will need to share our
+· Resource Path: This is the specific URI for the endpoint. We will follow RESTful conventions, using plural nouns for collections (e.g., /books) and path      specific API design style
+parameters for specific instances (e.g., /books/{bookId}).                                                                                                      preferences.
+· Operation Name: The familiar, business-friendly name from the Define phase (e.g., getBookDetails()). This links our technical design directly back to
+our business requirements.                                                                                                                                                                                                        51
+· Description: A brief summary of the endpoint's purpose.
+· Request: The data the consumer sends to the API, including any path parameters, query parameters for filtering/sorting, and the structure of the
+request body.
+· Response (Success): The data and status code the API returns on a successful request. This includes the structure of the response body and the
+appropriate 2xx HTTP status code (e.g., 200 OK, 201 Created, 204 No Content).
+· Response (Error): The potential 4xx family of HTTP status codes the operation might produce for client-side errors (e.g., 400 Bad Request, 404 Not
+Found).
+
+Why This Phase is Crucial
+This phase is critical because it creates the final, implementable specification for our API.
+
+1.Creates a Clear Contract: This artifact removes all ambiguity. Developers consuming our API and the teams building it will have a precise, shared
+understanding of how it works.
+2.Enforces Consistency: By systematically applying RESTful design patterns, we ensure our API is predictable, logical, and easy for developers to learn
+and use.
+3. Enables Parallel Development: With this design finalized, teams can work in parallel. The backend team can build the API, frontend and mobile teams
+can develop against a mock server based on this contract, and technical writers can draft the official documentation.
+
+Let's begin by creating the high-level design for our first API.
+     Establishing Style Guidelines                                                                                                                                                                           Coach's Notes
+
+Design Prompt the model to apply specific style guidelines to match the enterprise style guide.                                                                                         35 First, we need to provide a list of
+
+                                    For reference, attached is a list of style gui de preferences, to help you with naming conventi ons, HTTP method selection, and URL path creati on            API design standards to ensure our
+                                                                                                                                                                                                  API is consistent across other APIs
+                                    1. General API Principles:                                                                                                                                    in our portfolio. This step often
+                                       * Design APIs to be intuitive, consistent, and interoperable within an open ecosystem.                                                                     removes the need for API linting or
+                                       * Foll ow RESTful principles, ensuring each API is a well-defi ned resource wi th appropri ate HTTP methods.                                               limits the errors our linters would
+                                       * Defaul t response format must be JSON, adheri ng to RFC8259 standards.                                                                                   otherwise generate if we designed
+                                                                                                                                                                                                  our APIs manually. This is a huge
+                                    2. URL and Resource Design:                                                                                                                                   time saving step.
+                                       * Base path struct ure: {busi ness-domain}/{v#}/{resource-type}/{id}.
+                                       * URLs must be human-readable, avoid application-specific names, and use hyphen-delimi ted business domains.                                               Tip: Submit your API style guide to
+                                       * Major version (v#) must be included and fol low a whole-number format (e.g., /v 1/).                                                                     an LLM and request that it create a
+                                       * Resources should be nouns i n pl ural form (except si ngletons) and use UUIDs as identifiers.                                                            prompt that will direct the LLM
+                                                                                                                                                                                                  when designing an API. This will
+                                    3. HTTP Methods and Functional Resources:                                                                                                                     save considerable time writing the
+                                       * Use standard HTTP m ethods:                                                                                                                              prompt manually based upon your
+                                          * GET: Retriev e resources.                                                                                                                             style guide preferences.
+                                          * POST: Create resources or execute commands (Use a verb name for the funct ion, e.g. search, but do not use $ prefi x for functions).
+                                          * PATCH: Partially update a resource.                                                                                                                                                                                             52
+                                          * PUT: Full resource replacement (limi ted usage).
+                                          * DELETE: Remov e a resource and return 204 No Content (no response body).
+                                       * Functional endpoints (e.g., /resource/search, /resource/validate) must be i nv oked with POST.
+
+                                    4. Q uery Parameters & Filteri ng:
+                                       * Use lowerCamelCase for query parameters.
+                                       * Fil ters must support :
+                                          * AND conditions for multiple parameters.
+                                          * OR conditions using comma-separated v alues.
+                                       * Reserved functional parameters start with _ (e.g., _i ncl ude).
+                                       * Sorting must be indicated using sort:
+                                          * Example: GET /v 1/orders?sort=createdDat e.
+
+                                    5. Response Handling and Standardizat ion:
+                                       * Use HTTP status codes appropri ately:
+                                          * 200 OK: Successful retri eval of resources.
+                                          * 201 Created: New resource created; response must contain the full resource represent ation.
+                                          * 204 No Content: DELETE must return 204 No Content, not a message.
+                                          * 400 Bad Request: Invalid request.
+                                          * 404 Not Found: Resource does not exi st.
+                                          * 409 Conflict: Busi ness vali dation failure.
+                                          * 500 Internal Serv er Error: Unexpected issues.
+                                       * POST, PUT, and PA TCH responses must include the full resource r epresentation r ather than a success m essage.
+                                       * JSON responses must avoid envelope-wrapping (e.g., {"status": "success", "data": {...}} is not allowed).
+
+                                    .... continued...
+     Establishing Style Guidelines                                                                                                                                 Coach's Notes
+                                                                                                                                                        prompt continues...
+Design Prompt the model to apply specific style guidelines to match the enterprise style guide.
+                                                                                                                                              36 Once the model has understood
+                                6. Dat a F ormatting & S er iali zation:
+                                   * Dates must follow RFC-3339.                                                                                        the style guide, you are ready to
+                                   * Use ISO 8601 for durations and i nt ervals.                                                                        proceed.
+                                   * 64-bit i nt egers exceeding JavaScript limits must be returned as strings.
+                                   * Collections must be JSON arrays with each i tem containing a resourceId.
+
+                                7. Securi ty & Compliance:
+                                   * Do not pass sensitive dat a vi a query parameters; use POST for searches invol ving PII.
+                                   * Support O Auth 2.0 and API keys for authentication.
+                                   * Im plem ent CORS with appropriate access contr ols.
+
+                                8. Paginat ion & Sorting (O ffset-based Pagi nation):
+                                   * Use offset to specify the starting posit ion (zero-based index).
+                                   * Use l imit to defi ne the number of instances to fetch.
+                                   * Defaul t values shoul d be defined in t he API specification.
+                                   * Sorting must be indicated via sort. Example: GET /v1/orders?offset=20&l imit =10&sort=createdDat e
+                                   * Retrieves 10 orders starting from the 21st record, sorted by createdDat e.
+
+                                9. Error Handling & Problem Details:
+                                   * Use RFC 9457 Problem Detail s (formerly RC 7807) format for error responses.
+
+                                      Understood. I have reviewed the REST API Style Guide and will adhere to its conventions as we proceed.
+
+                                                                                                                                              53
+     Designing the APIs                                                                                                                                                                                   Coach's Notes
+
+Design Ask the LLM to generate a high-level design of each API using the style guidelines.
+
+Let's begin the Design phase by creating the high-level API design for our first boundary: the Product Catalog API                                                                                    37 Since most APIs will contain quite
+
+Product Catalog API Design                                                                                                                                                                                      a few operations and resources, it
+                                                                                                                                                                                                                is best to limit the design effort to
+Description: Provides public access to discover, browse, and evaluate all books and bundles sold in JSON's Bookstore. It is the single source of truth for product
+information for both customers and external partners.                                                                                                                                                           the first API when you have a large
+                                                                                                                                                                                                                scope of effort.
+
+HTTP Resource Path                                      Operation Name         Desc rip tion                                                 Request Respons e (Success) Response (Error)
+Metho d
+
+POST /prod uct-catalog/v1/ books/search                    searchB ook s( )                   Finds books matching specific query criteria.       Body: searchQuery, filters
+
+                                                                                                                                                  200 OK: listOf(Book)                                38 Review the generated API design
+                                                                                                                                                  400: Bad Request
+                                                                                                                                                                                                               in its tabular format first. Adjust
+GET /product-catalog/v1/ categories/{categoryId}/books     browseBy Cat egory( )              Retrieves a list of books within a given category.  Path: categoryId<br>Query: sort, offset, limit               your style guide prompt as needed
+                                                                                                                                                  200 OK: listOf(Book)
+                                                                                                                                                                                                               to ensure you are fully compliant
+                                                                                                                                                  404: Not Found                                               with your organization's API
+                                                                                                                                                                                                               design style guide.
+GET /product-catalog/v1/ curated-lists/{listId}            getCurated List( )                 Retrieves a specially curated list of books . Path: listId<br>Query: offset, limit
+
+                                                                                                                                                                      200 OK: listOf(Book or Bundle)
+                                                                                                                                                                      404: Not Found
+
+GET /product-catalog/v1/ books/{bookId}                    get Book Det ails( )               Retrieves detailed information for a single book.   Path: bookId
+                                                                                                                                                  200 OK: Book repres entation
+                                                                                                                                                  404: Not Found
+
+GET /product-catalog/v1/ works/{workId}/reviews         get Book Rev iews ( )  Fetches all customer reviews for a book's work.               Path: workId<br>Query: sort, offset, limit
+                                                                                                                                                               200 OK: listOf(Review)
+
+                                                                                                                                                               404: Not Found
+
+GET /product-catalog/v1/ books/{bookId}/recommendations    get Recom mendat ions( )           Retrieves a list of recommended books .        Path: bookId<br>Query: offset, limit
+
+                                                                                                                                                               200 OK: listOf(Book)                       Once everything looks good,
+                                                                                                                                                               404: Not Found                             proceed to transform each API
+                                                                                                                                                                                                          profile into a high-level API design.
+GET /product-catalog/v1/ inventory/{itemId}                getInven toryStatus()              Gets the availability status for a product.    Path: itemId
+                                                                                                                                                               200 OK: Inventory rep res entation
+
+                                                                                                                                                               404: Not Found
+
+Generate the high-level API design table for the next API                                                                                                                                             39                 54
+     Checking the Design Phase                                                                                                                                 Coach's Notes
+
+Design Cross-check the artifacts against previous phase artifacts for any gaps or improvements.
+
+Let's finalize this phase by cross-checking everything. Perform the following steps:                                                                       40  The Design phase goes fast, as
+                                                                                                                                                               most of the effort of API design
+· Cross check every operation from the Define phase against the design tables to ensure nothing was dropped or altered in intent.                              was focused in the Align and
+· Confirm each job story  operation  API design mapping is intact and still consumer aligned.                                                                  Define phases. The only thing left
+· Verify naming conventions, URI patterns, and HTTP method usage are consistent across all boundaries.                                                         is to apply your API style guide and
+· Ensure error handling patterns are uniform (status codes, error payload structure -- even if payload details are finalized in Refine).                       then cross-check that your API
+                                                                                                                                                               design reflects your previous
+Of course. Here is a final cross-check of the Design phase artifacts to ensure everything is consistent and complete.                                      41  artifacts.
+
+1. Operation Coverage Check                                                                                                                                    Make any adjustments as needed,
+I have cross-checked every operation identified in the Define phase against the final API design tables.                                                       based on your own review and the
+                                                                                                                                                               model's cross-check.
+· Result: Pass. All operations from the Product Catalog, Orders, and Customer Accounts API profiles have been successfully translated into a specific
+HTTP endpoint. No operations were dropped, and the intent of each operation has been preserved.                                                                                                                                  55
+
+2. Job Story Alignment Check
+I have traced the path from the initial job stories through the operations to the final API design.
+
+· Result: Pass. The API designs remain perfectly aligned with the consumer-centric goals of the original job stories. For example, JS2 (Complete a One-
+Time Purchase) is fully supported by a logical sequence of POST /carts, POST /carts/{cartId}/items, and POST /orders endpoints, creating a clear and
+intuitive workflow for the API consumer.
+
+3. Consistency Verification
+I have reviewed the naming conventions, URI patterns, and HTTP method usage across all three API designs.
+
+· Result: Pass. The design demonstrates strong consistency:
+ o Naming Conventions: All resource paths use hyphen-delimited business domains (e.g., /product-catalog, /orders-management).
+ o URI Patterns: The URI structure /{business-domain}/v1/{resource} is applied uniformly. Plural nouns are used for collections, and functional endpoints
+like /cancel and /search are used consistently.
+ o HTTP Method Usage: The selection of HTTP methods is consistent with the style guide and the operation's characteristics. GET is used for safe
+retrievals, POST is used for resource creation and functional commands, PATCH for partial updates, and DELETE for removals.
+    Starting the Refine Phase                                                                                                                                                                      Coach's Notes
+
+Refine Generate assets such as OpenAPI Specification documents, README docs, and diagrams.
+
+Human Prompt Engineer                                                                                                                                                                          42  We now enter the final phase of
+                                                                                                                                                                                                   ADDR, the Refine phase. In this
+Let's proceed to the Refine Phase. Here are the rules and restrictions for this effort:                                                                                                            phase, we produce artifacts that
+                                                                                                                                                                                                   help to obtain fast feedback. Doing
+· The Align, Define, and Design phases have been completed already. I will attach those artifacts separately                                                                                       so now allows us to make changes
+· Until I tell you otherwise, let's stay in the Refine phase and not blend any activities from the other phases of ADD R                                                                           when the cost of change is still
+· By staying only in the Refine phase, we will be required to produce an OpenAPI Specification of each API and a README document that demonstrates HTTP request/response                           low.
+examples for each job story
+· We will not consider the Refine phase complete until we have completed the artifacts for this phase
+· When we have determined that we have completed the Refine phase, you will package the final Refine deliverable as a single, clean reference sheet so it's ready for hand off to the
+delivery team
+
+Let's start by having you explain the phase, these artifacts, and why it is important so that we are clear. Since I have alre ady gathered artifacts from the previous phases, I will provide
+those next.
+
+Excellent. Let's move into the final phase of our process: the Refine phase. The goal of this phase is to take the high-level REST design we just completed and                                43  Review the artifacts for the Refine
+transform it into a formal, implementation-ready specification. This is where we finalize all the technical details, creating the definitive contract that                                         phase based upon the coaching of
+developers will use to build, test, and consume the APIs.                                                                                                                                          the model.
+
+Key Artifacts for the Refine Phase                                                                                                                                                                 In some cases, you may want to
+                                                                                                                                                                                                   ignore some artifacts and generate
+We will produce two critical artifacts for each of our three APIs.                                                                                                                                 others that your organization
+                                                                                                                                                                                                   prefers to use.
+1. OpenAPI Specification
+The OpenAPI Specification (OAS) is the primary technical artifact. It is a machine-readable YAML or JSON file that describes every single detail of the API in a                                                                                                     56
+standardized format. This includes:
+
+· Paths and Operations: The exact URI paths and their corresponding HTTP methods (GET, POST, etc.).
+· Parameters: Detailed definitions of all path, query, and header parameters.
+· Request/Response Bodies: Precise JSON schemas that define the exact structure, data types, and validation rules (e.g., required fields, string patterns) for
+all data sent to and from the API.
+· Security Schemes: Formal definitions of the security mechanisms, such as OAuth2.
+· Servers: The base URLs for different environments (e.g., development, production).
+
+The OAS is the single source of truth for the API's contract.
+
+.... truncated for space...
+    Generating OpenAPI Documents                                                                                                                                            Coach's Notes
+
+Refine Using the work completed so far, generate a complete OpenAPI document for review.
+
+44 Generate a fully compliant OpenAPI 3.1 specification that reflects the job stories and activity steps submitted previously and that adheres to the API design standards  Generating an OpenAPI document
+                                                                                                                                                                            is often the most time-consuming
+described above. Include required fields and examples for each property. Examples should be consistent across operations when possible, to demonstrate a basic workflow.    step in any API design process.
+Group operations under a tag and include tag meta data to properly document each group of operations. Start with the first API.                                             Since we have done the hard work
+                                                                                                                                                                            up-front to produce our ADDR-
+Here is the fully compliant OpenAPI 3.1 specification for the first API.                                                  45                                                based artifacts, LLMs can generate
+                                                                                                                                                                            complete and thoughtful API
+openapi: 3.1.0                                                                                                                                                              documentation quickly using a
+info:                                                                                                                                                                       single prompt.
+ tit le: Product Catal og API
+ description: Provides public access to discover, browse, and evaluat e all books and bundles sold i n JSON's Bookstore.                                                    Some models introduce minor
+ version: "1.0.0"                                                                                                                                                           OpenAPI errors that can be
+ta gs :                                                                                                                                                                     corrected via follow-up prompts or
+ - nam e: Product Catalog                                                                                                                                                   with a small, manual fix. Most
+                                                                                                                                                                            models, however, will generate
+  description: Discover and evaluat e all products avai lable for sale.                                                                                                     valid OpenAPI documents.
+pat hs:
+ /product-catalog/v 1/books/search                                                                                                                                                                                                            57
+post:
+
+    ta gs :
+     - Product Catal og
+    summ ary : S earch for Book s
+    operat ionId: searchBooks
+    description: Finds books matching specific query criteria.
+    requestBody:
+     required: t rue
+     content:
+       appli cation/json:
+
+        s chem a:
+          type: object
+          properties:
+           s ea rchQue ry:
+
+             type: string
+             example: "API Desi gn"
+           filters:
+             type: object
+             properties:
+
+.... truncated for space...
+    LLM-Generated Artifact: OpenAPI Documents
+
+Refine Example output generated by LLM.
+
+Generated documentation based upon the LLM-generated OpenAPI document  58
+    Generating README Documentation                                                                                                                                     Coach's Notes
+
+Refine Demonstrate the API usage using a README doc, the basis for a "Getting Started" guide.                                                                       46 OpenAPI documentation is a
+
+                       Let's produce README-based request/response examples using Markdown for each of the job stories that demonstrate the use of the API design.      helpful reference, but API
+
+                                            JS1: Discover Relevant Books                                                                                                consumers also need to
+                                            A customer wants to find a book about "API Design" and check its details and reviews.
+                                                                                                                                                                        understand how they will use your
+                                            1. Search for the book
+                                            The customer searches for books with "API Design" in the title.                                                             APIs to deliver on desired
+
+                                            Request:                                                                                                                47  outcomes captured in your job
+                                            curl -X POST 'https://api.jsonsbookstore.com/product-catalog/v1/books/search' \                                             stories.
+                                            -H 'Content-Type: application/json' \
+                                            -d '{                                                                                                                       LLMs equipped with the artifacts
+                                             "searchQuery": "API Design"                                                                                                previously generated can quickly
+                                            }'                                                                                                                          generate README-style
+                                                                                                                                                                        documentation that guides the
+                                            Response 200 OK:                                                                                                            reader step-by-step in using your
+                                                                                                                                                                        API to deliver those desired
+                                                             JSON                                                                                                       outcomes.
+                                                            [
+                                                              {                                                                                                         Review the generated
+                                                                                                                                                                        documentation then address any
+                                                               "boo kId": "a 1b2c3d4-e5f6-7890-1234-567890abcdef",                                                      gaps or improvements you
+                                                               "workId": "b 2c3d4e5-f6a7-8901-2345-67890abcdef0",                                                       identify.
+                                                             "title": "Design in g Web APIs ",
+                                                               "au tho r": "Jane Doe",                                                                                                                                                    59
+                                                               "format": "Pap erback",
+                                                               "price": 24.99
+                                                              }
+                                                             ]
+
+                                            2. Get book details
+
+                                            The customer retrieves the full details for the book they found.
+
+                                            .... truncated for space...
+    LLM-Generated Artifact: README Documentation
+
+Refine Example output generated by LLM.
+
+                                       Example of a generated README doc that shows how the API will be used to realize job story JS1
+                                                                                                                                                                                                                                                                                                                              60
+    Checking the Refine Phase                                                                                                                              Coach's Notes
+
+Refine Cross-check the Refine artifacts against all previous artifacts.
+
+Here is the final cross-check of the README examples against the API design.                                                                           48  Use the LLM's cross-check
+                                                                                                                                                           capabilities to spot any differences
+Final Artifact Cross-Check                                                                                                                             49  between your changes and
+                                                                                                                                                           previous artifacts.
+I have reviewed the README examples against the final API designs and OpenAPI specifications to ensure complete alignment.
+                                                                                                                                                           Use prompts to make any final
+· Operations Check: Pass. Every curl command in the README maps directly to an operation defined in the API design tables and OpenAPI files. No new        changes. You may want to ask the
+or undocumented operations were introduced.                                                                                                                model to generate a fresh set of
+                                                                                                                                                           artifacts that reflect any changes
+· Resources Check: Pass. The JSON payloads in the request and response examples use the exact resource structures (Book, Cart, Order, Customer, etc.)      you made.
+and properties defined in the final resource models. No new or undefined properties were added.
+
+· Workflow Logic Check: Pass. The sequence of API calls shown for each job story is logical and accurately reflects the intended use of the APIs. For
+example, the guest checkout flow correctly creates a cart before adding an item and creating the order, using consistent identifiers across steps.
+
+Conclusion
+
+The README examples are a faithful and accurate representation of the final API design. All artifacts are in alignment. The Refine phase is complete.
+
+                                                               50
+
+Congratulations! You now have a thoughtful, well-designed API that focuses on the needs of users rather than purely exposing
+raw data. Use this or a fresh LLM chat session to make any further improvements as needed.
+
+                                                                                                                                                                                                                                                                                       61
+4 Choosing Your AI Assistant
+
+LLM Capability Matrix
+
+                              Select the model that best fits your need
+
+                               Ratings and findings
+                               Capability matrix (by LLM model)
+                               Model evaluation methodology
+
+                              www.launchany.com                          62
+Anthropic   Findings:
+Claude
+Sonnet 4.5  - Wasn't trained or aware of ADDR.
+
+            - However, the model was able to be
+            trained with ADDR website to
+            develop basic awareness.
+
+            - Had to redirect the model at times
+            with prompts.
+
+            - Didn't offer a full coaching process
+            but satisfactory experience
+            considering the on-the-fly learning.
+
+            - Artifact generation was slower
+            than most models but was error-free
+            and complete.
+
+                                                    63
+Microsoft    Findings:
+Copilot
+with         - Good domain modeling
+Smart GPT-5  capabilities.
+
+             - Was unable to conduct the full
+             ADDR process in a single chat
+             session.
+
+             - Some artifacts had syntax errors
+             that needed to be fixed.
+
+             - Recommended additional artifacts
+             and actions along the way that could
+             be useful.
+
+                                                   64
+Google Gemini  Findings:
+2.5 Pro
+               - Excellent domain modeling
+               capabilities.
+
+               - Able to conduct the full ADDR
+               process in a single chat session with
+               minimal prompt guidance required.
+
+               - Very fast responses.
+
+               - Artifacts were complete and error-
+               free.
+
+               - Lacked some gap analysis
+               capabilities regarding the API design.
+
+                                                       65
+Google Gemini  Findings:
+3.0 Thinking
+               - Excellent domain modeling
+               capabilities.
+
+               - Able to conduct the full ADDR
+               process in a single chat session with
+               minimal prompt guidance required.
+
+               - Good at coaching through the full
+               process.
+
+               - Slower than Gemini 2.5 Pro by 2-
+               3x.
+
+               - Better at identifying gaps than
+               Gemini 2.5 Pro.
+
+                                                      66
+OpenAI        Findings:
+GPT-5.1 Auto
+              - Was familiar with ADDR and
+              capable of performing all tasks.
+
+              - Better job story creation
+              experience that avoided too many,
+              fine-grained job stories.
+
+              - Good at identifying gaps
+              throughout the process.
+
+              - Struggled with smaller boundaries
+              for each API, which required
+              additional prompting to better align
+              with job story outcomes.
+
+                                                    67
+OpenAI     Findings:
+GPT-5 Pro
+           - Very slow with no additional
+           insights offered.
+
+           - While the requirements Q&A
+           prompting resulted in fewer
+           questions asked, the time to process
+           prompts outweighs the savings.
+
+           - Unable to follow strict prompt
+           instructions when outlining user
+           journeys.
+
+           - Use only for deep research on
+           business requirements.
+
+           - NOT RECOMMENDED for API
+           design coaching.
+
+                                                 68
+Grok 4 Expert  Findings:
+
+               - Comprehensive business
+               requirements assessment.
+
+               - Understands ADDR but lacked
+               coaching guidance.
+
+               - Some generated artifacts were not
+               valid.
+
+               - Limited screen width given to table
+               outputs, making it difficult to work
+               with the model to design the API
+               (UX issue).
+
+                         Note: At the time of this report, Grok 4.1 is in beta. We will review this model in a
+                         future report due to frequent changes to the model during its beta.
+
+                                                                                                                                                                                                              69
+LLM Capability Findings - Details
+
+                                                       Anthropic Claude Microsoft Copilot  Google Gemini                                          Google Gemini     OpenAI     Grok 4 Expert
+                                                                                               2.5 Pro                                             3.0 Thinking  GPT-5.1 Auto
+                                                       Sonnet 4.5  Smart GPT-5
+                                                                                                  Yes
+ADDR Awareness                                                                                    Yes
+                                                                                                  Yes
+Model is aware of ADDR process                         No          Yes                            Yes                                             Yes            Yes           Yes
+
+Model explains ADDR phases and artifacts               Yes3        Yes                            Yes                                             Yes            Yes           Yes
+                                                                                                  Yes
+Model engages in a coached ADDR session                No          Yes                                                                            Yes            Yes           No
+
+Model transitions to each ADDR phase without starting  Yes         No                                                                             Yes            Yes           Yes
+
+a new chat session
+
+Business Requirements
+
+Model asks clarifying questions for business           Yes         Yes                                                                            Yes            Yes           Yes
+requirements
+
+Model recommends improvements to avoid rework and      Yes         No                                                                             Yes            Yes           Yes
+breaking API changes
+
+                                1 Some intentional gaps were missed by the model and had to be prompted by the API designer
+
+                                2 Model may introduce minor errors that have to be corrected, but overall produces a complete and valid document
+                                3 Not built in. Model had to search the web to understand the concept
+                                4 Not by default. Additional human prompt guidance
+
+@launchany                                                         www.launchany.com                                                                                                70
+LLM Capability Findings - Details(con't)
+
+                                                        Anthropic Claude Microsoft Copilot  Google Gemini                                      Google Gemini     OpenAI     Grok Expert
+                                                                                                2.5 Pro                                         3.0 Thinking  GPT-5.1 Auto
+                                                        Sonnet 4.5  Smart GPT-5                                                                                                  Yes
+                                                                                                   Yes                                                                           Yes
+Align Phase                                                                                        Yes                                                                           Yes
+                                                                                                   Yes                                                                           Yes
+Model is aware of job story concepts                    Yes         Yes                            Yes                                         Yes            Yes                Yes
+                                                                                                   Yes                                                                           Yes
+Model generates unifying job stories from requirements  No4         Yes                            Yes                                         Yes            Yes                Yes
+in the job story format                                                                            Yes                                                                           No
+                                                                                                   Yes
+Model evaluates job stories and identifies gaps         Yes         Yes                                                                        Yes            Yes                           71
+
+Model identifies follow-up questions based on job       Yes         Yes                                                                        Yes            Yes
+stories
+
+Model captures activity steps for each job story        No4         Yes                                                                        Yes            Yes
+
+Model requests clarifications of activity steps         Yes         Yes                                                                        Yes            Yes
+
+Model evaluates and identifies gaps in activity steps   Yes         Yes                                                                        Yes            Yes
+
+Model determines if sufficient information exists to    No          Yes                                                                        Yes            Yes
+
+proceed to the Define Phase
+
+@launchany                   1 Some intentional gaps were missed by the model and had to be prompted by the API designer
+                             2 Model may introduce minor errors that have to be corrected, but overall produces a complete and valid document
+                             3 Not built in. Model had to search the web to understand the concept
+                             4 Not by default. Additional human prompt guidance
+
+                                                                                        www.launchany.com
+LLM Capability Findings - Details(con't)
+
+                                                        Anthropic Claude Microsoft Copilot  Google Gemini                                      Google Gemini     OpenAI     Grok Expert
+                                                                                                2.5 Pro                                         3.0 Thinking  GPT-5.1 Auto
+                                                        Sonnet 4.5  Smart GPT-5                                                                                                  Yes
+                                                                                                                                                                    Yes          Yes
+Define Phase                                                                                                                                                        Yes          Yes
+                                                                                                                                                                    Yes          Yes
+Model recommends API resources given Align artifacts    Yes         Yes                     Yes                                                Yes                  Yes          Yes
+                                                                                                                                                                    Yes          Yes
+Model recommends API operations given Align artifacts   Yes         Yes                     Yes                                                Yes                  Yes          Yes
+                                                                                                                                                                    Yes          No
+Model identifies gaps with follow-up questions for      Yes         Yes                     Yes1                                               Yes                  Yes
+                                                                                                                                                                                            72
+captured API operations
+
+Model recommends API boundaries that ensure high        No4         Yes                     Yes                                                Yes
+cohesion and loose coupling
+
+Model produces a model sequence diagram or sequence     Yes         Yes                     Yes                                                Yes
+script for each job story
+
+Model produces an error-free model sequence diagram     Yes         Yes                     Yes                                                Yes
+
+or sequence script for each job story
+
+Model evaluates API operations for key characteristics  Yes         Yes 2                   Yes                                                Yes
+
+(safe, unsafe, idempotence)
+
+Model determines if sufficient information exists to    No          Yes 2                   Yes                                                Yes
+proceed to the Design Phase
+
+@launchany                   1 Some intentional gaps were missed by the model and had to be prompted by the API designer
+                             2 Model may introduce minor errors that have to be corrected, but overall produces a complete and valid document
+                             3 Not built in. Model had to search the web to understand the concept
+                             4 Not by default. Additional human prompt guidance
+
+                                                                                        www.launchany.com
+LLM Capability Findings - Details(con't)
+
+                                                        Anthropic Claude Microsoft Copilot  Google Gemini                       Google Gemini     OpenAI     Grok Expert
+                                                                                                2.5 Pro                          3.0 Thinking  GPT-5.1 Auto
+                                                        Sonnet 4.5  Smart GPT-5                                                                                   Yes
+                                                                                                   Yes                                                            Yes
+Design Phase                                                                                       Yes                                                            Yes
+                                                                                                  Yes1                                                            Yes
+Model transforms an API style guide into prompt format  Yes         Yes                            Yes                          Yes            Yes                No
+                                                                                                   Yes
+Model generates a REST-based API design based upon      Yes         Yes                                                         Yes            Yes
+the Define Artifacts
+
+Model generates a REST-based API design that complies   Yes         Yes                                                         Yes            Yes
+with the API design rules
+
+Model generates a REST-based API design that applies    Yes         Yes                                                         Yes            Yes
+
+each operation's Define characteristics
+
+Model determines if sufficient information exists to    No          No4                                                         Yes            Yes
+proceed to the Refine Phase
+
+              1 Some intentional gaps were missed by the model and had to be prompted by the API designer
+
+              2 Model may introduce minor errors that have to be corrected, but overall produces a complete and valid document
+              3 Not built in. Model had to search the web to understand the concept
+              4 Not by default. Additional human prompt guidance
+
+@launchany                                                          www.launchany.com                                                                        73
+LLM Capability Findings - Details(con't)
+
+                                                          Anthropic Claude Microsoft Copilot  Google Gemini                                  Google Gemini     OpenAI     Grok Expert
+                                                                                                  2.5 Pro                                     3.0 Thinking  GPT-5.1 Auto
+                                                          Sonnet 4.5  Smart GPT-5                                                                                              Yes
+                                                                                                                                                    Yes           Yes         Yes2
+Refine Phase                                                                                                                                       Yes2          Yes2          Yes
+                                                                                                                                                    Yes           Yes         Yes2
+Model generates an OpenAPI Specification (v3.0) for the   Yes         Yes                     Yes                                                  Yes2          Yes2          Yes
+current API design                                                                                                                                  Yes           Yes          Yes
+                                                                                                                                                    Yes           Yes          Yes
+Model generates a valid OpenAPI Specification (v3.0) for  Yes         Yes2                    Yes                                                   Yes           Yes          No
+                                                                                                                                                    Yes           Yes
+the current API design                                                                                                                                                                    74
+
+Model generates an OpenAPI Specification (v3.1) for the   Yes         Yes                     Yes
+current API design
+
+Model generates a valid OpenAPI Specification (v3.1) for  Yes         Yes2                    Yes
+
+the current API design
+
+Model produces a design sequence diagram or sequence      Yes         Yes                     Yes
+
+script for each job story
+
+Model produces a valid design sequence diagram or         Yes         No                      Yes
+sequence script for each job story
+
+Model produces a README-style document showing            Yes         Yes                     Yes
+request/response sets for each job story
+
+Model produces a valid Postman Collection showing         Yes         Yes                     Yes
+
+request/response sets for each job story
+
+                           1 Some intentional gaps were missed by the model and had to be prompted by the API designer
+
+                           2 Model may introduce minor errors that have to be corrected, but overall produces a complete and valid document
+                           3 Not built in. Model had to search the web to understand the concept
+                           4 Not by default. Additional human prompt guidance
+
+@launchany                                                            www.launchany.com
+Model                         Publicly Hosted Models. We focused on publicly-hosted production-
+Evaluation                    ready (i.e., non-beta) models for this version of the report. This
+Approach                      ensures that models are readily available and likely adopted by the
+                              organization. Pro or thinking models were selected whenever possible
+How each model was evaluated  to balance speed with the necessary skills for thoughtful API design.
+
+                              ADDR awareness and coaching. We evaluated models on their
+                              existing awareness of the ADDR process. In the case of a model that
+                              lacks awareness, we evaluated if they could learn ADDR for the
+                              specific session. We also evaluated if the model can coach the
+                              designer through the ADDR process.
+
+                              Artifact Creation. Finally, we needed to ensure that artifacts could be
+                              generated by the model to avoid the additional step of human artifact
+                              creation after prompting is complete. This included the creation of
+                              OpenAPI, Mermaid.js diagrams, and README-style documentation for
+                              fast feedback loops.
+
+                                                                                                                                                                                                  75
+5 Taking the First Step
+
+Try it Yourself
+
+                         Additional resources to get started
+
+                          About the Book "Principles of Web API Design"
+                          Learn ADDR at your own pace
+                          GitHub repository with starter prompts
+
+                         www.launchany.com                               76
+Additional Resources
+
+Learn more and accelerate your API design efforts
+
+    Prompt Starter Pack                                               GitHub Logomark
+
+Get started with starter prompts, guiderails, and tips in the GitHub     Principles of Web API
+Repo. Leverage these starter prompts to accelerate your AI-assisted      Design: Delivering Value
+API design coaching sessions.                                            with APIs and
+                                                                         Microservices
+    Buy the Book
+
+Purchase "Principles of Web API Design" to learn more about the
+ADDR process. The book brings together principles and processes to
+help you succeed across the entire API design lifecycle using REST-
+based, GraphQL, and gRPC-based APIs.
+
+    Take the Course
+
+Gain hands-on experience with the instructor-led course by the
+creator of the ADDR process, James Higginbotham. Receive
+feedback from the author and receive a certificate of completion
+toward your API design coach certification.
+
+                                                                                                                                                                                                                                                                                                       77
+About the Author
+
+James Higginbotham is an API and AI coach, with experience in API strategy and
+execution, software architecture, and assisting teams in delivering API platforms
+and products.
+As the founder of LaunchAny, James guides organizations through their AI and
+digital transformation journey, ensuring alignment between business and
+technology through product-based thinking to deliver a great customer
+experience.
+James has published several titles, including his latest book, "Principles of Web
+API Design: Delivering Value with APIs and Microservices", published by Addison-
+Wesley.
+He also offers training courses at APICoach.io.
+
+                                                                                                                                                                                                                                                                                                         78
+

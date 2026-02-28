@@ -1,6 +1,6 @@
 ---
 description: ADDR (Align-Define-Design-Refine) API design methodology conventions for the drone-web project
-globs: design/addr/**
+globs: design/*/addr/**
 alwaysApply: false
 ---
 
@@ -8,8 +8,12 @@ alwaysApply: false
 
 This project uses the ADDR (Align-Define-Design-Refine) API design methodology by James Higginbotham.
 
-- **Prompts guide:** `design/addr/addr-ai-prompts.md` — follow these prompts for each phase
-- **Design artifacts:** `design/addr/{phase}/` — Align, Define, Design, Refine deliverables
+- **Prompts guide:** `design/addr-ai-prompts.md` — follow these prompts for each phase
+- **Design artifacts:** `design/{domain}/addr/{phase}/` — Align, Define, Design, Refine deliverables per domain
+- **Completed domains:** `design/catalog-storefront/addr/` — Catalog Storefront (read side)
+- **Baseline domain:** `design/catalog-management/addr/` — Catalog Management v1 (write side baseline)
+- **Current domain:** `design/catalog-management-v2/addr/` — Catalog Management v2 (active write-side run)
 - **Domain:** Mechatronic product ecommerce (drones, motors, ESCs, flight controllers, sensors, frames, batteries, FPV gear)
 - **Validation:** Use `@redocly/cli lint` for OpenAPI, `@asyncapi/cli validate` for AsyncAPI. Create `validation.md` in each phase folder.
 - **Commit:** Commit and push after each completed ADDR phase
+- **Decision logging:** Record decisions only in `.ralph/agent/decisions.md` (no duplicated decision tables in `STATE.md`)

@@ -1,0 +1,253 @@
+openapi: 3.1.0
+info:
+  title: Technical Documentation API
+  description: Write-side document upload, versioning, and retirement.
+  version: 1.0.0
+  contact:
+    name: Drone Web API Team
+  license:
+    name: Proprietary
+    url: https://droneparts.com/terms
+servers:
+  - url: https://api.droneparts.com/technical-docs/v1
+    description: Production
+security:
+  - apiKey: []
+  - oauth2: []
+tags:
+  - name: TechnicalDocs
+    description: Document upload, versioning, association, and retirement
+paths:
+  /documents:
+    post:
+      operationId: uploadDocument
+      tags: [TechnicalDocs]
+      summary: Upload technical document artifact
+      parameters:
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UploadDocumentRequest'
+      responses:
+        '201':
+          description: Document uploaded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /products/{productId}/documents/{documentId}:
+    put:
+      operationId: associateDocumentToProduct
+      tags: [TechnicalDocs]
+      summary: Associate document to product
+      parameters:
+        - $ref: '#/components/parameters/productId'
+        - $ref: '#/components/parameters/documentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [isPrimary]
+              properties:
+                isPrimary: { type: boolean }
+      responses:
+        '200':
+          description: Link updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDocumentLink'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /documents/{documentId}:
+    patch:
+      operationId: updateDocumentMetadata
+      tags: [TechnicalDocs]
+      summary: Update document metadata
+      parameters:
+        - $ref: '#/components/parameters/documentId'
+        - $ref: '#/components/parameters/ifMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Document updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+  /documents/{documentId}/versions:
+    post:
+      operationId: publishDocumentVersion
+      tags: [TechnicalDocs]
+      summary: Publish document version
+      parameters:
+        - $ref: '#/components/parameters/documentId'
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishDocumentVersionRequest'
+      responses:
+        '201':
+          description: Version published
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentVersion'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /documents/{documentId}/retirements:
+    post:
+      operationId: retireDocument
+      tags: [TechnicalDocs]
+      summary: Retire document
+      parameters:
+        - $ref: '#/components/parameters/documentId'
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string }
+      responses:
+        '201':
+          description: Document retired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    oauth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.droneparts.com/oauth/token
+          scopes:
+            technical-docs:write: Manage technical documentation
+  parameters:
+    productId:
+      name: productId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    documentId:
+      name: documentId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    ifMatch:
+      name: If-Match
+      in: header
+      required: true
+      schema: { type: string }
+    idempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: { type: string, minLength: 8 }
+  responses:
+    BadRequest:
+      description: Invalid request payload
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/ProblemDetails' }
+    NotFound:
+      description: Resource not found
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/ProblemDetails' }
+    Conflict:
+      description: Business rule conflict
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/ProblemDetails' }
+    PreconditionFailed:
+      description: If-Match does not match current version
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/ProblemDetails' }
+  schemas:
+    Document:
+      type: object
+      required: [documentId, productId, title, documentType, status]
+      properties:
+        documentId: { type: string, format: uuid }
+        productId: { type: string, format: uuid }
+        title: { type: string }
+        documentType: { type: string }
+        status: { type: string, enum: [active, retired] }
+        latestVersion: { type: integer }
+        updatedDate: { type: string, format: date-time }
+    DocumentVersion:
+      type: object
+      required: [documentVersionId, documentId, versionNumber]
+      properties:
+        documentVersionId: { type: string, format: uuid }
+        documentId: { type: string, format: uuid }
+        versionNumber: { type: integer }
+        versionNotes: { type: string }
+    UploadDocumentRequest:
+      type: object
+      required: [productId, documentType, title, storageReference, checksum]
+      properties:
+        productId: { type: string, format: uuid }
+        documentType: { type: string }
+        title: { type: string }
+        storageReference: { type: string }
+        checksum: { type: string }
+    PublishDocumentVersionRequest:
+      type: object
+      required: [storageReference, checksum]
+      properties:
+        storageReference: { type: string }
+        checksum: { type: string }
+        versionNotes: { type: string }
+    ProductDocumentLink:
+      type: object
+      required: [productId, documentId, isPrimary]
+      properties:
+        productId: { type: string, format: uuid }
+        documentId: { type: string, format: uuid }
+        isPrimary: { type: boolean }
+    ProblemDetails:
+      type: object
+      required: [type, title, status]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string }

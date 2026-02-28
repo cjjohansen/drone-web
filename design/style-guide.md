@@ -98,3 +98,12 @@ GET  /partner-catalog/v1/feed
 - Do not pass sensitive data via query parameters — use `POST` for searches involving PII.
 - Support OAuth 2.0 and API keys for authentication.
 - Implement CORS with appropriate access controls.
+
+## 10. Write-Side Conventions (Command APIs)
+
+- Use `Idempotency-Key` header for unsafe `POST` command endpoints that may be retried by clients.
+- For idempotent command semantics on `POST`, the same `Idempotency-Key` and equivalent request payload must return the original result.
+- Use `If-Match` with strong ETags for optimistic concurrency when updating mutable resources with `PUT`/`PATCH`.
+- Return `412 Precondition Failed` when `If-Match` does not match the current resource version.
+- Prefer `202 Accepted` for asynchronous command submission and return a trackable job or request resource.
+- Bulk command endpoints must return item-level status references for partial success/failure handling.

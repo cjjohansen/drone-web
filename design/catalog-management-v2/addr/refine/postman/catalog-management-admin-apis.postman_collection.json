@@ -1,0 +1,166 @@
+{
+  "info": {
+    "name": "Catalog Management v2 Admin APIs",
+    "_postman_id": "f4b9b585-1497-4d09-a8b2-90f01c0adc24",
+    "description": "Write-side admin APIs for product lifecycle, docs, pricing, inventory, taxonomy, compatibility, governance, and ingestion.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "https://api.droneparts.com" },
+    { "key": "apiKey", "value": "<api-key>" }
+  ],
+  "item": [
+    {
+      "name": "Product Lifecycle",
+      "item": [
+        {
+          "name": "Create Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-API-Key", "value": "{{apiKey}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sku\": \"TMOTOR-VELOX-V2306-1750KV\",\n  \"name\": \"T-Motor Velox V2306 1750KV\",\n  \"brand\": \"T-Motor\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/product-lifecycle/v1/products", "host": ["{{baseUrl}}"], "path": ["product-lifecycle", "v1", "products"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Technical Docs",
+      "item": [
+        {
+          "name": "Upload Document",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-API-Key", "value": "{{apiKey}}" },
+              { "key": "Idempotency-Key", "value": "docs-upload-20260226-001" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"1f5f3f8a-7b6e-4f2d-90d9-f6c6417d8158\",\n  \"documentType\": \"datasheet\",\n  \"title\": \"Velox Datasheet\",\n  \"storageReference\": \"s3://catalog-docs/velox-v2306.pdf\",\n  \"checksum\": \"sha256:abc123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/technical-docs/v1/documents", "host": ["{{baseUrl}}"], "path": ["technical-docs", "v1", "documents"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pricing",
+      "item": [
+        {
+          "name": "Queue Repricing Job",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-API-Key", "value": "{{apiKey}}" },
+              { "key": "Idempotency-Key", "value": "repricing-20260226-001" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"scopeType\": \"category\",\n  \"scopeReference\": \"motors-brushless\",\n  \"adjustmentType\": \"percentage\",\n  \"adjustmentValue\": -7.5\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/pricing/v1/repricing-jobs", "host": ["{{baseUrl}}"], "path": ["pricing", "v1", "repricing-jobs"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inventory",
+      "item": [
+        {
+          "name": "Update Stock Quantity",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-API-Key", "value": "{{apiKey}}" },
+              { "key": "If-Match", "value": "\"v12\"" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"onHandQuantity\": 460,\n  \"reason\": \"Cycle count correction\"\n}" },
+            "url": { "raw": "{{baseUrl}}/inventory/v1/inventory-positions/5b745f26-e4d1-4f0f-ae5d-8f95e25d2f8f/quantity", "host": ["{{baseUrl}}"], "path": ["inventory", "v1", "inventory-positions", "5b745f26-e4d1-4f0f-ae5d-8f95e25d2f8f", "quantity"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Taxonomy",
+      "item": [
+        {
+          "name": "Create Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-API-Key", "value": "{{apiKey}}" },
+              { "key": "Idempotency-Key", "value": "category-20260226-001" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Brushless Motors\",\n  \"slug\": \"motors-brushless\",\n  \"sortOrder\": 10\n}" },
+            "url": { "raw": "{{baseUrl}}/taxonomy/v1/categories", "host": ["{{baseUrl}}"], "path": ["taxonomy", "v1", "categories"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Compatibility Rules",
+      "item": [
+        {
+          "name": "Create Compatibility Rule",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-API-Key", "value": "{{apiKey}}" },
+              { "key": "Idempotency-Key", "value": "compat-rule-20260226-001" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"expression\": \"motor.maxVoltage <= esc.maxVoltage\",\n  \"severity\": \"error\",\n  \"componentTypes\": [\"motor\", \"esc\"]\n}" },
+            "url": { "raw": "{{baseUrl}}/compatibility-rules/v1/compatibility-rules", "host": ["{{baseUrl}}"], "path": ["compatibility-rules", "v1", "compatibility-rules"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Catalog Governance",
+      "item": [
+        {
+          "name": "Submit Approval Case",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-API-Key", "value": "{{apiKey}}" },
+              { "key": "Idempotency-Key", "value": "approval-20260226-001" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"changeType\": \"price-adjustment\",\n  \"boundarySource\": \"pricing\",\n  \"sourceReferenceId\": \"9a78f8ea-5fd3-4fe9-b5e4-9adf8c96e115\",\n  \"riskLevel\": \"high\",\n  \"rationale\": \"Large catalog-wide markdown\"\n}" },
+            "url": { "raw": "{{baseUrl}}/catalog-governance/v1/approval-cases", "host": ["{{baseUrl}}"], "path": ["catalog-governance", "v1", "approval-cases"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bulk Ingestion",
+      "item": [
+        {
+          "name": "Submit Import Batch",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-API-Key", "value": "{{apiKey}}" },
+              { "key": "Idempotency-Key", "value": "ingestion-20260226-001" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"sourceSystem\": \"erp\",\n  \"submittedFileReference\": \"s3://imports/2026-02-26.csv\",\n  \"submissionChecksum\": \"sha256:def456\",\n  \"totalItems\": 5000\n}" },
+            "url": { "raw": "{{baseUrl}}/bulk-ingestion/v1/import-batches", "host": ["{{baseUrl}}"], "path": ["bulk-ingestion", "v1", "import-batches"] }
+          }
+        }
+      ]
+    }
+  ]
+}

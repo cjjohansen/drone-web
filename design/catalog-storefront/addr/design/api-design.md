@@ -2,7 +2,7 @@
 
 > **Phase:** ADDR — Design
 > **Status:** Draft
-> **Style Guide:** [style-guide.md](style-guide.md)
+> **Style Guide:** [style-guide.md](../../../style-guide.md)
 
 ---
 

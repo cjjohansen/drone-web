@@ -1,0 +1,5366 @@
+{
+  "slices": [
+    {
+      "id": "slice-001",
+      "status": "Created",
+      "index": 1,
+      "title": "Create A New Product Master Record",
+      "context": "Product Lifecycle API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-create-product",
+          "title": "Create A New Product Master Record",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "POST /products",
+          "dependencies": [
+            {
+              "id": "evt-product-created",
+              "type": "OUTBOUND",
+              "title": "Product Created",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-product-created",
+          "title": "Product Created",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Product.Created.",
+          "dependencies": [
+            {
+              "id": "cmd-create-product",
+              "type": "INBOUND",
+              "title": "Create A New Product Master Record",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-create-product-state",
+              "type": "OUTBOUND",
+              "title": "Product State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-create-product-state",
+          "title": "Product State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Product Created.",
+          "dependencies": [
+            {
+              "id": "evt-product-created",
+              "type": "INBOUND",
+              "title": "Product Created",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-001",
+          "title": "Given prior state when Create A New Product Master Record then Product Created",
+          "given": [
+            {
+              "title": "Prior Product state exists",
+              "id": "spec-slice-001-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Create A New Product Master Record",
+              "id": "spec-slice-001-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-create-product"
+            }
+          ],
+          "then": [
+            {
+              "title": "Product Created",
+              "id": "spec-slice-001-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-product-created"
+            },
+            {
+              "title": "Product State",
+              "id": "spec-slice-001-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-create-product-state"
+            }
+          ],
+          "linkedId": "slice-001"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Product Lifecycle Manager",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "Product"
+      ]
+    },
+    {
+      "id": "slice-002",
+      "status": "Created",
+      "index": 2,
+      "title": "Update Technical Specification Set",
+      "context": "Product Lifecycle API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-update-product-specifications",
+          "title": "Update Technical Specification Set",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "PATCH /products/{productId}/specifications",
+          "dependencies": [
+            {
+              "id": "evt-product-specification-updated",
+              "type": "OUTBOUND",
+              "title": "Product Specification Updated",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-product-specification-updated",
+          "title": "Product Specification Updated",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Product.SpecificationUpdated.",
+          "dependencies": [
+            {
+              "id": "cmd-update-product-specifications",
+              "type": "INBOUND",
+              "title": "Update Technical Specification Set",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-update-product-specifications-state",
+              "type": "OUTBOUND",
+              "title": "Product State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-update-product-specifications-state",
+          "title": "Product State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Product Specification Updated.",
+          "dependencies": [
+            {
+              "id": "evt-product-specification-updated",
+              "type": "INBOUND",
+              "title": "Product Specification Updated",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-002",
+          "title": "Given prior state when Update Technical Specification Set then Product Specification Updated",
+          "given": [
+            {
+              "title": "Prior Product state exists",
+              "id": "spec-slice-002-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Update Technical Specification Set",
+              "id": "spec-slice-002-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-update-product-specifications"
+            }
+          ],
+          "then": [
+            {
+              "title": "Product Specification Updated",
+              "id": "spec-slice-002-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-product-specification-updated"
+            },
+            {
+              "title": "Product State",
+              "id": "spec-slice-002-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-update-product-specifications-state"
+            }
+          ],
+          "linkedId": "slice-002"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Product Lifecycle Manager",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "Product"
+      ]
+    },
+    {
+      "id": "slice-003",
+      "status": "Created",
+      "index": 3,
+      "title": "Transition Product Lifecycle State",
+      "context": "Product Lifecycle API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-set-product-lifecycle-state",
+          "title": "Transition Product Lifecycle State",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "POST /products/{productId}/lifecycle-transitions",
+          "dependencies": [
+            {
+              "id": "evt-product-lifecycle-state-changed",
+              "type": "OUTBOUND",
+              "title": "Product Lifecycle State Changed",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-product-lifecycle-state-changed",
+          "title": "Product Lifecycle State Changed",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Product.LifecycleStateChanged.",
+          "dependencies": [
+            {
+              "id": "cmd-set-product-lifecycle-state",
+              "type": "INBOUND",
+              "title": "Transition Product Lifecycle State",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-set-product-lifecycle-state-state",
+              "type": "OUTBOUND",
+              "title": "Product State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-set-product-lifecycle-state-state",
+          "title": "Product State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Product Lifecycle State Changed.",
+          "dependencies": [
+            {
+              "id": "evt-product-lifecycle-state-changed",
+              "type": "INBOUND",
+              "title": "Product Lifecycle State Changed",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-003",
+          "title": "Given prior state when Transition Product Lifecycle State then Product Lifecycle State Changed",
+          "given": [
+            {
+              "title": "Prior Product state exists",
+              "id": "spec-slice-003-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Transition Product Lifecycle State",
+              "id": "spec-slice-003-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-set-product-lifecycle-state"
+            }
+          ],
+          "then": [
+            {
+              "title": "Product Lifecycle State Changed",
+              "id": "spec-slice-003-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-product-lifecycle-state-changed"
+            },
+            {
+              "title": "Product State",
+              "id": "spec-slice-003-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-set-product-lifecycle-state-state"
+            }
+          ],
+          "linkedId": "slice-003"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Product Lifecycle Manager",
+          "authzRequired": true
+        },
+        {
+          "name": "Governance Reviewer",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "Product",
+        "ProductLifecycleTransition"
+      ]
+    },
+    {
+      "id": "slice-004",
+      "status": "Created",
+      "index": 4,
+      "title": "Update Non-spec Core Attributes",
+      "context": "Product Lifecycle API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-update-product-attributes",
+          "title": "Update Non-spec Core Attributes",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "PATCH /products/{productId}",
+          "dependencies": [
+            {
+              "id": "evt-product-attributes-updated",
+              "type": "OUTBOUND",
+              "title": "Product Attributes Updated",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-product-attributes-updated",
+          "title": "Product Attributes Updated",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Product.AttributesUpdated.",
+          "dependencies": [
+            {
+              "id": "cmd-update-product-attributes",
+              "type": "INBOUND",
+              "title": "Update Non-spec Core Attributes",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-update-product-attributes-state",
+              "type": "OUTBOUND",
+              "title": "Product State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-update-product-attributes-state",
+          "title": "Product State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Product Attributes Updated.",
+          "dependencies": [
+            {
+              "id": "evt-product-attributes-updated",
+              "type": "INBOUND",
+              "title": "Product Attributes Updated",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-004",
+          "title": "Given prior state when Update Non-spec Core Attributes then Product Attributes Updated",
+          "given": [
+            {
+              "title": "Prior Product state exists",
+              "id": "spec-slice-004-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Update Non-spec Core Attributes",
+              "id": "spec-slice-004-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-update-product-attributes"
+            }
+          ],
+          "then": [
+            {
+              "title": "Product Attributes Updated",
+              "id": "spec-slice-004-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-product-attributes-updated"
+            },
+            {
+              "title": "Product State",
+              "id": "spec-slice-004-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-update-product-attributes-state"
+            }
+          ],
+          "linkedId": "slice-004"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Product Lifecycle Manager",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "Product"
+      ]
+    },
+    {
+      "id": "slice-005",
+      "status": "Created",
+      "index": 5,
+      "title": "Mark Product As Discontinued",
+      "context": "Product Lifecycle API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-discontinue-product",
+          "title": "Mark Product As Discontinued",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "POST /products/{productId}/discontinuations",
+          "dependencies": [
+            {
+              "id": "evt-product-discontinued",
+              "type": "OUTBOUND",
+              "title": "Product Discontinued",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-product-discontinued",
+          "title": "Product Discontinued",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Product.Discontinued.",
+          "dependencies": [
+            {
+              "id": "cmd-discontinue-product",
+              "type": "INBOUND",
+              "title": "Mark Product As Discontinued",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-discontinue-product-state",
+              "type": "OUTBOUND",
+              "title": "Product State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-discontinue-product-state",
+          "title": "Product State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Product Discontinued.",
+          "dependencies": [
+            {
+              "id": "evt-product-discontinued",
+              "type": "INBOUND",
+              "title": "Product Discontinued",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-005",
+          "title": "Given prior state when Mark Product As Discontinued then Product Discontinued",
+          "given": [
+            {
+              "title": "Prior Product state exists",
+              "id": "spec-slice-005-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Mark Product As Discontinued",
+              "id": "spec-slice-005-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-discontinue-product"
+            }
+          ],
+          "then": [
+            {
+              "title": "Product Discontinued",
+              "id": "spec-slice-005-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-product-discontinued"
+            },
+            {
+              "title": "Product State",
+              "id": "spec-slice-005-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-discontinue-product-state"
+            }
+          ],
+          "linkedId": "slice-005"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Product Lifecycle Manager",
+          "authzRequired": true
+        },
+        {
+          "name": "Governance Reviewer",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "Product",
+        "ProductLifecycleTransition"
+      ]
+    },
+    {
+      "id": "slice-006",
+      "status": "Created",
+      "index": 6,
+      "title": "Link Successor Product For Discontinued Item",
+      "context": "Product Lifecycle API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-link-replacement-product",
+          "title": "Link Successor Product For Discontinued Item",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "PUT /products/{productId}/replacement",
+          "dependencies": [
+            {
+              "id": "evt-product-replacement-linked",
+              "type": "OUTBOUND",
+              "title": "Product Replacement Linked",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-product-replacement-linked",
+          "title": "Product Replacement Linked",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Product.ReplacementLinked.",
+          "dependencies": [
+            {
+              "id": "cmd-link-replacement-product",
+              "type": "INBOUND",
+              "title": "Link Successor Product For Discontinued Item",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-link-replacement-product-state",
+              "type": "OUTBOUND",
+              "title": "Product State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-link-replacement-product-state",
+          "title": "Product State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Product Replacement Linked.",
+          "dependencies": [
+            {
+              "id": "evt-product-replacement-linked",
+              "type": "INBOUND",
+              "title": "Product Replacement Linked",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-006",
+          "title": "Given prior state when Link Successor Product For Discontinued Item then Product Replacement Linked",
+          "given": [
+            {
+              "title": "Prior Product state exists",
+              "id": "spec-slice-006-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Link Successor Product For Discontinued Item",
+              "id": "spec-slice-006-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-link-replacement-product"
+            }
+          ],
+          "then": [
+            {
+              "title": "Product Replacement Linked",
+              "id": "spec-slice-006-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-product-replacement-linked"
+            },
+            {
+              "title": "Product State",
+              "id": "spec-slice-006-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-link-replacement-product-state"
+            }
+          ],
+          "linkedId": "slice-006"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Product Lifecycle Manager",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "ProductReplacementLink"
+      ]
+    },
+    {
+      "id": "slice-007",
+      "status": "Created",
+      "index": 7,
+      "title": "Upload Technical Document Artifact",
+      "context": "Technical Documentation API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-upload-document",
+          "title": "Upload Technical Document Artifact",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "POST /documents",
+          "dependencies": [
+            {
+              "id": "evt-document-uploaded",
+              "type": "OUTBOUND",
+              "title": "Document Uploaded",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-document-uploaded",
+          "title": "Document Uploaded",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Document.Uploaded.",
+          "dependencies": [
+            {
+              "id": "cmd-upload-document",
+              "type": "INBOUND",
+              "title": "Upload Technical Document Artifact",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-upload-document-state",
+              "type": "OUTBOUND",
+              "title": "Document State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-upload-document-state",
+          "title": "Document State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Document Uploaded.",
+          "dependencies": [
+            {
+              "id": "evt-document-uploaded",
+              "type": "INBOUND",
+              "title": "Document Uploaded",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-007",
+          "title": "Given prior state when Upload Technical Document Artifact then Document Uploaded",
+          "given": [
+            {
+              "title": "Prior Document state exists",
+              "id": "spec-slice-007-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Upload Technical Document Artifact",
+              "id": "spec-slice-007-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-upload-document"
+            }
+          ],
+          "then": [
+            {
+              "title": "Document Uploaded",
+              "id": "spec-slice-007-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-document-uploaded"
+            },
+            {
+              "title": "Document State",
+              "id": "spec-slice-007-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-upload-document-state"
+            }
+          ],
+          "linkedId": "slice-007"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Documentation Steward",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "Document",
+        "DocumentVersion"
+      ]
+    },
+    {
+      "id": "slice-008",
+      "status": "Created",
+      "index": 8,
+      "title": "Link Document To Product Record",
+      "context": "Technical Documentation API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-associate-document-to-product",
+          "title": "Link Document To Product Record",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "PUT /products/{productId}/documents/{documentId}",
+          "dependencies": [
+            {
+              "id": "evt-product-document-associated",
+              "type": "OUTBOUND",
+              "title": "Product Document Associated",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-product-document-associated",
+          "title": "Product Document Associated",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Product.DocumentAssociated.",
+          "dependencies": [
+            {
+              "id": "cmd-associate-document-to-product",
+              "type": "INBOUND",
+              "title": "Link Document To Product Record",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-associate-document-to-product-state",
+              "type": "OUTBOUND",
+              "title": "Product State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-associate-document-to-product-state",
+          "title": "Product State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Product Document Associated.",
+          "dependencies": [
+            {
+              "id": "evt-product-document-associated",
+              "type": "INBOUND",
+              "title": "Product Document Associated",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-008",
+          "title": "Given prior state when Link Document To Product Record then Product Document Associated",
+          "given": [
+            {
+              "title": "Prior Product state exists",
+              "id": "spec-slice-008-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Link Document To Product Record",
+              "id": "spec-slice-008-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-associate-document-to-product"
+            }
+          ],
+          "then": [
+            {
+              "title": "Product Document Associated",
+              "id": "spec-slice-008-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-product-document-associated"
+            },
+            {
+              "title": "Product State",
+              "id": "spec-slice-008-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-associate-document-to-product-state"
+            }
+          ],
+          "linkedId": "slice-008"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Documentation Steward",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "ProductDocumentLink"
+      ]
+    },
+    {
+      "id": "slice-009",
+      "status": "Created",
+      "index": 9,
+      "title": "Update Searchable/document Metadata",
+      "context": "Technical Documentation API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-update-document-metadata",
+          "title": "Update Searchable/document Metadata",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "PATCH /documents/{documentId}",
+          "dependencies": [
+            {
+              "id": "evt-document-metadata-updated",
+              "type": "OUTBOUND",
+              "title": "Document Metadata Updated",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-document-metadata-updated",
+          "title": "Document Metadata Updated",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Document.MetadataUpdated.",
+          "dependencies": [
+            {
+              "id": "cmd-update-document-metadata",
+              "type": "INBOUND",
+              "title": "Update Searchable/document Metadata",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-update-document-metadata-state",
+              "type": "OUTBOUND",
+              "title": "Document State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-update-document-metadata-state",
+          "title": "Document State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Document Metadata Updated.",
+          "dependencies": [
+            {
+              "id": "evt-document-metadata-updated",
+              "type": "INBOUND",
+              "title": "Document Metadata Updated",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-009",
+          "title": "Given prior state when Update Searchable/document Metadata then Document Metadata Updated",
+          "given": [
+            {
+              "title": "Prior Document state exists",
+              "id": "spec-slice-009-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Update Searchable/document Metadata",
+              "id": "spec-slice-009-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-update-document-metadata"
+            }
+          ],
+          "then": [
+            {
+              "title": "Document Metadata Updated",
+              "id": "spec-slice-009-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-document-metadata-updated"
+            },
+            {
+              "title": "Document State",
+              "id": "spec-slice-009-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-update-document-metadata-state"
+            }
+          ],
+          "linkedId": "slice-009"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Documentation Steward",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "Document"
+      ]
+    },
+    {
+      "id": "slice-010",
+      "status": "Created",
+      "index": 10,
+      "title": "Publish A New Document Version",
+      "context": "Technical Documentation API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-publish-document-version",
+          "title": "Publish A New Document Version",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "POST /documents/{documentId}/versions",
+          "dependencies": [
+            {
+              "id": "evt-document-version-published",
+              "type": "OUTBOUND",
+              "title": "Document Version Published",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-document-version-published",
+          "title": "Document Version Published",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Document.VersionPublished.",
+          "dependencies": [
+            {
+              "id": "cmd-publish-document-version",
+              "type": "INBOUND",
+              "title": "Publish A New Document Version",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-publish-document-version-state",
+              "type": "OUTBOUND",
+              "title": "Document State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-publish-document-version-state",
+          "title": "Document State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Document Version Published.",
+          "dependencies": [
+            {
+              "id": "evt-document-version-published",
+              "type": "INBOUND",
+              "title": "Document Version Published",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-010",
+          "title": "Given prior state when Publish A New Document Version then Document Version Published",
+          "given": [
+            {
+              "title": "Prior Document state exists",
+              "id": "spec-slice-010-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Publish A New Document Version",
+              "id": "spec-slice-010-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-publish-document-version"
+            }
+          ],
+          "then": [
+            {
+              "title": "Document Version Published",
+              "id": "spec-slice-010-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-document-version-published"
+            },
+            {
+              "title": "Document State",
+              "id": "spec-slice-010-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-publish-document-version-state"
+            }
+          ],
+          "linkedId": "slice-010"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Documentation Steward",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "DocumentVersion"
+      ]
+    },
+    {
+      "id": "slice-011",
+      "status": "Created",
+      "index": 11,
+      "title": "Retire Obsolete Document",
+      "context": "Technical Documentation API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-retire-document",
+          "title": "Retire Obsolete Document",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "POST /documents/{documentId}/retirements",
+          "dependencies": [
+            {
+              "id": "evt-document-retired",
+              "type": "OUTBOUND",
+              "title": "Document Retired",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-document-retired",
+          "title": "Document Retired",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Document.Retired.",
+          "dependencies": [
+            {
+              "id": "cmd-retire-document",
+              "type": "INBOUND",
+              "title": "Retire Obsolete Document",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-retire-document-state",
+              "type": "OUTBOUND",
+              "title": "Document State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-retire-document-state",
+          "title": "Document State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Document Retired.",
+          "dependencies": [
+            {
+              "id": "evt-document-retired",
+              "type": "INBOUND",
+              "title": "Document Retired",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-011",
+          "title": "Given prior state when Retire Obsolete Document then Document Retired",
+          "given": [
+            {
+              "title": "Prior Document state exists",
+              "id": "spec-slice-011-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Retire Obsolete Document",
+              "id": "spec-slice-011-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-retire-document"
+            }
+          ],
+          "then": [
+            {
+              "title": "Document Retired",
+              "id": "spec-slice-011-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-document-retired"
+            },
+            {
+              "title": "Document State",
+              "id": "spec-slice-011-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-retire-document-state"
+            }
+          ],
+          "linkedId": "slice-011"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Documentation Steward",
+          "authzRequired": true
+        },
+        {
+          "name": "Governance Reviewer",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "Document"
+      ]
+    },
+    {
+      "id": "slice-012",
+      "status": "Created",
+      "index": 12,
+      "title": "Set Or Replace Base Product Price",
+      "context": "Pricing and Promotions API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-set-base-price",
+          "title": "Set Or Replace Base Product Price",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "PUT /price-book-entries/{productId}/base-price",
+          "dependencies": [
+            {
+              "id": "evt-price-base-set",
+              "type": "OUTBOUND",
+              "title": "Price Base Set",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-price-base-set",
+          "title": "Price Base Set",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Price.BaseSet.",
+          "dependencies": [
+            {
+              "id": "cmd-set-base-price",
+              "type": "INBOUND",
+              "title": "Set Or Replace Base Product Price",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-set-base-price-state",
+              "type": "OUTBOUND",
+              "title": "Price State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-set-base-price-state",
+          "title": "Price State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Price Base Set.",
+          "dependencies": [
+            {
+              "id": "evt-price-base-set",
+              "type": "INBOUND",
+              "title": "Price Base Set",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-012",
+          "title": "Given prior state when Set Or Replace Base Product Price then Price Base Set",
+          "given": [
+            {
+              "title": "Prior Price state exists",
+              "id": "spec-slice-012-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Set Or Replace Base Product Price",
+              "id": "spec-slice-012-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-set-base-price"
+            }
+          ],
+          "then": [
+            {
+              "title": "Price Base Set",
+              "id": "spec-slice-012-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-price-base-set"
+            },
+            {
+              "title": "Price State",
+              "id": "spec-slice-012-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-set-base-price-state"
+            }
+          ],
+          "linkedId": "slice-012"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Pricing Analyst",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "PriceBookEntry"
+      ]
+    },
+    {
+      "id": "slice-013",
+      "status": "Created",
+      "index": 13,
+      "title": "Configure Quantity Discount Tiers",
+      "context": "Pricing and Promotions API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-set-volume-discount-tiers",
+          "title": "Configure Quantity Discount Tiers",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "PUT /price-book-entries/{productId}/volume-tiers",
+          "dependencies": [
+            {
+              "id": "evt-price-volume-tiers-updated",
+              "type": "OUTBOUND",
+              "title": "Price Volume Tiers Updated",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-price-volume-tiers-updated",
+          "title": "Price Volume Tiers Updated",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Price.VolumeTiersUpdated.",
+          "dependencies": [
+            {
+              "id": "cmd-set-volume-discount-tiers",
+              "type": "INBOUND",
+              "title": "Configure Quantity Discount Tiers",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-set-volume-discount-tiers-state",
+              "type": "OUTBOUND",
+              "title": "Price State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-set-volume-discount-tiers-state",
+          "title": "Price State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Price Volume Tiers Updated.",
+          "dependencies": [
+            {
+              "id": "evt-price-volume-tiers-updated",
+              "type": "INBOUND",
+              "title": "Price Volume Tiers Updated",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-013",
+          "title": "Given prior state when Configure Quantity Discount Tiers then Price Volume Tiers Updated",
+          "given": [
+            {
+              "title": "Prior Price state exists",
+              "id": "spec-slice-013-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Configure Quantity Discount Tiers",
+              "id": "spec-slice-013-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-set-volume-discount-tiers"
+            }
+          ],
+          "then": [
+            {
+              "title": "Price Volume Tiers Updated",
+              "id": "spec-slice-013-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-price-volume-tiers-updated"
+            },
+            {
+              "title": "Price State",
+              "id": "spec-slice-013-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-set-volume-discount-tiers-state"
+            }
+          ],
+          "linkedId": "slice-013"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Pricing Analyst",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "VolumeTier",
+        "PriceBookEntry"
+      ]
+    },
+    {
+      "id": "slice-014",
+      "status": "Created",
+      "index": 14,
+      "title": "Start Promotion Window",
+      "context": "Pricing and Promotions API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-start-promotion",
+          "title": "Start Promotion Window",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "POST /promotions",
+          "dependencies": [
+            {
+              "id": "evt-promotion-started",
+              "type": "OUTBOUND",
+              "title": "Promotion Started",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-promotion-started",
+          "title": "Promotion Started",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Promotion.Started.",
+          "dependencies": [
+            {
+              "id": "cmd-start-promotion",
+              "type": "INBOUND",
+              "title": "Start Promotion Window",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-start-promotion-state",
+              "type": "OUTBOUND",
+              "title": "Promotion State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-start-promotion-state",
+          "title": "Promotion State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Promotion Started.",
+          "dependencies": [
+            {
+              "id": "evt-promotion-started",
+              "type": "INBOUND",
+              "title": "Promotion Started",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-014",
+          "title": "Given prior state when Start Promotion Window then Promotion Started",
+          "given": [
+            {
+              "title": "Prior Promotion state exists",
+              "id": "spec-slice-014-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Start Promotion Window",
+              "id": "spec-slice-014-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-start-promotion"
+            }
+          ],
+          "then": [
+            {
+              "title": "Promotion Started",
+              "id": "spec-slice-014-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-promotion-started"
+            },
+            {
+              "title": "Promotion State",
+              "id": "spec-slice-014-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-start-promotion-state"
+            }
+          ],
+          "linkedId": "slice-014"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Pricing Analyst",
+          "authzRequired": true
+        },
+        {
+          "name": "Governance Reviewer",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "PromotionWindow"
+      ]
+    },
+    {
+      "id": "slice-015",
+      "status": "Created",
+      "index": 15,
+      "title": "Cancel Active Or Scheduled Promotion",
+      "context": "Pricing and Promotions API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-cancel-promotion",
+          "title": "Cancel Active Or Scheduled Promotion",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "POST /promotions/{promotionId}/cancellations",
+          "dependencies": [
+            {
+              "id": "evt-promotion-canceled",
+              "type": "OUTBOUND",
+              "title": "Promotion Canceled",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-promotion-canceled",
+          "title": "Promotion Canceled",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Promotion.Canceled.",
+          "dependencies": [
+            {
+              "id": "cmd-cancel-promotion",
+              "type": "INBOUND",
+              "title": "Cancel Active Or Scheduled Promotion",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-cancel-promotion-state",
+              "type": "OUTBOUND",
+              "title": "Promotion State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-cancel-promotion-state",
+          "title": "Promotion State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Promotion Canceled.",
+          "dependencies": [
+            {
+              "id": "evt-promotion-canceled",
+              "type": "INBOUND",
+              "title": "Promotion Canceled",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-015",
+          "title": "Given prior state when Cancel Active Or Scheduled Promotion then Promotion Canceled",
+          "given": [
+            {
+              "title": "Prior Promotion state exists",
+              "id": "spec-slice-015-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Cancel Active Or Scheduled Promotion",
+              "id": "spec-slice-015-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-cancel-promotion"
+            }
+          ],
+          "then": [
+            {
+              "title": "Promotion Canceled",
+              "id": "spec-slice-015-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-promotion-canceled"
+            },
+            {
+              "title": "Promotion State",
+              "id": "spec-slice-015-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-cancel-promotion-state"
+            }
+          ],
+          "linkedId": "slice-015"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Pricing Analyst",
+          "authzRequired": true
+        },
+        {
+          "name": "Governance Reviewer",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "PromotionWindow"
+      ]
+    },
+    {
+      "id": "slice-016",
+      "status": "Created",
+      "index": 16,
+      "title": "Apply Scoped Repricing Across Products",
+      "context": "Pricing and Promotions API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-apply-price-adjustment",
+          "title": "Apply Scoped Repricing Across Products",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "POST /repricing-jobs",
+          "dependencies": [
+            {
+              "id": "evt-price-group-repricing-requested",
+              "type": "OUTBOUND",
+              "title": "Price Group Repricing Requested",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-price-group-repricing-requested",
+          "title": "Price Group Repricing Requested",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Price.GroupRepricingRequested.",
+          "dependencies": [
+            {
+              "id": "cmd-apply-price-adjustment",
+              "type": "INBOUND",
+              "title": "Apply Scoped Repricing Across Products",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-apply-price-adjustment-state",
+              "type": "OUTBOUND",
+              "title": "Price State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-apply-price-adjustment-state",
+          "title": "Price State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Price Group Repricing Requested.",
+          "dependencies": [
+            {
+              "id": "evt-price-group-repricing-requested",
+              "type": "INBOUND",
+              "title": "Price Group Repricing Requested",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-016",
+          "title": "Given prior state when Apply Scoped Repricing Across Products then Price Group Repricing Requested",
+          "given": [
+            {
+              "title": "Prior Price state exists",
+              "id": "spec-slice-016-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Apply Scoped Repricing Across Products",
+              "id": "spec-slice-016-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-apply-price-adjustment"
+            }
+          ],
+          "then": [
+            {
+              "title": "Price Group Repricing Requested",
+              "id": "spec-slice-016-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-price-group-repricing-requested"
+            },
+            {
+              "title": "Price State",
+              "id": "spec-slice-016-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-apply-price-adjustment-state"
+            }
+          ],
+          "linkedId": "slice-016"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Pricing Analyst",
+          "authzRequired": true
+        },
+        {
+          "name": "Governance Reviewer",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "RepricingJob"
+      ]
+    },
+    {
+      "id": "slice-017",
+      "status": "Created",
+      "index": 17,
+      "title": "Set On-hand Quantity",
+      "context": "Inventory and Availability API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-update-stock-quantity",
+          "title": "Set On-hand Quantity",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "PUT /inventory-positions/{inventoryId}/quantity",
+          "dependencies": [
+            {
+              "id": "evt-inventory-quantity-updated",
+              "type": "OUTBOUND",
+              "title": "Inventory Quantity Updated",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-inventory-quantity-updated",
+          "title": "Inventory Quantity Updated",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Inventory.QuantityUpdated.",
+          "dependencies": [
+            {
+              "id": "cmd-update-stock-quantity",
+              "type": "INBOUND",
+              "title": "Set On-hand Quantity",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-update-stock-quantity-state",
+              "type": "OUTBOUND",
+              "title": "Inventory State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-update-stock-quantity-state",
+          "title": "Inventory State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Inventory Quantity Updated.",
+          "dependencies": [
+            {
+              "id": "evt-inventory-quantity-updated",
+              "type": "INBOUND",
+              "title": "Inventory Quantity Updated",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-017",
+          "title": "Given prior state when Set On-hand Quantity then Inventory Quantity Updated",
+          "given": [
+            {
+              "title": "Prior Inventory state exists",
+              "id": "spec-slice-017-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Set On-hand Quantity",
+              "id": "spec-slice-017-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-update-stock-quantity"
+            }
+          ],
+          "then": [
+            {
+              "title": "Inventory Quantity Updated",
+              "id": "spec-slice-017-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-inventory-quantity-updated"
+            },
+            {
+              "title": "Inventory State",
+              "id": "spec-slice-017-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-update-stock-quantity-state"
+            }
+          ],
+          "linkedId": "slice-017"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Inventory Controller",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "InventoryPosition"
+      ]
+    },
+    {
+      "id": "slice-018",
+      "status": "Created",
+      "index": 18,
+      "title": "Set Expected Restock Date And Quantity",
+      "context": "Inventory and Availability API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-set-restock-date",
+          "title": "Set Expected Restock Date And Quantity",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "PUT /restock-plans/{productId}",
+          "dependencies": [
+            {
+              "id": "evt-inventory-restock-date-set",
+              "type": "OUTBOUND",
+              "title": "Inventory Restock Date Set",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-inventory-restock-date-set",
+          "title": "Inventory Restock Date Set",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Inventory.RestockDateSet.",
+          "dependencies": [
+            {
+              "id": "cmd-set-restock-date",
+              "type": "INBOUND",
+              "title": "Set Expected Restock Date And Quantity",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-set-restock-date-state",
+              "type": "OUTBOUND",
+              "title": "Inventory State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-set-restock-date-state",
+          "title": "Inventory State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Inventory Restock Date Set.",
+          "dependencies": [
+            {
+              "id": "evt-inventory-restock-date-set",
+              "type": "INBOUND",
+              "title": "Inventory Restock Date Set",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-018",
+          "title": "Given prior state when Set Expected Restock Date And Quantity then Inventory Restock Date Set",
+          "given": [
+            {
+              "title": "Prior Inventory state exists",
+              "id": "spec-slice-018-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Set Expected Restock Date And Quantity",
+              "id": "spec-slice-018-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-set-restock-date"
+            }
+          ],
+          "then": [
+            {
+              "title": "Inventory Restock Date Set",
+              "id": "spec-slice-018-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-inventory-restock-date-set"
+            },
+            {
+              "title": "Inventory State",
+              "id": "spec-slice-018-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-set-restock-date-state"
+            }
+          ],
+          "linkedId": "slice-018"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Inventory Controller",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "RestockPlan"
+      ]
+    },
+    {
+      "id": "slice-019",
+      "status": "Created",
+      "index": 19,
+      "title": "Update Expected Lead-time Value",
+      "context": "Inventory and Availability API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-update-lead-time",
+          "title": "Update Expected Lead-time Value",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "PATCH /availability-policies/{productId}/lead-time",
+          "dependencies": [
+            {
+              "id": "evt-inventory-lead-time-updated",
+              "type": "OUTBOUND",
+              "title": "Inventory Lead Time Updated",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-inventory-lead-time-updated",
+          "title": "Inventory Lead Time Updated",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Inventory.LeadTimeUpdated.",
+          "dependencies": [
+            {
+              "id": "cmd-update-lead-time",
+              "type": "INBOUND",
+              "title": "Update Expected Lead-time Value",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-update-lead-time-state",
+              "type": "OUTBOUND",
+              "title": "Inventory State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-update-lead-time-state",
+          "title": "Inventory State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Inventory Lead Time Updated.",
+          "dependencies": [
+            {
+              "id": "evt-inventory-lead-time-updated",
+              "type": "INBOUND",
+              "title": "Inventory Lead Time Updated",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-019",
+          "title": "Given prior state when Update Expected Lead-time Value then Inventory Lead Time Updated",
+          "given": [
+            {
+              "title": "Prior Inventory state exists",
+              "id": "spec-slice-019-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Update Expected Lead-time Value",
+              "id": "spec-slice-019-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-update-lead-time"
+            }
+          ],
+          "then": [
+            {
+              "title": "Inventory Lead Time Updated",
+              "id": "spec-slice-019-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-inventory-lead-time-updated"
+            },
+            {
+              "title": "Inventory State",
+              "id": "spec-slice-019-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-update-lead-time-state"
+            }
+          ],
+          "linkedId": "slice-019"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Inventory Controller",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "AvailabilityPolicy"
+      ]
+    },
+    {
+      "id": "slice-020",
+      "status": "Created",
+      "index": 20,
+      "title": "Enable Or Disable Backorder Posture",
+      "context": "Inventory and Availability API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-set-backorder-state",
+          "title": "Enable Or Disable Backorder Posture",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "PATCH /availability-policies/{productId}/backorder-state",
+          "dependencies": [
+            {
+              "id": "evt-inventory-backorder-state-changed",
+              "type": "OUTBOUND",
+              "title": "Inventory Backorder State Changed",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-inventory-backorder-state-changed",
+          "title": "Inventory Backorder State Changed",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Inventory.BackorderStateChanged.",
+          "dependencies": [
+            {
+              "id": "cmd-set-backorder-state",
+              "type": "INBOUND",
+              "title": "Enable Or Disable Backorder Posture",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-set-backorder-state-state",
+              "type": "OUTBOUND",
+              "title": "Inventory State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-set-backorder-state-state",
+          "title": "Inventory State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Inventory Backorder State Changed.",
+          "dependencies": [
+            {
+              "id": "evt-inventory-backorder-state-changed",
+              "type": "INBOUND",
+              "title": "Inventory Backorder State Changed",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-020",
+          "title": "Given prior state when Enable Or Disable Backorder Posture then Inventory Backorder State Changed",
+          "given": [
+            {
+              "title": "Prior Inventory state exists",
+              "id": "spec-slice-020-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Enable Or Disable Backorder Posture",
+              "id": "spec-slice-020-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-set-backorder-state"
+            }
+          ],
+          "then": [
+            {
+              "title": "Inventory Backorder State Changed",
+              "id": "spec-slice-020-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-inventory-backorder-state-changed"
+            },
+            {
+              "title": "Inventory State",
+              "id": "spec-slice-020-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-set-backorder-state-state"
+            }
+          ],
+          "linkedId": "slice-020"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Inventory Controller",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "AvailabilityPolicy"
+      ]
+    },
+    {
+      "id": "slice-021",
+      "status": "Created",
+      "index": 21,
+      "title": "Suspend Temporary Purchasability",
+      "context": "Inventory and Availability API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-suspend-product-availability",
+          "title": "Suspend Temporary Purchasability",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "POST /availability-policies/{productId}/suspensions",
+          "dependencies": [
+            {
+              "id": "evt-inventory-availability-suspended",
+              "type": "OUTBOUND",
+              "title": "Inventory Availability Suspended",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-inventory-availability-suspended",
+          "title": "Inventory Availability Suspended",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Inventory.AvailabilitySuspended.",
+          "dependencies": [
+            {
+              "id": "cmd-suspend-product-availability",
+              "type": "INBOUND",
+              "title": "Suspend Temporary Purchasability",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-suspend-product-availability-state",
+              "type": "OUTBOUND",
+              "title": "Inventory State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-suspend-product-availability-state",
+          "title": "Inventory State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Inventory Availability Suspended.",
+          "dependencies": [
+            {
+              "id": "evt-inventory-availability-suspended",
+              "type": "INBOUND",
+              "title": "Inventory Availability Suspended",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-021",
+          "title": "Given prior state when Suspend Temporary Purchasability then Inventory Availability Suspended",
+          "given": [
+            {
+              "title": "Prior Inventory state exists",
+              "id": "spec-slice-021-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Suspend Temporary Purchasability",
+              "id": "spec-slice-021-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-suspend-product-availability"
+            }
+          ],
+          "then": [
+            {
+              "title": "Inventory Availability Suspended",
+              "id": "spec-slice-021-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-inventory-availability-suspended"
+            },
+            {
+              "title": "Inventory State",
+              "id": "spec-slice-021-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-suspend-product-availability-state"
+            }
+          ],
+          "linkedId": "slice-021"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Inventory Controller",
+          "authzRequired": true
+        },
+        {
+          "name": "Governance Reviewer",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "AvailabilityPolicy"
+      ]
+    },
+    {
+      "id": "slice-022",
+      "status": "Created",
+      "index": 22,
+      "title": "Create Category Node",
+      "context": "Category and Faceting API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-create-category",
+          "title": "Create Category Node",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "POST /categories",
+          "dependencies": [
+            {
+              "id": "evt-category-created",
+              "type": "OUTBOUND",
+              "title": "Category Created",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-category-created",
+          "title": "Category Created",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Category.Created.",
+          "dependencies": [
+            {
+              "id": "cmd-create-category",
+              "type": "INBOUND",
+              "title": "Create Category Node",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-create-category-state",
+              "type": "OUTBOUND",
+              "title": "Category State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-create-category-state",
+          "title": "Category State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Category Created.",
+          "dependencies": [
+            {
+              "id": "evt-category-created",
+              "type": "INBOUND",
+              "title": "Category Created",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-022",
+          "title": "Given prior state when Create Category Node then Category Created",
+          "given": [
+            {
+              "title": "Prior Category state exists",
+              "id": "spec-slice-022-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Create Category Node",
+              "id": "spec-slice-022-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-create-category"
+            }
+          ],
+          "then": [
+            {
+              "title": "Category Created",
+              "id": "spec-slice-022-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-category-created"
+            },
+            {
+              "title": "Category State",
+              "id": "spec-slice-022-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-create-category-state"
+            }
+          ],
+          "linkedId": "slice-022"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Taxonomy Manager",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "Category"
+      ]
+    },
+    {
+      "id": "slice-023",
+      "status": "Created",
+      "index": 23,
+      "title": "Update Category Metadata",
+      "context": "Category and Faceting API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-update-category",
+          "title": "Update Category Metadata",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "PATCH /categories/{categoryId}",
+          "dependencies": [
+            {
+              "id": "evt-category-updated",
+              "type": "OUTBOUND",
+              "title": "Category Updated",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-category-updated",
+          "title": "Category Updated",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Category.Updated.",
+          "dependencies": [
+            {
+              "id": "cmd-update-category",
+              "type": "INBOUND",
+              "title": "Update Category Metadata",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-update-category-state",
+              "type": "OUTBOUND",
+              "title": "Category State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-update-category-state",
+          "title": "Category State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Category Updated.",
+          "dependencies": [
+            {
+              "id": "evt-category-updated",
+              "type": "INBOUND",
+              "title": "Category Updated",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-023",
+          "title": "Given prior state when Update Category Metadata then Category Updated",
+          "given": [
+            {
+              "title": "Prior Category state exists",
+              "id": "spec-slice-023-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Update Category Metadata",
+              "id": "spec-slice-023-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-update-category"
+            }
+          ],
+          "then": [
+            {
+              "title": "Category Updated",
+              "id": "spec-slice-023-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-category-updated"
+            },
+            {
+              "title": "Category State",
+              "id": "spec-slice-023-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-update-category-state"
+            }
+          ],
+          "linkedId": "slice-023"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Taxonomy Manager",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "Category"
+      ]
+    },
+    {
+      "id": "slice-024",
+      "status": "Created",
+      "index": 24,
+      "title": "Move Category To New Hierarchy Position",
+      "context": "Category and Faceting API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-move-category",
+          "title": "Move Category To New Hierarchy Position",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "POST /categories/{categoryId}/moves",
+          "dependencies": [
+            {
+              "id": "evt-category-moved",
+              "type": "OUTBOUND",
+              "title": "Category Moved",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-category-moved",
+          "title": "Category Moved",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Category.Moved.",
+          "dependencies": [
+            {
+              "id": "cmd-move-category",
+              "type": "INBOUND",
+              "title": "Move Category To New Hierarchy Position",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-move-category-state",
+              "type": "OUTBOUND",
+              "title": "Category State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-move-category-state",
+          "title": "Category State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Category Moved.",
+          "dependencies": [
+            {
+              "id": "evt-category-moved",
+              "type": "INBOUND",
+              "title": "Category Moved",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-024",
+          "title": "Given prior state when Move Category To New Hierarchy Position then Category Moved",
+          "given": [
+            {
+              "title": "Prior Category state exists",
+              "id": "spec-slice-024-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Move Category To New Hierarchy Position",
+              "id": "spec-slice-024-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-move-category"
+            }
+          ],
+          "then": [
+            {
+              "title": "Category Moved",
+              "id": "spec-slice-024-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-category-moved"
+            },
+            {
+              "title": "Category State",
+              "id": "spec-slice-024-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-move-category-state"
+            }
+          ],
+          "linkedId": "slice-024"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Taxonomy Manager",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "Category"
+      ]
+    },
+    {
+      "id": "slice-025",
+      "status": "Created",
+      "index": 25,
+      "title": "Archive/remove Category From Active Tree",
+      "context": "Category and Faceting API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-retire-category",
+          "title": "Archive/remove Category From Active Tree",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "POST /categories/{categoryId}/retirements",
+          "dependencies": [
+            {
+              "id": "evt-category-retired",
+              "type": "OUTBOUND",
+              "title": "Category Retired",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-category-retired",
+          "title": "Category Retired",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Category.Retired.",
+          "dependencies": [
+            {
+              "id": "cmd-retire-category",
+              "type": "INBOUND",
+              "title": "Archive/remove Category From Active Tree",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-retire-category-state",
+              "type": "OUTBOUND",
+              "title": "Category State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-retire-category-state",
+          "title": "Category State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Category Retired.",
+          "dependencies": [
+            {
+              "id": "evt-category-retired",
+              "type": "INBOUND",
+              "title": "Category Retired",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-025",
+          "title": "Given prior state when Archive/remove Category From Active Tree then Category Retired",
+          "given": [
+            {
+              "title": "Prior Category state exists",
+              "id": "spec-slice-025-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Archive/remove Category From Active Tree",
+              "id": "spec-slice-025-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-retire-category"
+            }
+          ],
+          "then": [
+            {
+              "title": "Category Retired",
+              "id": "spec-slice-025-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-category-retired"
+            },
+            {
+              "title": "Category State",
+              "id": "spec-slice-025-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-retire-category-state"
+            }
+          ],
+          "linkedId": "slice-025"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Taxonomy Manager",
+          "authzRequired": true
+        },
+        {
+          "name": "Governance Reviewer",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "Category"
+      ]
+    },
+    {
+      "id": "slice-026",
+      "status": "Created",
+      "index": 26,
+      "title": "Assign Product To Category",
+      "context": "Category and Faceting API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-assign-product-to-category",
+          "title": "Assign Product To Category",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "PUT /categories/{categoryId}/products/{productId}",
+          "dependencies": [
+            {
+              "id": "evt-category-product-assigned",
+              "type": "OUTBOUND",
+              "title": "Category Product Assigned",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-category-product-assigned",
+          "title": "Category Product Assigned",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Category.ProductAssigned.",
+          "dependencies": [
+            {
+              "id": "cmd-assign-product-to-category",
+              "type": "INBOUND",
+              "title": "Assign Product To Category",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-assign-product-to-category-state",
+              "type": "OUTBOUND",
+              "title": "Category State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-assign-product-to-category-state",
+          "title": "Category State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Category Product Assigned.",
+          "dependencies": [
+            {
+              "id": "evt-category-product-assigned",
+              "type": "INBOUND",
+              "title": "Category Product Assigned",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-026",
+          "title": "Given prior state when Assign Product To Category then Category Product Assigned",
+          "given": [
+            {
+              "title": "Prior Category state exists",
+              "id": "spec-slice-026-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Assign Product To Category",
+              "id": "spec-slice-026-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-assign-product-to-category"
+            }
+          ],
+          "then": [
+            {
+              "title": "Category Product Assigned",
+              "id": "spec-slice-026-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-category-product-assigned"
+            },
+            {
+              "title": "Category State",
+              "id": "spec-slice-026-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-assign-product-to-category-state"
+            }
+          ],
+          "linkedId": "slice-026"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Taxonomy Manager",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "CategoryAssignment"
+      ]
+    },
+    {
+      "id": "slice-027",
+      "status": "Created",
+      "index": 27,
+      "title": "Remove Product-category Assignment",
+      "context": "Category and Faceting API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-remove-product-from-category",
+          "title": "Remove Product-category Assignment",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "DELETE /categories/{categoryId}/products/{productId}",
+          "dependencies": [
+            {
+              "id": "evt-category-product-removed",
+              "type": "OUTBOUND",
+              "title": "Category Product Removed",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-category-product-removed",
+          "title": "Category Product Removed",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Category.ProductRemoved.",
+          "dependencies": [
+            {
+              "id": "cmd-remove-product-from-category",
+              "type": "INBOUND",
+              "title": "Remove Product-category Assignment",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-remove-product-from-category-state",
+              "type": "OUTBOUND",
+              "title": "Category State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-remove-product-from-category-state",
+          "title": "Category State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Category Product Removed.",
+          "dependencies": [
+            {
+              "id": "evt-category-product-removed",
+              "type": "INBOUND",
+              "title": "Category Product Removed",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-027",
+          "title": "Given prior state when Remove Product-category Assignment then Category Product Removed",
+          "given": [
+            {
+              "title": "Prior Category state exists",
+              "id": "spec-slice-027-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Remove Product-category Assignment",
+              "id": "spec-slice-027-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-remove-product-from-category"
+            }
+          ],
+          "then": [
+            {
+              "title": "Category Product Removed",
+              "id": "spec-slice-027-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-category-product-removed"
+            },
+            {
+              "title": "Category State",
+              "id": "spec-slice-027-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-remove-product-from-category-state"
+            }
+          ],
+          "linkedId": "slice-027"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Taxonomy Manager",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "CategoryAssignment"
+      ]
+    },
+    {
+      "id": "slice-028",
+      "status": "Created",
+      "index": 28,
+      "title": "Set Category Facet Configuration",
+      "context": "Category and Faceting API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-define-category-facets",
+          "title": "Set Category Facet Configuration",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "PUT /categories/{categoryId}/facets",
+          "dependencies": [
+            {
+              "id": "evt-category-facets-defined",
+              "type": "OUTBOUND",
+              "title": "Category Facets Defined",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-category-facets-defined",
+          "title": "Category Facets Defined",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Category.FacetsDefined.",
+          "dependencies": [
+            {
+              "id": "cmd-define-category-facets",
+              "type": "INBOUND",
+              "title": "Set Category Facet Configuration",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-define-category-facets-state",
+              "type": "OUTBOUND",
+              "title": "Category State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-define-category-facets-state",
+          "title": "Category State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Category Facets Defined.",
+          "dependencies": [
+            {
+              "id": "evt-category-facets-defined",
+              "type": "INBOUND",
+              "title": "Category Facets Defined",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-028",
+          "title": "Given prior state when Set Category Facet Configuration then Category Facets Defined",
+          "given": [
+            {
+              "title": "Prior Category state exists",
+              "id": "spec-slice-028-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Set Category Facet Configuration",
+              "id": "spec-slice-028-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-define-category-facets"
+            }
+          ],
+          "then": [
+            {
+              "title": "Category Facets Defined",
+              "id": "spec-slice-028-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-category-facets-defined"
+            },
+            {
+              "title": "Category State",
+              "id": "spec-slice-028-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-define-category-facets-state"
+            }
+          ],
+          "linkedId": "slice-028"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Taxonomy Manager",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "FacetDefinition"
+      ]
+    },
+    {
+      "id": "slice-029",
+      "status": "Created",
+      "index": 29,
+      "title": "Create New Compatibility Rule",
+      "context": "Compatibility Rules API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-create-compatibility-rule",
+          "title": "Create New Compatibility Rule",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "POST /compatibility-rules",
+          "dependencies": [
+            {
+              "id": "evt-compatibility-rule-created",
+              "type": "OUTBOUND",
+              "title": "Compatibility Rule Created",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-compatibility-rule-created",
+          "title": "Compatibility Rule Created",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event CompatibilityRule.Created.",
+          "dependencies": [
+            {
+              "id": "cmd-create-compatibility-rule",
+              "type": "INBOUND",
+              "title": "Create New Compatibility Rule",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-create-compatibility-rule-state",
+              "type": "OUTBOUND",
+              "title": "Compatibility Rule State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-create-compatibility-rule-state",
+          "title": "Compatibility Rule State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Compatibility Rule Created.",
+          "dependencies": [
+            {
+              "id": "evt-compatibility-rule-created",
+              "type": "INBOUND",
+              "title": "Compatibility Rule Created",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-029",
+          "title": "Given prior state when Create New Compatibility Rule then Compatibility Rule Created",
+          "given": [
+            {
+              "title": "Prior Compatibility Rule state exists",
+              "id": "spec-slice-029-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Create New Compatibility Rule",
+              "id": "spec-slice-029-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-create-compatibility-rule"
+            }
+          ],
+          "then": [
+            {
+              "title": "Compatibility Rule Created",
+              "id": "spec-slice-029-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-compatibility-rule-created"
+            },
+            {
+              "title": "Compatibility Rule State",
+              "id": "spec-slice-029-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-create-compatibility-rule-state"
+            }
+          ],
+          "linkedId": "slice-029"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Compatibility Engineer",
+          "authzRequired": true
+        },
+        {
+          "name": "Governance Reviewer",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "CompatibilityRule"
+      ]
+    },
+    {
+      "id": "slice-030",
+      "status": "Created",
+      "index": 30,
+      "title": "Update Existing Compatibility Rule",
+      "context": "Compatibility Rules API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-update-compatibility-rule",
+          "title": "Update Existing Compatibility Rule",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "PATCH /compatibility-rules/{ruleId}",
+          "dependencies": [
+            {
+              "id": "evt-compatibility-rule-updated",
+              "type": "OUTBOUND",
+              "title": "Compatibility Rule Updated",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-compatibility-rule-updated",
+          "title": "Compatibility Rule Updated",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event CompatibilityRule.Updated.",
+          "dependencies": [
+            {
+              "id": "cmd-update-compatibility-rule",
+              "type": "INBOUND",
+              "title": "Update Existing Compatibility Rule",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-update-compatibility-rule-state",
+              "type": "OUTBOUND",
+              "title": "Compatibility Rule State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-update-compatibility-rule-state",
+          "title": "Compatibility Rule State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Compatibility Rule Updated.",
+          "dependencies": [
+            {
+              "id": "evt-compatibility-rule-updated",
+              "type": "INBOUND",
+              "title": "Compatibility Rule Updated",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-030",
+          "title": "Given prior state when Update Existing Compatibility Rule then Compatibility Rule Updated",
+          "given": [
+            {
+              "title": "Prior Compatibility Rule state exists",
+              "id": "spec-slice-030-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Update Existing Compatibility Rule",
+              "id": "spec-slice-030-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-update-compatibility-rule"
+            }
+          ],
+          "then": [
+            {
+              "title": "Compatibility Rule Updated",
+              "id": "spec-slice-030-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-compatibility-rule-updated"
+            },
+            {
+              "title": "Compatibility Rule State",
+              "id": "spec-slice-030-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-update-compatibility-rule-state"
+            }
+          ],
+          "linkedId": "slice-030"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Compatibility Engineer",
+          "authzRequired": true
+        },
+        {
+          "name": "Governance Reviewer",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "CompatibilityRule"
+      ]
+    },
+    {
+      "id": "slice-031",
+      "status": "Created",
+      "index": 31,
+      "title": "Deactivate Rule From Active Use",
+      "context": "Compatibility Rules API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-deactivate-compatibility-rule",
+          "title": "Deactivate Rule From Active Use",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "POST /compatibility-rules/{ruleId}/deactivations",
+          "dependencies": [
+            {
+              "id": "evt-compatibility-rule-deactivated",
+              "type": "OUTBOUND",
+              "title": "Compatibility Rule Deactivated",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-compatibility-rule-deactivated",
+          "title": "Compatibility Rule Deactivated",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event CompatibilityRule.Deactivated.",
+          "dependencies": [
+            {
+              "id": "cmd-deactivate-compatibility-rule",
+              "type": "INBOUND",
+              "title": "Deactivate Rule From Active Use",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-deactivate-compatibility-rule-state",
+              "type": "OUTBOUND",
+              "title": "Compatibility Rule State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-deactivate-compatibility-rule-state",
+          "title": "Compatibility Rule State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Compatibility Rule Deactivated.",
+          "dependencies": [
+            {
+              "id": "evt-compatibility-rule-deactivated",
+              "type": "INBOUND",
+              "title": "Compatibility Rule Deactivated",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-031",
+          "title": "Given prior state when Deactivate Rule From Active Use then Compatibility Rule Deactivated",
+          "given": [
+            {
+              "title": "Prior Compatibility Rule state exists",
+              "id": "spec-slice-031-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Deactivate Rule From Active Use",
+              "id": "spec-slice-031-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-deactivate-compatibility-rule"
+            }
+          ],
+          "then": [
+            {
+              "title": "Compatibility Rule Deactivated",
+              "id": "spec-slice-031-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-compatibility-rule-deactivated"
+            },
+            {
+              "title": "Compatibility Rule State",
+              "id": "spec-slice-031-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-deactivate-compatibility-rule-state"
+            }
+          ],
+          "linkedId": "slice-031"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Compatibility Engineer",
+          "authzRequired": true
+        },
+        {
+          "name": "Governance Reviewer",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "CompatibilityRule"
+      ]
+    },
+    {
+      "id": "slice-032",
+      "status": "Created",
+      "index": 32,
+      "title": "Create Component Grouping Baseline",
+      "context": "Compatibility Rules API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-create-component-group",
+          "title": "Create Component Grouping Baseline",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "POST /component-groups",
+          "dependencies": [
+            {
+              "id": "evt-component-group-created",
+              "type": "OUTBOUND",
+              "title": "Component Group Created",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-component-group-created",
+          "title": "Component Group Created",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event ComponentGroup.Created.",
+          "dependencies": [
+            {
+              "id": "cmd-create-component-group",
+              "type": "INBOUND",
+              "title": "Create Component Grouping Baseline",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-create-component-group-state",
+              "type": "OUTBOUND",
+              "title": "Component Group State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-create-component-group-state",
+          "title": "Component Group State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Component Group Created.",
+          "dependencies": [
+            {
+              "id": "evt-component-group-created",
+              "type": "INBOUND",
+              "title": "Component Group Created",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-032",
+          "title": "Given prior state when Create Component Grouping Baseline then Component Group Created",
+          "given": [
+            {
+              "title": "Prior Component Group state exists",
+              "id": "spec-slice-032-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Create Component Grouping Baseline",
+              "id": "spec-slice-032-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-create-component-group"
+            }
+          ],
+          "then": [
+            {
+              "title": "Component Group Created",
+              "id": "spec-slice-032-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-component-group-created"
+            },
+            {
+              "title": "Component Group State",
+              "id": "spec-slice-032-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-create-component-group-state"
+            }
+          ],
+          "linkedId": "slice-032"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Compatibility Engineer",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "ComponentGroup"
+      ]
+    },
+    {
+      "id": "slice-033",
+      "status": "Created",
+      "index": 33,
+      "title": "Update Component Group Membership",
+      "context": "Compatibility Rules API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-update-component-group",
+          "title": "Update Component Group Membership",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "PATCH /component-groups/{componentGroupId}",
+          "dependencies": [
+            {
+              "id": "evt-component-group-updated",
+              "type": "OUTBOUND",
+              "title": "Component Group Updated",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-component-group-updated",
+          "title": "Component Group Updated",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event ComponentGroup.Updated.",
+          "dependencies": [
+            {
+              "id": "cmd-update-component-group",
+              "type": "INBOUND",
+              "title": "Update Component Group Membership",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-update-component-group-state",
+              "type": "OUTBOUND",
+              "title": "Component Group State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-update-component-group-state",
+          "title": "Component Group State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Component Group Updated.",
+          "dependencies": [
+            {
+              "id": "evt-component-group-updated",
+              "type": "INBOUND",
+              "title": "Component Group Updated",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-033",
+          "title": "Given prior state when Update Component Group Membership then Component Group Updated",
+          "given": [
+            {
+              "title": "Prior Component Group state exists",
+              "id": "spec-slice-033-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Update Component Group Membership",
+              "id": "spec-slice-033-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-update-component-group"
+            }
+          ],
+          "then": [
+            {
+              "title": "Component Group Updated",
+              "id": "spec-slice-033-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-component-group-updated"
+            },
+            {
+              "title": "Component Group State",
+              "id": "spec-slice-033-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-update-component-group-state"
+            }
+          ],
+          "linkedId": "slice-033"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Compatibility Engineer",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "ComponentGroup"
+      ]
+    },
+    {
+      "id": "slice-034",
+      "status": "Created",
+      "index": 34,
+      "title": "Submit High-risk Change For Review",
+      "context": "Catalog Governance API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-submit-approval-case",
+          "title": "Submit High-risk Change For Review",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "POST /approval-cases",
+          "dependencies": [
+            {
+              "id": "evt-governance-approval-case-submitted",
+              "type": "OUTBOUND",
+              "title": "Governance Approval Case Submitted",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-governance-approval-case-submitted",
+          "title": "Governance Approval Case Submitted",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Governance.ApprovalCaseSubmitted.",
+          "dependencies": [
+            {
+              "id": "cmd-submit-approval-case",
+              "type": "INBOUND",
+              "title": "Submit High-risk Change For Review",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-submit-approval-case-state",
+              "type": "OUTBOUND",
+              "title": "Governance State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-submit-approval-case-state",
+          "title": "Governance State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Governance Approval Case Submitted.",
+          "dependencies": [
+            {
+              "id": "evt-governance-approval-case-submitted",
+              "type": "INBOUND",
+              "title": "Governance Approval Case Submitted",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-034",
+          "title": "Given prior state when Submit High-risk Change For Review then Governance Approval Case Submitted",
+          "given": [
+            {
+              "title": "Prior Governance state exists",
+              "id": "spec-slice-034-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Submit High-risk Change For Review",
+              "id": "spec-slice-034-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-submit-approval-case"
+            }
+          ],
+          "then": [
+            {
+              "title": "Governance Approval Case Submitted",
+              "id": "spec-slice-034-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-governance-approval-case-submitted"
+            },
+            {
+              "title": "Governance State",
+              "id": "spec-slice-034-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-submit-approval-case-state"
+            }
+          ],
+          "linkedId": "slice-034"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Product Lifecycle Manager",
+          "authzRequired": true
+        },
+        {
+          "name": "Pricing Analyst",
+          "authzRequired": true
+        },
+        {
+          "name": "Compatibility Engineer",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "ApprovalCase"
+      ]
+    },
+    {
+      "id": "slice-035",
+      "status": "Created",
+      "index": 35,
+      "title": "Assign Reviewer To Approval Case",
+      "context": "Catalog Governance API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-assign-approval-reviewer",
+          "title": "Assign Reviewer To Approval Case",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "PUT /approval-cases/{approvalCaseId}/reviewer-assignment",
+          "dependencies": [
+            {
+              "id": "evt-governance-reviewer-assigned",
+              "type": "OUTBOUND",
+              "title": "Governance Reviewer Assigned",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-governance-reviewer-assigned",
+          "title": "Governance Reviewer Assigned",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Governance.ReviewerAssigned.",
+          "dependencies": [
+            {
+              "id": "cmd-assign-approval-reviewer",
+              "type": "INBOUND",
+              "title": "Assign Reviewer To Approval Case",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-assign-approval-reviewer-state",
+              "type": "OUTBOUND",
+              "title": "Governance State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-assign-approval-reviewer-state",
+          "title": "Governance State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Governance Reviewer Assigned.",
+          "dependencies": [
+            {
+              "id": "evt-governance-reviewer-assigned",
+              "type": "INBOUND",
+              "title": "Governance Reviewer Assigned",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-035",
+          "title": "Given prior state when Assign Reviewer To Approval Case then Governance Reviewer Assigned",
+          "given": [
+            {
+              "title": "Prior Governance state exists",
+              "id": "spec-slice-035-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Assign Reviewer To Approval Case",
+              "id": "spec-slice-035-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-assign-approval-reviewer"
+            }
+          ],
+          "then": [
+            {
+              "title": "Governance Reviewer Assigned",
+              "id": "spec-slice-035-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-governance-reviewer-assigned"
+            },
+            {
+              "title": "Governance State",
+              "id": "spec-slice-035-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-assign-approval-reviewer-state"
+            }
+          ],
+          "linkedId": "slice-035"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Governance Reviewer",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "ApprovalCase"
+      ]
+    },
+    {
+      "id": "slice-036",
+      "status": "Created",
+      "index": 36,
+      "title": "Approve Or Reject Proposed Change",
+      "context": "Catalog Governance API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-record-approval-decision",
+          "title": "Approve Or Reject Proposed Change",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "POST /approval-cases/{approvalCaseId}/decisions",
+          "dependencies": [
+            {
+              "id": "evt-governance-decision-recorded",
+              "type": "OUTBOUND",
+              "title": "Governance Decision Recorded",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-governance-decision-recorded",
+          "title": "Governance Decision Recorded",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Governance.DecisionRecorded.",
+          "dependencies": [
+            {
+              "id": "cmd-record-approval-decision",
+              "type": "INBOUND",
+              "title": "Approve Or Reject Proposed Change",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-record-approval-decision-state",
+              "type": "OUTBOUND",
+              "title": "Governance State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-record-approval-decision-state",
+          "title": "Governance State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Governance Decision Recorded.",
+          "dependencies": [
+            {
+              "id": "evt-governance-decision-recorded",
+              "type": "INBOUND",
+              "title": "Governance Decision Recorded",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-036",
+          "title": "Given prior state when Approve Or Reject Proposed Change then Governance Decision Recorded",
+          "given": [
+            {
+              "title": "Prior Governance state exists",
+              "id": "spec-slice-036-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Approve Or Reject Proposed Change",
+              "id": "spec-slice-036-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-record-approval-decision"
+            }
+          ],
+          "then": [
+            {
+              "title": "Governance Decision Recorded",
+              "id": "spec-slice-036-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-governance-decision-recorded"
+            },
+            {
+              "title": "Governance State",
+              "id": "spec-slice-036-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-record-approval-decision-state"
+            }
+          ],
+          "linkedId": "slice-036"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Governance Reviewer",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "ApprovalDecision",
+        "ApprovalCase"
+      ]
+    },
+    {
+      "id": "slice-037",
+      "status": "Created",
+      "index": 37,
+      "title": "Release Approved Change For Publication",
+      "context": "Catalog Governance API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-release-publication-gate",
+          "title": "Release Approved Change For Publication",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "POST /approval-cases/{approvalCaseId}/publication-gate-releases",
+          "dependencies": [
+            {
+              "id": "evt-governance-publication-gate-released",
+              "type": "OUTBOUND",
+              "title": "Governance Publication Gate Released",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-governance-publication-gate-released",
+          "title": "Governance Publication Gate Released",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event Governance.PublicationGateReleased.",
+          "dependencies": [
+            {
+              "id": "cmd-release-publication-gate",
+              "type": "INBOUND",
+              "title": "Release Approved Change For Publication",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-release-publication-gate-state",
+              "type": "OUTBOUND",
+              "title": "Governance State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-release-publication-gate-state",
+          "title": "Governance State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Governance Publication Gate Released.",
+          "dependencies": [
+            {
+              "id": "evt-governance-publication-gate-released",
+              "type": "INBOUND",
+              "title": "Governance Publication Gate Released",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-037",
+          "title": "Given prior state when Release Approved Change For Publication then Governance Publication Gate Released",
+          "given": [
+            {
+              "title": "Prior Governance state exists",
+              "id": "spec-slice-037-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Release Approved Change For Publication",
+              "id": "spec-slice-037-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-release-publication-gate"
+            }
+          ],
+          "then": [
+            {
+              "title": "Governance Publication Gate Released",
+              "id": "spec-slice-037-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-governance-publication-gate-released"
+            },
+            {
+              "title": "Governance State",
+              "id": "spec-slice-037-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-release-publication-gate-state"
+            }
+          ],
+          "linkedId": "slice-037"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Governance Reviewer",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "PublicationGate"
+      ]
+    },
+    {
+      "id": "slice-038",
+      "status": "Created",
+      "index": 38,
+      "title": "Submit Import Batch For Processing",
+      "context": "Bulk Ingestion API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-submit-import-batch",
+          "title": "Submit Import Batch For Processing",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "POST /import-batches",
+          "dependencies": [
+            {
+              "id": "evt-import-batch-submitted",
+              "type": "OUTBOUND",
+              "title": "Import Batch Submitted",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-import-batch-submitted",
+          "title": "Import Batch Submitted",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event ImportBatch.Submitted.",
+          "dependencies": [
+            {
+              "id": "cmd-submit-import-batch",
+              "type": "INBOUND",
+              "title": "Submit Import Batch For Processing",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-submit-import-batch-state",
+              "type": "OUTBOUND",
+              "title": "Import Batch State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-submit-import-batch-state",
+          "title": "Import Batch State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Import Batch Submitted.",
+          "dependencies": [
+            {
+              "id": "evt-import-batch-submitted",
+              "type": "INBOUND",
+              "title": "Import Batch Submitted",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-038",
+          "title": "Given prior state when Submit Import Batch For Processing then Import Batch Submitted",
+          "given": [
+            {
+              "title": "Prior Import Batch state exists",
+              "id": "spec-slice-038-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Submit Import Batch For Processing",
+              "id": "spec-slice-038-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-submit-import-batch"
+            }
+          ],
+          "then": [
+            {
+              "title": "Import Batch Submitted",
+              "id": "spec-slice-038-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-import-batch-submitted"
+            },
+            {
+              "title": "Import Batch State",
+              "id": "spec-slice-038-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-submit-import-batch-state"
+            }
+          ],
+          "linkedId": "slice-038"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Product Lifecycle Manager",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "ImportBatch"
+      ]
+    },
+    {
+      "id": "slice-039",
+      "status": "Created",
+      "index": 39,
+      "title": "Replay Failed Subset Of Import Items",
+      "context": "Bulk Ingestion API",
+      "sliceType": "STATE_CHANGE",
+      "commands": [
+        {
+          "id": "cmd-replay-failed-import-items",
+          "title": "Replay Failed Subset Of Import Items",
+          "fields": [
+            {
+              "name": "requestId",
+              "type": "UUID"
+            }
+          ],
+          "type": "COMMAND",
+          "description": "POST /import-batches/{importBatchId}/replay-requests",
+          "dependencies": [
+            {
+              "id": "evt-import-batch-replay-requested",
+              "type": "OUTBOUND",
+              "title": "Import Batch Replay Requested",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "evt-import-batch-replay-requested",
+          "title": "Import Batch Replay Requested",
+          "fields": [
+            {
+              "name": "eventId",
+              "type": "UUID"
+            },
+            {
+              "name": "occurredAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "EVENT",
+          "description": "Derived from emitted domain event ImportBatch.ReplayRequested.",
+          "dependencies": [
+            {
+              "id": "cmd-replay-failed-import-items",
+              "type": "INBOUND",
+              "title": "Replay Failed Subset Of Import Items",
+              "elementType": "COMMAND"
+            },
+            {
+              "id": "rm-replay-failed-import-items-state",
+              "type": "OUTBOUND",
+              "title": "Import Batch State",
+              "elementType": "READMODEL"
+            }
+          ]
+        }
+      ],
+      "readmodels": [
+        {
+          "id": "rm-replay-failed-import-items-state",
+          "title": "Import Batch State",
+          "fields": [
+            {
+              "name": "lastEventId",
+              "type": "UUID"
+            },
+            {
+              "name": "lastUpdatedAt",
+              "type": "DateTime"
+            }
+          ],
+          "type": "READMODEL",
+          "description": "Projection derived from Import Batch Replay Requested.",
+          "dependencies": [
+            {
+              "id": "evt-import-batch-replay-requested",
+              "type": "INBOUND",
+              "title": "Import Batch Replay Requested",
+              "elementType": "EVENT"
+            }
+          ]
+        }
+      ],
+      "screens": [],
+      "processors": [],
+      "tables": [],
+      "specifications": [
+        {
+          "id": "spec-slice-039",
+          "title": "Given prior state when Replay Failed Subset Of Import Items then Import Batch Replay Requested",
+          "given": [
+            {
+              "title": "Prior Import Batch state exists",
+              "id": "spec-slice-039-g1",
+              "type": "SPEC_EVENT"
+            }
+          ],
+          "when": [
+            {
+              "title": "Replay Failed Subset Of Import Items",
+              "id": "spec-slice-039-w1",
+              "type": "SPEC_COMMAND",
+              "linkedId": "cmd-replay-failed-import-items"
+            }
+          ],
+          "then": [
+            {
+              "title": "Import Batch Replay Requested",
+              "id": "spec-slice-039-t1",
+              "type": "SPEC_EVENT",
+              "linkedId": "evt-import-batch-replay-requested"
+            },
+            {
+              "title": "Import Batch State",
+              "id": "spec-slice-039-t2",
+              "type": "SPEC_READMODEL",
+              "linkedId": "rm-replay-failed-import-items-state"
+            }
+          ],
+          "linkedId": "slice-039"
+        }
+      ],
+      "actors": [
+        {
+          "name": "Product Lifecycle Manager",
+          "authzRequired": true
+        }
+      ],
+      "aggregates": [
+        "ImportReplayRequest",
+        "ImportItemResult"
+      ]
+    }
+  ]
+}
