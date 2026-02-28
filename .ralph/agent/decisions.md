@@ -212,6 +212,25 @@ Both validate collision constraints after each piece placement and throw on ille
 
 ---
 
+## Ralph Loop / JTBD Drone Web Decisions
+
+### D-034: Switch single active plan to JTBD Drone Web
+**Date:** 2026-02-26
+**Decision:** Set the active Ralph Loop workstream to JTBD Drone Web and retargeting for Drone Web, tracked in `.ralph/tasks/jtbd-droneweb.md` and `.ralph/specs/jtbd-droneweb.md`. Treat Catalog Management v2 work as baseline/reference until explicitly re-activated.
+**Rationale:** Ralph governance requires exactly one active plan in `STATE.md`. The current user directive prioritizes anonymized JTBD deliverables and mapping quality over further ADDR/EventModel progression.
+
+### D-035: Use realistic pseudonyms instead of generic persona labels
+**Date:** 2026-02-26
+**Decision:** Replace direct personal names with stable placeholder tokens and mapped pseudonyms using the canonical dictionary (for example, `source-persona-name` -> `mapped-persona-name`) rather than ad hoc labels.
+**Rationale:** Placeholder-token mapping preserves anonymity, traceability, and consistency across all artifacts while avoiding exposure of source case identifiers.
+
+### D-036: Include producer-informed domain enrichment in mapping design
+**Date:** 2026-02-26
+**Decision:** Extend mapping work beyond strict anonymization to include generic producer-informed terminology (portfolio, business unit, product family, and related catalog/ERP concepts) expressed through source placeholders (for example, `source-portfolio-name`).
+**Rationale:** Enrichment improves cross-domain reuse while placeholder tokens prevent leaking source-case specifics.
+
+---
+
 ## Open Questions
 
 | ID | Phase | Question | Status |

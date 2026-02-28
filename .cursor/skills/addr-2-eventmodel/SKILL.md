@@ -109,6 +109,28 @@ If output files already exist, update them in-place unless the user asks for ver
 - Use `align/eventmodel-mapping.md` to preserve intentional slice boundaries and flow ordering.
 - Use `design/api-design.md` to resolve ambiguous aggregate ownership.
 
+## Field Lineage Rule (Required)
+
+Maintain continuous field lineage across the flow:
+
+- `COMMAND -> EVENT -> READMODEL -> SCREEN/AUTOMATION -> COMMAND`
+
+Rules:
+
+1. Preserve field names when semantics are unchanged.
+2. If a field is renamed or transformed, set `mapping` on the target field to the source field name.
+3. Every business field in an event must come from:
+   - an inbound command field, or
+   - prior state/readmodel field, or
+   - a clearly generated/system field.
+4. Generated/system fields (for example IDs, timestamps, correlation IDs) are allowed to appear only in downstream elements and should be marked with:
+   - `generated: true` (when applicable)
+   - `idAttribute: true` for identity fields
+5. Read models must trace back to one or more event fields (same name or explicit `mapping`).
+6. For automation loops, command input fields must map from the automation trigger/read model/event context.
+
+Do not emit placeholder fields like only `requestId`/`eventId` when richer ADDR/OpenAPI field data exists.
+
 ## Validation Checklist
 
 Before final output:
@@ -121,6 +143,8 @@ Before final output:
 - [ ] Slice specs follow Given/When/Then patterns
 - [ ] Names remain in business terminology
 - [ ] Domain events and integration events are not merged
+- [ ] Field lineage is traceable end-to-end (same-name or explicit `mapping`)
+- [ ] Generated/system fields are explicitly marked and not mistaken for business input
 - [ ] JSON is valid and parseable
 
 ## Output Contract
