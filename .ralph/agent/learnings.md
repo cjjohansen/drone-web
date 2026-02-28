@@ -8,15 +8,15 @@
 
 ## LRN-001 (2026-02-14)
 - **Category:** Git / Auth
-- **Context:** Attempted to push to GitHub using HTTPS URL. Failed with "could not read Username." SSH also failed (no key configured). The user has a fine-grained personal access token set as `GITHUB_PERSONAL_ACCESS_TOKEN` env var.
-- **Learning:** On this WSL2 environment, git push requires token-based auth embedded in the remote URL. Set remote as `https://cjjohansen:${GITHUB_PERSONAL_ACCESS_TOKEN}@github.com/cjjohansen/drone-web.git`.
-- **Action:** Always use token-embedded HTTPS URL for git push. Check env var is set before pushing.
+- **Context:** Push via default auth flow failed in this environment.
+- **Learning:** Use approved credential handling for remote operations; never store or document raw credential material in governance notes.
+- **Action:** Keep auth guidance generic and reference secure environment configuration only.
 
 ## LRN-002 (2026-02-14)
 - **Category:** GitHub / Permissions
-- **Context:** Tried to create a repo via the GitHub MCP plugin (`create_repository`). Got 403 "Resource not accessible by personal access token." The token has Contents permission but not Administration.
-- **Learning:** Fine-grained GitHub tokens need Administration (write) permission to create repos. Contents permission only covers file/commit operations. Fine-grained tokens cannot be edited after creation — a new token must be created to add permissions.
-- **Action:** For repo creation, either add Administration permission to a new token or create repos manually on GitHub.
+- **Context:** Attempted repository creation via automation failed with insufficient scope.
+- **Learning:** Repository-creation operations require elevated repository-administration scope, and scope changes may require credential rotation.
+- **Action:** Validate required scope before repo-administration actions and use secure credential workflows.
 
 ## LRN-003 (2026-02-14)
 - **Category:** ADDR / Process
@@ -158,3 +158,15 @@
 - **Context:** EventModel imports into visualization tooling did not render expected command-event-readmodel flows reliably when read models were embedded in the same slice as state changes.
 - **Learning:** A split topology (`STATE_CHANGE` slice for command+event, separate `STATE_VIEW` slice for event-derived read model) is more interoperable for downstream tools and easier to inspect.
 - **Action:** Prefer split `STATE_CHANGE` + `STATE_VIEW` slices for write-side flows, then validate graph connectivity and schema compatibility after generation.
+
+## LRN-025 (2026-02-26)
+- **Category:** Anonymization / Research Quality
+- **Context:** During JTBD anonymization planning, placeholder labels like "Business Unit A" and "Persona B/C" were judged too generic for practical reuse.
+- **Learning:** Effective anonymization should preserve business realism. Use stable, realistic pseudonyms and domain-credible replacement terms informed by producer research (for example, drone portfolio naming), instead of abstract placeholders.
+- **Action:** For anonymization tasks, define a canonical mapping dictionary that includes: (1) realistic person pseudonyms, (2) domain-specific unit/portfolio replacements, and (3) consistency checks across all files before completion.
+
+## LRN-026 (2026-02-26)
+- **Category:** Governance / Redaction
+- **Context:** Governance files may accidentally carry source-case identifiers or overly specific references during active work.
+- **Learning:** `STATE.md`, `decisions.md`, and `learnings.md` should avoid source-case specifics and use placeholder tokens for any sensitive concept.
+- **Action:** Prefer these tokens in governance notes: `source-persona-name`, `source-organization-name`, `source-system-name`, `source-business-unit-name`, `source-portfolio-name`.
