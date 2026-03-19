@@ -84,74 +84,67 @@ The Ralph Loop reads state at session start, follows ADDR prompts for each phase
 ```
 drone-web/
 ├── design/
-│   ├── addr-ai-prompts.md              # ADDR prompt guide (shared, from launchany)
-│   ├── style-guide.md                  # API design style guide (shared across all domains)
-│   ├── catalog-storefront/             # Catalog Storefront domain (read side) — COMPLETE
+│   ├── addr-ai-prompts.md                  # ADDR prompt guide (shared, from launchany)
+│   ├── style-guide.md                      # Shared API design style guide
+│   ├── catalog-storefront/                 # Catalog storefront (read side) - complete ADDR run
 │   │   └── addr/
-│   │       ├── align/                  # Align phase deliverables
-│   │       │   ├── README.md
-│   │       │   ├── personas.md         # 4 personas with job story mapping
-│   │       │   ├── job-stories.md      # 6 unifying job stories
-│   │       │   ├── activity-steps.md   # 23 activity steps
-│   │       │   ├── event-storming.md   # Big Picture Event Storming (40 events)
-│   │       │   ├── event-storming.drawio
-│   │       │   ├── event-storming.svg
-│   │       │   ├── big-picture-event-storming.drawio
-│   │       │   └── validation.md
-│   │       ├── define/                 # Define phase deliverables
-│   │       │   ├── README.md
-│   │       │   ├── boundaries.md       # 3 API boundaries with DDD rationale
-│   │       │   ├── resources.md        # 14 resources with properties
-│   │       │   ├── api-profiles.md     # 19 operations with events/characteristics
-│   │       │   ├── sequence-diagrams.md
-│   │       │   └── validation.md
-│   │       ├── design/                 # Design phase deliverables
-│   │       │   ├── README.md
-│   │       │   ├── api-design.md       # High-level API design tables (3 APIs, 19 ops)
-│   │       │   └── validation.md
-│   │       └── refine/                 # Refine phase deliverables
-│   │           ├── README.md
-│   │           ├── catalog-storefront-api.yaml   # OpenAPI 3.1
-│   │           ├── component-compatibility-api.yaml
-│   │           ├── partner-catalog-api.yaml
-│   │           ├── integration-events.yaml       # AsyncAPI 3.0
-│   │           ├── api-examples.md
-│   │           ├── sequence-diagrams.md
-│   │           ├── validation.md
-│   │           └── postman/
-│   └── catalog-management/              # Catalog Management domain (write side) — IN PROGRESS
+│   │       ├── align/
+│   │       ├── define/
+│   │       ├── design/
+│   │       └── refine/
+│   ├── catalog-management/                  # Earlier write-side run (baseline/reference)
 │       └── addr/
-│           ├── align/
-│           ├── define/
-│           ├── design/
-│           └── refine/
-├── .ralph/                             # Ralph Loop workspace
-│   ├── STATE.md                        # Session handoff state
-│   ├── agent/decisions.md              # Decision log (D-001 – D-022)
-│   ├── agent/learnings.md              # Persistent learnings
-│   ├── specs/catalog-storefront.md     # Product spec
-│   ├── tasks/addr-process.md           # Storefront task tracking (complete)
-│   └── tasks/addr-catalog-management.md # Catalog Management task tracking (current)
-├── .cursor/skills/                     # Cursor agent skills
-│   ├── event-storming/SKILL.md         # Event Storming domain knowledge
-│   ├── event-storming-drawio/          # draw.io generation skill
-│   │   ├── SKILL.md
-│   │   └── _drawio-engine.js
-│   └── legacy-system-2-eventmodel/     # Event Modeling skill
-│       ├── SKILL.md
-│       └── schema.json
-└── CLAUDE.md                           # Project instructions
+│           ├── align/                       # populated
+│           ├── define/                      # placeholders
+│           ├── design/                      # placeholders
+│           └── refine/                      # placeholders
+│   └── catalog-management-v2/              # Current write-side run
+│       ├── addr/
+│       │   ├── align/
+│       │   ├── define/
+│       │   ├── design/
+│       │   └── refine/                      # 8 OpenAPI files + AsyncAPI + Postman
+│       └── eventmodel/
+├── Specs/
+│   └── Case/JTBD/                          # Sanitized JTBD corpus and mapping notes
+├── .ralph/                                  # Ralph Loop governance workspace
+│   ├── STATE.md
+│   ├── agent/
+│   │   ├── decisions.md
+│   │   └── learnings.md
+│   ├── specs/
+│   │   ├── catalog-storefront.md
+│   │   └── jtbd-droneweb.md
+│   └── tasks/
+│       ├── addr-process.md
+│       ├── addr-catalog-management.md
+│       ├── addr-catalog-management-v2.md
+│       └── jtbd-droneweb.md
+├── .cursor/skills/                          # Agent skills
+│   ├── addr-2-eventmodel/
+│   ├── event-modeling-automation-slice/
+│   ├── event-modeling-state-change-slice/
+│   ├── event-modeling-state-view-slice/
+│   ├── event-storming/
+│   ├── event-storming-drawio/
+│   ├── legacy-system-2-eventmodel/
+│   ├── railway-drawio/
+│   └── ralph-loop-governance/
+└── CLAUDE.md                                # Project instructions and Ralph integration notes
 ```
 
 ## Current Status
 
-**Phase:** All 4 ADDR phases complete (Align, Define, Design, Refine).
+**Active workstream:** JTBD Drone Web anonymization in `.ralph/tasks/jtbd-droneweb.md`.
 
-**Completed:**
-- Align: Personas, job stories, activity steps, event storming, validation
-- Define: API boundaries, resources, operation profiles, sequence diagrams, validation
-- Design: Style guide, high-level API design tables, validation
-- Refine: OpenAPI 3.1 specs, AsyncAPI 3.0 spec, Postman collections, examples, validation
+**Current focus:**
+- Mirror and sanitize JTBD source corpus into `Specs/Case/JTBD/` with stable placeholder mappings
+- Keep governance/task/spec artifacts in `.ralph/` aligned with active plan and decision logs
+
+**Baseline / reference workstreams:**
+- `design/catalog-storefront/addr/`: complete 4-phase ADDR run (Align, Define, Design, Refine)
+- `design/catalog-management/addr/`: earlier write-side run kept for historical reference
+- `design/catalog-management-v2/addr/`: revised write-side ADDR run with refine contracts and eventmodel artifacts
 
 ## Retrospective
 
