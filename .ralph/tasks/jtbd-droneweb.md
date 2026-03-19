@@ -45,7 +45,7 @@ The source corpus contains identifying names and source-specific references. We 
 
 - Canonical mapping dictionary is published in `Specs/Case/JTBD/README.md`.
 - JTBD Drone Web corpus now mirrors all source markdown files (plus target README).
-- Replacement policy applied across corpus, including `control center` -> `control center`.
+- Replacement policy applied consistently across the corpus.
 - Residual scan shows no remaining known source-case identifiers in target docs.
 
 ## Notes

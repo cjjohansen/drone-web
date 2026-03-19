@@ -29,7 +29,7 @@
   - `source-portfolio-name`
 - [x] Published canonical mapping dictionary in `Specs/Case/JTBD/README.md`
 - [x] Mirrored source markdown corpus into `Specs/Case/JTBD/` and applied deterministic replacements
-- [x] Standardized terminology replacement `control center` -> `control center` in JTBD Drone Web files
+- [x] Standardized sensitive source terminology in JTBD Drone Web files
 - [x] Ran residual identifier scan and spot-check validation on JTBD Drone Web corpus
 
 ## What Comes Next
