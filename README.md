@@ -94,34 +94,67 @@ Current active plan is tracked in `.ralph/STATE.md`; ADDR and Event Modeling art
 ```text
 drone-web/
 ├── design/
-│   ├── addr-ai-prompts.md
-│   ├── style-guide.md
-│   ├── catalog-storefront/addr/        # read-side ADDR run (complete)
-│   ├── catalog-management/addr/         # write-side v1 baseline
-│   └── catalog-management-v2/           # write-side v2 run (complete)
-│       ├── addr/                        # Align/Define/Design/Refine artifacts
-│       └── eventmodel/                  # derived EventModel config/analysis outputs
-├── Specs/Case/JTBD/                     # supporting case docs and mapping references
-├── .ralph/
+│   ├── addr-ai-prompts.md                  # ADDR prompt guide (shared, from launchany)
+│   ├── style-guide.md                      # Shared API design style guide
+│   ├── catalog-storefront/                 # Catalog storefront (read side) - complete ADDR run
+│   │   └── addr/
+│   │       ├── align/
+│   │       ├── define/
+│   │       ├── design/
+│   │       └── refine/
+│   ├── catalog-management/                  # Earlier write-side run (baseline/reference)
+│       └── addr/
+│           ├── align/                       # populated
+│           ├── define/                      # placeholders
+│           ├── design/                      # placeholders
+│           └── refine/                      # placeholders
+│   └── catalog-management-v2/              # Current write-side run
+│       ├── addr/
+│       │   ├── align/
+│       │   ├── define/
+│       │   ├── design/
+│       │   └── refine/                      # 8 OpenAPI files + AsyncAPI + Postman
+│       └── eventmodel/
+├── Specs/
+│   └── Case/JTBD/                          # Sanitized JTBD corpus and mapping notes
+├── .ralph/                                  # Ralph Loop governance workspace
 │   ├── STATE.md
 │   ├── agent/
 │   │   ├── decisions.md
 │   │   └── learnings.md
 │   ├── specs/
+│   │   ├── catalog-storefront.md
+│   │   └── jtbd-droneweb.md
 │   └── tasks/
-├── .cursor/skills/
-└── README.md
+│       ├── addr-process.md
+│       ├── addr-catalog-management.md
+│       ├── addr-catalog-management-v2.md
+│       └── jtbd-droneweb.md
+├── .cursor/skills/                          # Agent skills
+│   ├── addr-2-eventmodel/
+│   ├── event-modeling-automation-slice/
+│   ├── event-modeling-state-change-slice/
+│   ├── event-modeling-state-view-slice/
+│   ├── event-storming/
+│   ├── event-storming-drawio/
+│   ├── legacy-system-2-eventmodel/
+│   ├── railway-drawio/
+│   └── ralph-loop-governance/
+└── CLAUDE.md                                # Project instructions and Ralph integration notes
 ```
 
 ## Current Status
 
-**Primary baseline:** ADDR and Event Modeling artifacts for Catalog Storefront and Catalog Management v2.
+**Active workstream:** JTBD Drone Web anonymization in `.ralph/tasks/jtbd-droneweb.md`.
 
-**Completed baselines:**
-- Catalog Storefront ADDR (all 4 phases validated)
-- Catalog Management v2 ADDR (all 4 phases validated)
-- Catalog Management v2 refine packaging (8 boundary OpenAPI 3.1 specs, AsyncAPI 3.0 integration contract, consolidated Postman collection)
-- Supporting case corpus mirrored into `Specs/Case/JTBD/` with deterministic mapping policy and residual identifier scans
+**Current focus:**
+- Mirror and sanitize JTBD source corpus into `Specs/Case/JTBD/` with stable placeholder mappings
+- Keep governance/task/spec artifacts in `.ralph/` aligned with active plan and decision logs
+
+**Baseline / reference workstreams:**
+- `design/catalog-storefront/addr/`: complete 4-phase ADDR run (Align, Define, Design, Refine)
+- `design/catalog-management/addr/`: earlier write-side run kept for historical reference
+- `design/catalog-management-v2/addr/`: revised write-side ADDR run with refine contracts and eventmodel artifacts
 
 ## Retrospective
 
