@@ -33,7 +33,7 @@ Core ERP ↔ Flight Data Hub mismatches, mobile "translation layer" is invisible
 - Wants the control center to become the **primary application** for reviewing, correcting, and approving product data.
 - Vision: **automatic health checks, warnings, governance, BI-like usage analytics**.
 - High manual work today across Core ERP, Excel, Flight Data Hub, visualization tools → wants consolidation.
-- Sees control center as **central database for data + 3D/CAD/BIM/media assets**.
+- Sees control center as **central database for data + 3D/CAD models and media assets**.
 - Major business impact: reduce delays (currently "3 months") caused by Flight Data Hub dependencies.
 
 ---
@@ -51,7 +51,7 @@ Core ERP ↔ Flight Data Hub mismatches, mobile "translation layer" is invisible
 #### Manual, labor-intensive workflows
 - Must overlay large extracted datasets manually to understand gaps.
 - Performance curve data requires multi-step manual extraction and comparison.
-- BIM/CAD/visualization views require multiple separate tools and folder searches.
+- 3D/CAD model and visualization views require multiple separate tools and folder searches.
 
 #### Control Center limitations (current version)
 - Only one product family visible at a time.
@@ -75,7 +75,7 @@ Core ERP ↔ Flight Data Hub mismatches, mobile "translation layer" is invisible
 | **Multi-family / multi-filter analysis** to compare 2–3+ families at once. |
 | **Automatic health insights**: gaps, illogical values, missing attributes, version mismatches. |
 | **Clear governance & ownership**: who approves, who corrects, who owns data. |
-| **Automation of models/drawings** (CAD/BIM/exploded views). |
+| **Automation of models/drawings** (3D/CAD models, exploded views). |
 | **Central source for all data + visual assets.** |
 | **Usage analytics** to track external product documentation consumption. |
 | **Streamlined corrections** → ability to fix or approve directly in Control Center. |
@@ -103,7 +103,7 @@ Core ERP ↔ Flight Data Hub mismatches, mobile "translation layer" is invisible
 
 | JTBD | When | I want | So that |
 |------|------|--------|---------|
-| **JTBD 5 — Automating updates of models and drawings** | a product is updated, | BIM, CAD, and exploded drawings to update automatically, | I don't need to manually recreate or search for new versions in multiple tools. |
+| **JTBD 5 — Automating updates of models and drawings** | a product is updated, | 3D/CAD models and exploded drawings to update automatically, | I don't need to manually recreate or search for new versions in multiple tools. |
 | **JTBD 6 — Streamlined corrections** | I detect an issue in control center, | to approve/correct it directly and automatically notify Core ERP or the data maintainer, | corrections flow seamlessly back into the source system. |
 | **JTBD 9 — Shared responsibility** | maintaining product data across departments, | clear ownership layers, | maintaining data quality becomes a joint responsibility instead of falling on one team. |
 
@@ -125,7 +125,7 @@ Core ERP ↔ Flight Data Hub mismatches, mobile "translation layer" is invisible
 | **Role:** | Taxonomy Specialist |
 
 ### About Me
-An industry taxonomy specialist responsible for connecting AeroDynamics Corp product data to the industry taxonomy standard standard and delivering industry taxonomy data to external online portals. He works on industry taxonomy data setup, transformation, and delivery using Core ERP-sourced data, neutral data models, and mapping layers, but is not responsible for the raw source data itself.
+An industry taxonomy specialist responsible for connecting AeroDynamics Corp product data to the industry taxonomy standard and delivering industry taxonomy data to external online portals. He works on industry taxonomy data setup, transformation, and delivery using Core ERP-sourced data, neutral data models, and mapping layers, but is not responsible for the raw source data itself.
 
 ### Usage Patterns
 Prefers being notified by the control center when an action is needed. Uses industry taxonomy dashboards and reports **regularly** to monitor data completeness and delivery results.
@@ -404,7 +404,7 @@ Miscommunication, slow systems, late discovery of issues
 ### Main Interview HIGHLIGHTS
 
 - Miscommunication is the biggest recurring issue.
-- Validation and checking data (documentation, I&O, publication status) is the primary control center value.
+- Validation and checking data (documentation, operator manuals, publication status) is the primary control center value.
 - AeroDynamics Corp checking is slow and cumbersome — control center can make checks easier.
 - Wants visibility on whether updates actually reached the right products.
 - Rarely needs to use the control center unless something changes.
@@ -441,7 +441,7 @@ Miscommunication, slow systems, late discovery of issues
 | **Verify data quickly** after updates, without navigating slow systems. |
 | **Full overview** of all required documentation elements. |
 | **Know when something has changed**, preferably through awareness and process adherence, not only tooling. |
-| **PD to be able to do more themselves**, reducing dependency and miscommunication. |
+| **The product data team to be able to do more themselves**, reducing dependency and miscommunication. |
 | **Faster, more reliable validation workflows.** |
 | **Avoid being pulled into coordination issues.** |
 
@@ -453,7 +453,7 @@ Miscommunication, slow systems, late discovery of issues
 
 | JTBD | When | I want | So that |
 |------|------|--------|---------|
-| **JTBD 1 — Validate product data after updates** | we update product data (e.g., I&O manuals, documentation packages...), | to quickly check whether the updates reached all intended products, | we avoid discovering issues only when customers complain. |
+| **JTBD 1 — Validate product data after updates** | we update product data (e.g., operator manuals, documentation packages...), | to quickly check whether the updates reached all intended products, | we avoid discovering issues only when customers complain. |
 | **JTBD 2 — Perform broad product data checks efficiently** | I need to verify documentation or data for many products, | a fast tool that gives me an overview, | I don't have to navigate sluggish systems like AeroDynamics Corp. |
 | **JTBD 5 — Confirm product has correct public-facing data before launch** | launching new products, | to ensure all data is correct, relevant, and in a format AeroDynamics Corp can use, | customers can identify the right product and get proper documentation. |
 | **JTBD 6 — AI empowered data optimisation** | I'm responsible for validating and improving product data, | AI to surface unusual values, missing elements, and deviations from expected patterns, | I can focus my time on resolving issues rather than searching for them. |
@@ -468,18 +468,18 @@ Miscommunication, slow systems, late discovery of issues
 
 | JTBD | When | I want | So that |
 |------|------|--------|---------|
-| **JTBD 4 — Reduce dependency on others during validation** | product data needs to be validated, | PD to be able to do more themselves, | there are fewer handovers and fewer communication failures. |
+| **JTBD 4 — Reduce dependency on others during validation** | product data needs to be validated, | the product data team to be able to do more themselves, | there are fewer handovers and fewer communication failures. |
 
 ---
 
-## 6. PRODUCT SPECIALIST (Mira Petrovic - Sentinel Response Portfolio)
+## 6. PRODUCT SPECIALIST (Mira Petrovic - Field Response Portfolio)
 
 ### Profile
 
 | Field | Value |
 |-------|-------|
 | **Name:** | Mira Petrovic |
-| **Role:** | Product Specialist – Sentinel Response Portfolio |
+| **Role:** | Product Specialist – Field Response Portfolio |
 | **Unit:** | Airframe Portfolio Management |
 
 ### About Me
@@ -617,7 +617,7 @@ Incorrect data caused by manual Core ERP input, manual work during release gaps 
 | **Notification-driven workflow** instead of manual checks. |
 | Better **synchronization across Core ERP, Flight Data Hub, online channels, and price lists**. |
 | Cleaner **document lifecycle management** (only latest versions visible). |
-| Support for **country-specific variants**, images, and front covers. |
+| Support for **country-specific variants**, including country-specific hero images and banners. |
 | **Role and product specific** control center views and sessions. |
 
 ---

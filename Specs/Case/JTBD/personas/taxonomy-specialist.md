@@ -8,7 +8,7 @@
 | **Role:** | Taxonomy Specialist |
 
 ### About Me
-An industry taxonomy specialist responsible for connecting AeroDynamics Corp product data to the industry taxonomy standard standard and delivering industry taxonomy data to external online portals. He works on industry taxonomy data setup, transformation, and delivery using Core ERP-sourced data, neutral data models, and mapping layers, but is not responsible for the raw source data itself.
+An industry taxonomy specialist responsible for connecting AeroDynamics Corp product data to the industry taxonomy standard and delivering industry taxonomy data to external online portals. He works on industry taxonomy data setup, transformation, and delivery using Core ERP-sourced data, neutral data models, and mapping layers, but is not responsible for the raw source data itself.
 
 ### Usage Patterns
 Prefers being notified by the control center when an action is needed. Uses industry taxonomy dashboards and reports **regularly** to monitor data completeness and delivery results.

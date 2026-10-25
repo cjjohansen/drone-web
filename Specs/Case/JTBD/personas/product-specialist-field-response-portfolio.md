@@ -1,11 +1,11 @@
-# PRODUCT SPECIALIST (Mira Petrovic - Sentinel Response Portfolio)
+# PRODUCT SPECIALIST (Mira Petrovic - Field Response Portfolio)
 
 ### Profile
 
 | Field | Value |
 |-------|-------|
 | **Name:** | Mira Petrovic |
-| **Role:** | Product Specialist – Sentinel Response Portfolio |
+| **Role:** | Product Specialist – Field Response Portfolio |
 | **Unit:** | Airframe Portfolio Management |
 
 ### About Me

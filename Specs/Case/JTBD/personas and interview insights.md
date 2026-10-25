@@ -6,8 +6,6 @@
 
 ![Data maintainer 1](assets/data-maintainer-1.png)
 
-![Etim specialist 1](assets/etim-specialist-1.png)
-
 ![Whole sale representative 1](assets/whole-sale-representative-1.png)
 
 ![Global Product Manager 1](assets/global-product-manager-1.png)

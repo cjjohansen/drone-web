@@ -29,7 +29,7 @@ Miscommunication, slow systems, late discovery of issues
 ## Main Interview HIGHLIGHTS
 
 - Miscommunication is the biggest recurring issue.
-- Validation and checking data (documentation, I&O, publication status) is the primary control center value.
+- Validation and checking data (documentation, operator manuals, publication status) is the primary control center value.
 - AeroDynamics Corp checking is slow and cumbersome — control center can make checks easier.
 - Wants visibility on whether updates actually reached the right products.
 - Rarely needs to use the control center unless something changes.
@@ -66,7 +66,7 @@ Miscommunication, slow systems, late discovery of issues
 | **Verify data quickly** | Need to verify data quickly after updates, without navigating slow systems. |
 | **Full overview** | Need full overview of all required documentation elements. |
 | **Change awareness** | Need to know when something has changed, preferably through awareness and process adherence, not only tooling. |
-| **Self-service for PD** | Need PD to be able to do more themselves, reducing dependency and miscommunication. |
+| **Self-service for the product data team** | Need the product data team to be able to do more themselves, reducing dependency and miscommunication. |
 | **Reliable validation** | Need faster, more reliable validation workflows. |
 | **Avoid coordination overhead** | Need to avoid being pulled into coordination issues. |
 
@@ -79,7 +79,7 @@ Miscommunication, slow systems, late discovery of issues
 #### JTBD 1 — Validate product data after updates
 | Element | Description |
 |---------|-------------|
-| **When** | we update product data (e.g., I&O manuals, documentation packages...), |
+| **When** | we update product data (e.g., operator manuals, documentation packages...), |
 | **I want** | to quickly check whether the updates reached all intended products, |
 | **so that** | we avoid discovering issues only when customers complain. |
 
@@ -123,7 +123,7 @@ Miscommunication, slow systems, late discovery of issues
 | Element | Description |
 |---------|-------------|
 | **When** | product data needs to be validated, |
-| **I want** | PD to be able to do more themselves, |
+| **I want** | the product data team to be able to do more themselves, |
 | **so that** | there are fewer handovers and fewer communication failures. |
 
 ---
@@ -136,7 +136,7 @@ Main NEEDS                                          JOBS TO BE DONE
 Verify data quickly ──────────────────────────────► JTBD 1, JTBD 2
 Full overview ────────────────────────────────────► JTBD 2, JTBD 5
 Know when something changed ──────────────────────► JTBD 3
-PD self-service ──────────────────────────────────► JTBD 4
+Product data team self-service ──────────────────────────────────► JTBD 4
 Faster validation workflows ──────────────────────► JTBD 1, JTBD 2, JTBD 6
 Avoid coordination issues ────────────────────────► JTBD 4
 ```
@@ -151,5 +151,5 @@ Avoid coordination issues ──────────────────
 | Documentation completeness checker | 2, 5 |
 | Change tracking / color-coded diff view | 3 |
 | AI-powered anomaly detection | 6 |
-| Self-service tools for PD teams | 4 |
+| Self-service tools for product data teams | 4 |
 | Pre-launch checklist / readiness view | 5 |

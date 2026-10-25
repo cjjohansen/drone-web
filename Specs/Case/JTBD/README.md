@@ -55,7 +55,7 @@ This folder contains JTBD Drone Web copies of files from the source corpus.
 | `source-business-unit-name-3` | `Airframe Portfolio Management` |
 | `source-portfolio-name-1` | `Falcon Enterprise Series` |
 | `source-portfolio-name-2` | `Hawk Compact Series` |
-| `source-portfolio-name-3` | `Sentinel Response Portfolio` |
+| `source-portfolio-name-3` | `Field Response Portfolio` |
 
 ## Validation Rules
 

@@ -9,7 +9,7 @@
 | **Unit:** | Airframe Portfolio Management |
 
 ### About Me
-A product manager responsible for portfolio and product performance analysis, working heavily with sales, cost, BOM, and component data. He relies on complete and correct product data to make decisions on standardization, modularization, and product strategy, but is frequently slowed down by missing, incomplete, or unreliable variant and engine-to-order data.
+A product manager responsible for portfolio and product performance analysis, working heavily with sales, cost, BOM, and component data. He relies on complete and correct product data to make decisions on standardization, modularization, and product strategy, but is frequently slowed down by missing, incomplete, or unreliable variant and engineer-to-order data.
 
 ### Usage Patterns
 At least once per week, with heavier usage when performing portfolio analysis, preparing product or market analyses, and reviewing data quality trends.
@@ -18,7 +18,7 @@ At least once per week, with heavier usage when performing portfolio analysis, p
 Making confident, data-driven portfolio decisions and self-service access to rich and reliable product and component data; visibility to data quality by product, plant, and variant; measurable KPIs for data quality; consistency of data across analytics and systems.
 
 ### Top Frustrations
-Missing component-level data for variants and engine-to-order products, inconsistent data across Core ERP, Flight Data Hub, PDFs, and BIM, slow and manual dataset retrieval requiring multiple teams, reliance on assumptions due to lack of confirmed data quality insights.
+Missing component-level data for variants and engineer-to-order products, inconsistent data across Core ERP, Flight Data Hub, PDFs, and 3D/CAD models, slow and manual dataset retrieval requiring multiple teams, reliance on assumptions due to lack of confirmed data quality insights.
 
 ---
 
@@ -26,7 +26,7 @@ Missing component-level data for variants and engine-to-order products, inconsis
 
 - Analytical user of product and sales data.
 - Strong dependency on data completeness and correctness.
-- Suffers most from variant and engine-to-order data gaps.
+- Suffers most from variant and engineer-to-order data gaps.
 - Values self-service and exploratory data access.
 - Sees control center as a way to professionalize data-driven product management.
 - Strong interest in measurable data quality KPIs.
@@ -39,7 +39,7 @@ Missing component-level data for variants and engine-to-order products, inconsis
 - Incomplete system-level performance data.
 - Missing component-level data for variants.
 - Manual, slow data retrieval via multiple teams.
-- Inconsistent data across Core ERP, Flight Data Hub, PDFs, and BIM.
+- Inconsistent data across Core ERP, Flight Data Hub, PDFs, and 3D/CAD models.
 - Limited ability to extract usable datasets from Flight Data Hub.
 
 ---

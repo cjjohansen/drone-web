@@ -29,7 +29,7 @@ Core ERP ↔ Flight Data Hub mismatches, mobile "translation layer" is invisible
 - Wants the control center to become the **primary application** for reviewing, correcting, and approving product data.
 - Vision: **automatic health checks, warnings, governance, BI-like usage analytics**.
 - High manual work today across Core ERP, Excel, Flight Data Hub, visualization tools → wants consolidation.
-- Sees control center as **central database for data + 3D/CAD/BIM/media assets**.
+- Sees control center as **central database for data + 3D/CAD models and media assets**.
 - Major business impact: reduce delays (currently "3 months") caused by Flight Data Hub dependencies.
 
 ---
@@ -47,7 +47,7 @@ Core ERP ↔ Flight Data Hub mismatches, mobile "translation layer" is invisible
 #### Manual, labor-intensive workflows
 - Must overlay large extracted datasets manually to understand gaps.
 - Performance curve data requires multi-step manual extraction and comparison.
-- BIM/CAD/visualization views require multiple separate tools and folder searches.
+- 3D/CAD model and visualization views require multiple separate tools and folder searches.
 
 #### Control Center limitations (current version)
 - Only one product family visible at a time.
@@ -71,7 +71,7 @@ Core ERP ↔ Flight Data Hub mismatches, mobile "translation layer" is invisible
 | **Multi-family / multi-filter analysis** to compare 2–3+ families at once. |
 | **Automatic health insights**: gaps, illogical values, missing attributes, version mismatches. |
 | **Clear governance & ownership**: who approves, who corrects, who owns data. |
-| **Automation of models/drawings** (CAD/BIM/exploded views). |
+| **Automation of models/drawings** (3D/CAD models, exploded views). |
 | **Central source for all data + visual assets.** |
 | **Usage analytics** to track external product documentation consumption. |
 | **Streamlined corrections** → ability to fix or approve directly in Control Center. |
@@ -99,7 +99,7 @@ Core ERP ↔ Flight Data Hub mismatches, mobile "translation layer" is invisible
 
 | JTBD | When | I want | So that |
 |------|------|--------|---------|
-| **JTBD 5 — Automating updates of models and drawings** | a product is updated, | BIM, CAD, and exploded drawings to update automatically, | I don't need to manually recreate or search for new versions in multiple tools. |
+| **JTBD 5 — Automating updates of models and drawings** | a product is updated, | 3D/CAD models and exploded drawings to update automatically, | I don't need to manually recreate or search for new versions in multiple tools. |
 | **JTBD 6 — Streamlined corrections** | I detect an issue in control center, | to approve/correct it directly and automatically notify Core ERP or the data maintainer, | corrections flow seamlessly back into the source system. |
 | **JTBD 9 — Shared responsibility** | maintaining product data across departments, | clear ownership layers, | maintaining data quality becomes a joint responsibility instead of falling on one team. |
 

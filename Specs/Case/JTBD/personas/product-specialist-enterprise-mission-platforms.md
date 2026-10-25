@@ -54,7 +54,7 @@ Incorrect data caused by manual Core ERP input, manual work during release gaps 
 | **Notification-driven workflow** instead of manual checks. |
 | Better **synchronization across Core ERP, Flight Data Hub, online channels, and price lists**. |
 | Cleaner **document lifecycle management** (only latest versions visible). |
-| Support for **country-specific variants**, images, and front covers. |
+| Support for **country-specific variants**, including country-specific hero images and banners. |
 | **Role and product specific** control center views and sessions. |
 
 ---
