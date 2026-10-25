@@ -41,12 +41,12 @@ Miscommunication, slow systems, late discovery of issues
 
 ## Main PAIN POINTS
 
-### 1. Miscommunication across PD, GBC, and other stakeholders
+### 1. Miscommunication across teams and stakeholders
 - Leads to rework, delays, and he "gets pulled in every time."
 - People not following established processes when making changes.
 
 ### 2. Poor visibility into changes
-- Changes (e.g., curves) made without his team being informed.
+- Changes (e.g., performance curves) made without his team being informed.
 - Only discovered after some time — creates "a hell of a mess."
 
 ### 3. Slow and inefficient tools for checking product data
