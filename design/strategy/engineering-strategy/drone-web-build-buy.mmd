@@ -1,0 +1,43 @@
+wardley-beta
+size [1280, 720]
+
+anchor "Integrator" [0.96, 0.46]
+component "Verify a build" [0.84, 0.28]
+component "Find parts" [0.84, 0.62]
+component "Buy parts" [0.84, 0.82]
+component "Compatibility rules" [0.66, 0.18] (build)
+component "Search" [0.66, 0.70] (buy)
+component "Product data" [0.52, 0.38] (build)
+component "Payment" [0.62, 0.90] (outsource)
+component "Approval workflow" [0.36, 0.56] (buy)
+component "Event broker" [0.26, 0.80] (outsource)
+component "Cloud hosting" [0.08, 0.93] (outsource)
+
+"Integrator" -> "Verify a build"
+"Integrator" -> "Find parts"
+"Integrator" -> "Buy parts"
+"Verify a build" -> "Compatibility rules"
+"Find parts" -> "Search"
+"Buy parts" -> "Payment"
+"Buy parts" -> "Product data"
+"Compatibility rules" -> "Product data"
+"Search" -> "Product data"
+"Product data" -> "Approval workflow"
+"Product data" -> "Event broker"
+"Approval workflow" -> "Cloud hosting"
+"Event broker" -> "Cloud hosting"
+
+%% Drone Web (fictional shop): build vs buy, after Will Larson's use of Wardley maps in
+%% Crafting Engineering Strategy (lethain.com/wardley-mapping). Strategy marks:
+%% (build) = build in house (Core), (buy) = buy a product, (outsource) = rent a service.
+%% Compatibility rules depend on product specs. Rule changes are also approved
+%% (SubmitRuleChangeForApproval in boundary-map.md); that link is left out to keep
+%% the map readable: the build/buy point does not depend on it.
+%% Payment is rented as a service: the provider runs it, so the map stops there.
+%% leaf "Payment"
+%% Product data: Product Lifecycle Management, the one source of truth, publishes events.
+%% Approval workflow: Catalog Governance Workflow, the one boundary typed Generic.
+note "Build left of centre, buy or rent right of it" [0.04, 0.04]
+%% label-side "Cloud hosting" left
+%% label-side "Product data" left
+%% label-side "Approval workflow" left
