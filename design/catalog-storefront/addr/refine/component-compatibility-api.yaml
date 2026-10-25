@@ -9,10 +9,10 @@ info:
     name: Drone Web API Team
   license:
     name: Proprietary
-    url: https://droneparts.com/terms
+    url: https://example.com/terms
 
 servers:
-  - url: https://api.droneparts.com/compatibility/v1
+  - url: https://api.example.com/compatibility/v1
     description: Production
 
 security:
@@ -75,7 +75,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
               example:
-                type: "https://api.droneparts.com/problems/bad-request"
+                type: "https://api.example.com/problems/bad-request"
                 title: "Bad Request"
                 status: 400
                 detail: "At least 2 component IDs are required"
@@ -92,7 +92,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
               example:
-                type: "https://api.droneparts.com/problems/unprocessable-entity"
+                type: "https://api.example.com/problems/unprocessable-entity"
                 title: "Unprocessable Entity"
                 status: 422
                 detail: "Product 'e5f6a7b8-c9d0-4e1f-ba3b-4c5d6e7f8a9b' is not a recognized component type for compatibility checking"
@@ -251,7 +251,7 @@ components:
       type: oauth2
       flows:
         clientCredentials:
-          tokenUrl: https://auth.droneparts.com/oauth/token
+          tokenUrl: https://auth.example.com/oauth/token
           scopes:
             compatibility:read: Check compatibility
             compatibility:write: Create compatibility checks

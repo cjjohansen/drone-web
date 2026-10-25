@@ -13,7 +13,7 @@
     ]
   },
   "variable": [
-    { "key": "baseUrl", "value": "https://api.droneparts.com/partner-catalog/v1" },
+    { "key": "baseUrl", "value": "https://api.example.com/partner-catalog/v1" },
     { "key": "apiKey", "value": "partner-api-key" }
   ],
   "item": [

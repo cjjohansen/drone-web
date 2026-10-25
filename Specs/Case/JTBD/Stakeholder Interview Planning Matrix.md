@@ -52,7 +52,7 @@
 
 ---
 
-## Content Enrichment Specialist (Visualisation, TC, curve specialists)
+## Content Enrichment Specialist (Visualisation, TC, performance curve specialists)
 **Group:** Data Producers (Orange)  
 **Owner:** Interview Owner B
 

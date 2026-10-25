@@ -4,7 +4,7 @@
 
 ```http
 POST /product-lifecycle/v1/products HTTP/1.1
-Host: api.droneparts.com
+Host: api.example.com
 Content-Type: application/json
 X-API-Key: <api-key>
 
@@ -22,7 +22,7 @@ X-API-Key: <api-key>
 ## 2) Technical Docs — Publish Document Version
 
 ```bash
-curl -X POST "https://api.droneparts.com/technical-docs/v1/documents/58ef5af0-0f9a-43cd-9d0a-f6f23752d11f/versions" \
+curl -X POST "https://api.example.com/technical-docs/v1/documents/58ef5af0-0f9a-43cd-9d0a-f6f23752d11f/versions" \
   -H "Content-Type: application/json" \
   -H "X-API-Key: ${API_KEY}" \
   -H "Idempotency-Key: docs-ver-20260226-001" \
@@ -37,7 +37,7 @@ curl -X POST "https://api.droneparts.com/technical-docs/v1/documents/58ef5af0-0f
 
 ```http
 POST /pricing/v1/repricing-jobs HTTP/1.1
-Host: api.droneparts.com
+Host: api.example.com
 Content-Type: application/json
 Idempotency-Key: repricing-20260226-001
 X-API-Key: <api-key>
@@ -63,7 +63,7 @@ Content-Type: application/json
 ## 4) Inventory — Update Quantity
 
 ```bash
-curl -X PUT "https://api.droneparts.com/inventory/v1/inventory-positions/5b745f26-e4d1-4f0f-ae5d-8f95e25d2f8f/quantity" \
+curl -X PUT "https://api.example.com/inventory/v1/inventory-positions/5b745f26-e4d1-4f0f-ae5d-8f95e25d2f8f/quantity" \
   -H "Content-Type: application/json" \
   -H "X-API-Key: ${API_KEY}" \
   -H 'If-Match: "v12"' \
@@ -77,7 +77,7 @@ curl -X PUT "https://api.droneparts.com/inventory/v1/inventory-positions/5b745f2
 
 ```http
 PUT /taxonomy/v1/categories/motors-brushless/facets HTTP/1.1
-Host: api.droneparts.com
+Host: api.example.com
 Content-Type: application/json
 X-API-Key: <api-key>
 
@@ -93,7 +93,7 @@ X-API-Key: <api-key>
 
 ```http
 POST /compatibility-rules/v1/compatibility-rules HTTP/1.1
-Host: api.droneparts.com
+Host: api.example.com
 Content-Type: application/json
 Idempotency-Key: compat-rule-20260226-001
 X-API-Key: <api-key>
@@ -109,7 +109,7 @@ X-API-Key: <api-key>
 
 ```http
 POST /catalog-governance/v1/approval-cases/03724352-c0cd-4fa7-ac65-bddf8df0474d/decisions HTTP/1.1
-Host: api.droneparts.com
+Host: api.example.com
 Content-Type: application/json
 Idempotency-Key: gov-decision-20260226-001
 X-API-Key: <api-key>
@@ -123,7 +123,7 @@ X-API-Key: <api-key>
 ## 8) Bulk Ingestion — Replay Failed Items
 
 ```bash
-curl -X POST "https://api.droneparts.com/bulk-ingestion/v1/import-batches/ca23dc58-7e65-4f89-81f3-2828ac8df4d0/replay-requests" \
+curl -X POST "https://api.example.com/bulk-ingestion/v1/import-batches/ca23dc58-7e65-4f89-81f3-2828ac8df4d0/replay-requests" \
   -H "Content-Type: application/json" \
   -H "X-API-Key: ${API_KEY}" \
   -H "Idempotency-Key: replay-20260226-001" \

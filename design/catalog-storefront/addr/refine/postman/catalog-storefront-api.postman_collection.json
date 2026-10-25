@@ -13,7 +13,7 @@
     ]
   },
   "variable": [
-    { "key": "baseUrl", "value": "https://api.droneparts.com/catalog/v1" },
+    { "key": "baseUrl", "value": "https://api.example.com/catalog/v1" },
     { "key": "apiKey", "value": "your-api-key" },
     { "key": "productId", "value": "d290f1ee-6c54-4b01-90e6-d701748f0851" },
     { "key": "categoryId", "value": "cat-motors-brushless" }

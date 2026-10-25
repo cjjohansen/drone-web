@@ -24,7 +24,7 @@ Unclear processes, waiting for Flight Data Hub uploads, inconsistent terminology
 
 ### Main Interview HIGHLIGHTS
 
-- Very strong focus on **quality of customer-visible data** (text, curves, specifications).
+- Very strong focus on **quality of customer-visible data** (text, performance curves, specifications).
 - Control Center seen as a major opportunity for **transparency + completeness checking**.
 - Wants control center to provide **immediate visibility** after Core ERP creation — no waiting for Flight Data Hub team.
 - High appreciation for ability to **compare products, find missing data quickly, and view across countries**.
@@ -68,7 +68,7 @@ Unclear processes, waiting for Flight Data Hub uploads, inconsistent terminology
 | JTBD | When | I want | So that |
 |------|------|--------|---------|
 | **JTBD 1 — Identify Missing or Incorrect Data Early** | preparing a product release, | to instantly see which data elements are missing or inconsistent, | I can fix issues early without waiting for the Flight Data Hub sandbox or manual updates. |
-| **JTBD 2 — Ensure Customer-Visible Data Quality** | validating product data, | a clear view of exactly how text, curves, specifications, and images will appear to customers across all regions, | I can ensure the highest quality and avoid any visible mistakes. |
+| **JTBD 2 — Ensure Customer-Visible Data Quality** | validating product data, | a clear view of exactly how text, performance curves, specifications, and images will appear to customers across all regions, | I can ensure the highest quality and avoid any visible mistakes. |
 | **JTBD 5 — View Product Data Across Countries** | reviewing global product availability, | to see how each product number appears on international and local sites, | I can ensure consistency and quality across all markets. |
 | **JTBD 7 — Visibility of changes/updates to Flight Data Hub** | I make changes or new updates to products, | know when updates are visible in Flight Data Hub, | I do now waste time checking in Flight Data Hub. |
 

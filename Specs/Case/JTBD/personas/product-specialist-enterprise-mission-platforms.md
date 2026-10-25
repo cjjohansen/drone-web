@@ -9,7 +9,7 @@
 | **Unit:** | Enterprise Mission Platforms |
 
 ### About Me
-A product specialist for mission-critical product lines, responsible for approving how products are presented in the Flight Data Hub. She defines which characteristics are required per product, ensures specifications, curves, drawings, and engineering data are correct, and approves all data before it is made available to customers and sales teams.
+A product specialist for mission-critical product lines, responsible for approving how products are presented in the Flight Data Hub. She defines which characteristics are required per product, ensures specifications, performance curves, drawings, and engineering data are correct, and approves all data before it is made available to customers and sales teams.
 
 ### Usage Patterns
 Mostly during **product launches**, **product updates**, and **variant creation**; relies on **notifications and alerts** rather than daily or continuous control center monitoring.

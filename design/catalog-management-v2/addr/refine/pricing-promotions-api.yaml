@@ -7,9 +7,9 @@ info:
     name: Drone Web API Team
   license:
     name: Proprietary
-    url: https://droneparts.com/terms
+    url: https://example.com/terms
 servers:
-  - url: https://api.droneparts.com/pricing/v1
+  - url: https://api.example.com/pricing/v1
     description: Production
 security:
   - apiKey: []
@@ -153,7 +153,7 @@ components:
       type: oauth2
       flows:
         clientCredentials:
-          tokenUrl: https://auth.droneparts.com/oauth/token
+          tokenUrl: https://auth.example.com/oauth/token
           scopes: { pricing:write: Manage pricing and promotions }
   parameters:
     productId:

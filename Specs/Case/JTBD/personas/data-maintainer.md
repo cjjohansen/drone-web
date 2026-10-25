@@ -46,7 +46,7 @@ Core ERP ↔ Flight Data Hub mismatches, mobile "translation layer" is invisible
 
 #### Manual, labor-intensive workflows
 - Must overlay large extracted datasets manually to understand gaps.
-- Curve data requires multi-step manual extraction and comparison.
+- Performance curve data requires multi-step manual extraction and comparison.
 - BIM/CAD/visualization views require multiple separate tools and folder searches.
 
 #### Control Center limitations (current version)

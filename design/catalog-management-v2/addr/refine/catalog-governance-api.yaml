@@ -4,9 +4,9 @@ info:
   description: Approval cases, decisions, and publication gate release.
   version: 1.0.0
   contact: { name: Drone Web API Team }
-  license: { name: Proprietary, url: https://droneparts.com/terms }
+  license: { name: Proprietary, url: https://example.com/terms }
 servers:
-  - url: https://api.droneparts.com/catalog-governance/v1
+  - url: https://api.example.com/catalog-governance/v1
 security:
   - apiKey: []
   - oauth2: []
@@ -93,7 +93,7 @@ components:
       type: oauth2
       flows:
         clientCredentials:
-          tokenUrl: https://auth.droneparts.com/oauth/token
+          tokenUrl: https://auth.example.com/oauth/token
           scopes: { catalog-governance:write: Manage approval workflow }
   parameters:
     approvalCaseId: { name: approvalCaseId, in: path, required: true, schema: { type: string, format: uuid } }

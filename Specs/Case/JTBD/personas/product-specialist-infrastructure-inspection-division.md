@@ -42,7 +42,7 @@ Miscommunication, slow systems, late discovery of issues.
 - People not following established processes when making changes.
 
 #### Poor visibility into changes
-- Changes (e.g., curves) made without his team being informed.
+- Changes (e.g., performance curves) made without his team being informed.
 - Only discovered after some time — creates severe cleanup effort.
 
 #### Slow and inefficient tools for checking product data

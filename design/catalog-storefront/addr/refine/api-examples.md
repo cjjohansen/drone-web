@@ -11,7 +11,7 @@
 
 ```http
 POST /catalog/v1/products/search HTTP/1.1
-Host: api.droneparts.com
+Host: api.example.com
 Content-Type: application/json
 X-API-Key: your-api-key
 
@@ -32,7 +32,7 @@ X-API-Key: your-api-key
 ```
 
 ```bash
-curl -X POST https://api.droneparts.com/catalog/v1/products/search \
+curl -X POST https://api.example.com/catalog/v1/products/search \
   -H "Content-Type: application/json" \
   -H "X-API-Key: your-api-key" \
   -d '{
@@ -60,7 +60,7 @@ curl -X POST https://api.droneparts.com/catalog/v1/products/search \
       "brand": "EMAX",
       "pricing": { "basePrice": 18.99, "currency": "USD" },
       "availability": { "status": "in-stock", "quantityAvailable": 342 },
-      "images": ["https://cdn.droneparts.com/img/d290f1ee-6c54-4b01-90e6-d701748f0851-thumb.jpg"]
+      "images": ["https://cdn.example.com/img/d290f1ee-6c54-4b01-90e6-d701748f0851-thumb.jpg"]
     },
     {
       "productId": "a23f6c7d-8e9b-4a12-b345-6789abcdef01",
@@ -69,7 +69,7 @@ curl -X POST https://api.droneparts.com/catalog/v1/products/search \
       "brand": "T-Motor",
       "pricing": { "basePrice": 24.99, "currency": "USD" },
       "availability": { "status": "in-stock", "quantityAvailable": 156 },
-      "images": ["https://cdn.droneparts.com/img/a23f6c7d-8e9b-4a12-b345-6789abcdef01-thumb.jpg"]
+      "images": ["https://cdn.example.com/img/a23f6c7d-8e9b-4a12-b345-6789abcdef01-thumb.jpg"]
     }
   ],
   "offset": 0,
@@ -81,7 +81,7 @@ curl -X POST https://api.droneparts.com/catalog/v1/products/search \
 
 ```http
 POST /catalog/v1/products/autocomplete HTTP/1.1
-Host: api.droneparts.com
+Host: api.example.com
 Content-Type: application/json
 X-API-Key: your-api-key
 
@@ -109,12 +109,12 @@ X-API-Key: your-api-key
 
 ```http
 GET /catalog/v1/products/d290f1ee-6c54-4b01-90e6-d701748f0851 HTTP/1.1
-Host: api.droneparts.com
+Host: api.example.com
 X-API-Key: your-api-key
 ```
 
 ```bash
-curl https://api.droneparts.com/catalog/v1/products/d290f1ee-6c54-4b01-90e6-d701748f0851 \
+curl https://api.example.com/catalog/v1/products/d290f1ee-6c54-4b01-90e6-d701748f0851 \
   -H "X-API-Key: your-api-key"
 ```
 
@@ -157,7 +157,7 @@ curl https://api.droneparts.com/catalog/v1/products/d290f1ee-6c54-4b01-90e6-d701
 
 ```http
 GET /catalog/v1/products/d290f1ee-6c54-4b01-90e6-d701748f0851/documents?type=datasheet HTTP/1.1
-Host: api.droneparts.com
+Host: api.example.com
 X-API-Key: your-api-key
 ```
 
@@ -169,7 +169,7 @@ X-API-Key: your-api-key
     "title": "EMAX ECO II 2207 Datasheet",
     "type": "datasheet",
     "format": "PDF",
-    "url": "https://cdn.droneparts.com/docs/emax-eco2-2207-datasheet.pdf",
+    "url": "https://cdn.example.com/docs/emax-eco2-2207-datasheet.pdf",
     "fileSize": 245760
   }
 ]
@@ -179,7 +179,7 @@ X-API-Key: your-api-key
 
 ```http
 GET /catalog/v1/products/d290f1ee-6c54-4b01-90e6-d701748f0851/reviews?sort=rating&offset=0&limit=5 HTTP/1.1
-Host: api.droneparts.com
+Host: api.example.com
 X-API-Key: your-api-key
 ```
 
@@ -208,7 +208,7 @@ X-API-Key: your-api-key
 
 ```http
 GET /catalog/v1/products/d290f1ee-6c54-4b01-90e6-d701748f0851/compatible?offset=0&limit=5 HTTP/1.1
-Host: api.droneparts.com
+Host: api.example.com
 X-API-Key: your-api-key
 ```
 
@@ -239,7 +239,7 @@ X-API-Key: your-api-key
 
 ```http
 POST /catalog/v1/products/compare HTTP/1.1
-Host: api.droneparts.com
+Host: api.example.com
 Content-Type: application/json
 X-API-Key: your-api-key
 
@@ -247,7 +247,7 @@ X-API-Key: your-api-key
 ```
 
 ```bash
-curl -X POST https://api.droneparts.com/catalog/v1/products/compare \
+curl -X POST https://api.example.com/catalog/v1/products/compare \
   -H "Content-Type: application/json" \
   -H "X-API-Key: your-api-key" \
   -d '{ "productIds": ["d290f1ee-6c54-4b01-90e6-d701748f0851", "a23f6c7d-8e9b-4a12-b345-6789abcdef01", "b34a7d8e-9f0c-4b23-8456-789abcdef012"] }'
@@ -282,7 +282,7 @@ curl -X POST https://api.droneparts.com/catalog/v1/products/compare \
 
 ```http
 POST /compatibility/v1/checks HTTP/1.1
-Host: api.droneparts.com
+Host: api.example.com
 Content-Type: application/json
 X-API-Key: your-api-key
 
@@ -290,7 +290,7 @@ X-API-Key: your-api-key
 ```
 
 ```bash
-curl -X POST https://api.droneparts.com/compatibility/v1/checks \
+curl -X POST https://api.example.com/compatibility/v1/checks \
   -H "Content-Type: application/json" \
   -H "X-API-Key: your-api-key" \
   -d '{ "productIds": ["d290f1ee-6c54-4b01-90e6-d701748f0851", "f47ac10b-58cc-4372-a567-0e02b2c3d479", "7c9e6679-7425-40de-944b-e07fc1f90ae7", "c3d4e5f6-a7b8-4c9d-ae1f-2a3b4c5d6e7f"] }'
@@ -319,7 +319,7 @@ curl -X POST https://api.droneparts.com/compatibility/v1/checks \
 
 ```http
 GET /compatibility/v1/checks/550e8400-e29b-41d4-a716-446655440000/replacements/7c9e6679-7425-40de-944b-e07fc1f90ae7 HTTP/1.1
-Host: api.droneparts.com
+Host: api.example.com
 X-API-Key: your-api-key
 ```
 
@@ -351,7 +351,7 @@ X-API-Key: your-api-key
 
 ```http
 GET /catalog/v1/categories HTTP/1.1
-Host: api.droneparts.com
+Host: api.example.com
 X-API-Key: your-api-key
 ```
 
@@ -387,7 +387,7 @@ X-API-Key: your-api-key
 
 ```http
 GET /catalog/v1/categories/cat-motors-brushless/facets HTTP/1.1
-Host: api.droneparts.com
+Host: api.example.com
 X-API-Key: your-api-key
 ```
 
@@ -404,7 +404,7 @@ X-API-Key: your-api-key
 
 ```http
 GET /catalog/v1/categories/cat-motors-brushless/products?sort=price&offset=0&limit=10 HTTP/1.1
-Host: api.droneparts.com
+Host: api.example.com
 X-API-Key: your-api-key
 ```
 
@@ -435,12 +435,12 @@ X-API-Key: your-api-key
 
 ```http
 GET /partner-catalog/v1/feed?lastUpdatedSince=2026-02-01T00:00:00Z&offset=0&limit=100 HTTP/1.1
-Host: api.droneparts.com
+Host: api.example.com
 X-API-Key: partner-api-key
 ```
 
 ```bash
-curl "https://api.droneparts.com/partner-catalog/v1/feed?lastUpdatedSince=2026-02-01T00:00:00Z&limit=100" \
+curl "https://api.example.com/partner-catalog/v1/feed?lastUpdatedSince=2026-02-01T00:00:00Z&limit=100" \
   -H "X-API-Key: partner-api-key"
 ```
 
@@ -472,7 +472,7 @@ curl "https://api.droneparts.com/partner-catalog/v1/feed?lastUpdatedSince=2026-0
 
 ```http
 POST /partner-catalog/v1/availability HTTP/1.1
-Host: api.droneparts.com
+Host: api.example.com
 Content-Type: application/json
 X-API-Key: partner-api-key
 
@@ -492,7 +492,7 @@ X-API-Key: partner-api-key
 
 ```http
 POST /partner-catalog/v1/pricing HTTP/1.1
-Host: api.droneparts.com
+Host: api.example.com
 Content-Type: application/json
 X-API-Key: partner-api-key
 
@@ -530,14 +530,14 @@ X-API-Key: partner-api-key
 
 ```http
 GET /catalog/v1/products/prod-nonexistent HTTP/1.1
-Host: api.droneparts.com
+Host: api.example.com
 X-API-Key: your-api-key
 ```
 
 **Response: 404 Not Found**
 ```json
 {
-  "type": "https://api.droneparts.com/problems/not-found",
+  "type": "https://api.example.com/problems/not-found",
   "title": "Product Not Found",
   "status": 404,
   "detail": "Product with ID 'prod-nonexistent' does not exist.",

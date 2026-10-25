@@ -50,7 +50,7 @@ Core ERP ↔ Flight Data Hub mismatches, mobile "translation layer" is invisible
 
 #### Manual, labor-intensive workflows
 - Must overlay large extracted datasets manually to understand gaps.
-- Curve data requires multi-step manual extraction and comparison.
+- Performance curve data requires multi-step manual extraction and comparison.
 - BIM/CAD/visualization views require multiple separate tools and folder searches.
 
 #### Control Center limitations (current version)
@@ -416,12 +416,12 @@ Miscommunication, slow systems, late discovery of issues
 
 ### Main PAIN POINTS
 
-#### Miscommunication across PD, GBC, and other stakeholders
+#### Miscommunication across teams and stakeholders
 - Leads to rework, delays, and he "gets pulled in every time."
 - People not following established processes when making changes.
 
 #### Poor visibility into changes
-- Changes (e.g., curves) made without his team being informed.
+- Changes (e.g., performance curves) made without his team being informed.
 - Only discovered after some time — creates "a hell of a mess."
 
 #### Slow and inefficient tools for checking product data
@@ -498,7 +498,7 @@ Unclear processes, waiting for Flight Data Hub uploads, inconsistent terminology
 
 ### Main Interview HIGHLIGHTS
 
-- Very strong focus on **quality of customer-visible data** (text, curves, specifications).
+- Very strong focus on **quality of customer-visible data** (text, performance curves, specifications).
 - Control Center seen as a major opportunity for **transparency + completeness checking**.
 - Wants control center to provide **immediate visibility** after Core ERP creation — no waiting for Flight Data Hub team.
 - High appreciation for ability to **compare products, find missing data quickly, and view across countries**.
@@ -542,7 +542,7 @@ Unclear processes, waiting for Flight Data Hub uploads, inconsistent terminology
 | JTBD | When | I want | So that |
 |------|------|--------|---------|
 | **JTBD 1 — Identify Missing or Incorrect Data Early** | preparing a product release, | to instantly see which data elements are missing or inconsistent, | I can fix issues early without waiting for the Flight Data Hub sandbox or manual updates. |
-| **JTBD 2 — Ensure Customer-Visible Data Quality** | validating product data, | a clear view of exactly how text, curves, specifications, and images will appear to customers across all regions, | I can ensure the highest quality and avoid any visible mistakes. |
+| **JTBD 2 — Ensure Customer-Visible Data Quality** | validating product data, | a clear view of exactly how text, performance curves, specifications, and images will appear to customers across all regions, | I can ensure the highest quality and avoid any visible mistakes. |
 | **JTBD 5 — View Product Data Across Countries** | reviewing global product availability, | to see how each product number appears on international and local sites, | I can ensure consistency and quality across all markets. |
 | **JTBD 7 — Visibility of changes/updates to Flight Data Hub** | I make changes or new updates to products, | know when updates are visible in Flight Data Hub, | I do now waste time checking in Flight Data Hub. |
 
@@ -572,7 +572,7 @@ Unclear processes, waiting for Flight Data Hub uploads, inconsistent terminology
 | **Unit:** | Enterprise Mission Platforms |
 
 ### About Me
-A product specialist for enterprise drone platform products, responsible for approving how products are presented in Flight Data Hub. She defines which characteristics are required per product, ensures specifications, curves, drawings, and engineering data are correct, and approves all data before it is made available to customers and sales teams.
+A product specialist for enterprise drone platform products, responsible for approving how products are presented in Flight Data Hub. She defines which characteristics are required per product, ensures specifications, performance curves, drawings, and engineering data are correct, and approves all data before it is made available to customers and sales teams.
 
 ### Usage Patterns
 Mostly during **product launches**, **product updates**, and **variant creation**; relies on **notifications and alerts** rather than daily or continuous control center monitoring.
@@ -581,7 +581,7 @@ Mostly during **product launches**, **product updates**, and **variant creation*
 Ensuring customer-facing data in Flight Data Hub is correct and up to date, preventing incorrect or inconsistent data from reaching customers and sales, automated detection and notifications instead of manual monitoring, governed and validated characteristics, clean and up-to-date documents visible to customers, strong online product presentation
 
 ### Top Frustrations
-Incorrect data caused by manual Core ERP input, manual work during release gaps (TP4 vs Flight Data Hub availability), lack of automatic alerts when data becomes outdated or incomplete, too many outdated or duplicate documents visible to customers, inconsistent data entry due to ungoverned fields, limited time to manually monitor products, manual rework during updates and market releases
+Incorrect data caused by manual Core ERP input, manual work during release gaps (source publishing vs hub availability), lack of automatic alerts when data becomes outdated or incomplete, too many outdated or duplicate documents visible to customers, inconsistent data entry due to ungoverned fields, limited time to manually monitor products, manual rework during updates and market releases
 
 ---
 
@@ -598,7 +598,7 @@ Incorrect data caused by manual Core ERP input, manual work during release gaps 
 ### Main PAIN POINTS
 
 - Incorrect data caused by manual Core ERP input.
-- Manual work during release gaps (TP4 vs Flight Data Hub availability).
+- Manual work during release gaps (source publishing vs hub availability).
 - Lack of automatic alerts when data becomes outdated or incomplete.
 - Too many outdated or duplicate documents visible to customers.
 - Missing governed/validated fields leading to inconsistent data entry.
