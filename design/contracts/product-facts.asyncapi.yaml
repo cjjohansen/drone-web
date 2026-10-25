@@ -1,0 +1,274 @@
+asyncapi: 3.0.0
+info:
+  title: drone-web Product Facts (source-aligned data products)
+  version: 0.3.0
+  description: |
+    Each owning context publishes one source-aligned fact stream about its own part of a product,
+    keyed by productId on a compacted topic. Every event carries the owner's current state for that
+    product (event-carried state transfer per owner), never IDs only.
+
+    Envelope: every message uses the shared, platform-owned envelope in envelope.yaml: CloudEvents
+    1.0 in Kafka binary mode, so the attributes and lineage extensions are ce_ headers and the
+    message value is the data product's payload only. OpenTelemetry trace context is in the
+    traceparent header. This file defines only each product's payload.
+
+    Rules (see README.md and the decision "Product event contracts: source-aligned fact streams"
+    in .ralph/agent/decisions.md):
+    - Owners publish computed facts (effective price, availability), not the inputs.
+    - An owner publishes a fact only after Governance has approved it (ce_approvalcaseid header);
+      consumers never apply approval.
+    - Each consumer owns its join. Merge mechanics (key, highest ce_sourceversion wins, out-of-order
+      arrival, discontinued) come from one shared platform helper, which also emits OpenLineage run
+      events. When two consumers need the same cross-domain rule, the join is promoted to a shared
+      Product View with a named owner.
+    - Product Data is a curated copy of the ERP and supplier files. Where a value came from is domain
+      information, so curated facts carry `origin` in their payload.
+    - The product.specification stream is the Core contract; the rest of product.* may
+      follow a bought product hub, translated by an ACL.
+servers:
+  production: { host: 'kafka.example.com:9092', protocol: kafka }
+channels:
+  # --- Source-aligned data products -----------------------------------------------------------
+  productRecord:
+    address: product.record
+    description: |
+      Product Lifecycle (Product Data team). Identity, attributes and lifecycle state. Sent on create,
+      attribute change and lifecycle transition. Discontinued is a state, not a tombstone.
+    x-data-product: { owner: Product Data, context: Product Lifecycle, kind: source-aligned, type: supporting }
+    messages:
+      ProductRecordChanged:
+        traits: [{ $ref: 'envelope.yaml#/components/messageTraits/DroneWebEvent' }]
+        headers:
+          allOf:
+            - $ref: 'envelope.yaml#/components/schemas/CloudEventHeaders'
+            - type: object
+              properties:
+                ce_type: { const: tech.drone-web.product.record.changed }
+        payload: { $ref: '#/components/schemas/ProductRecord' }
+  productSpecification:
+    address: product.specification
+    description: |
+      Product Lifecycle (Product Data team). The spec model the compatibility rules read. Core
+      contract: typed fields with units and an explicit specSchemaVersion; breaking changes get a
+      new major version and a parallel topic.
+    x-data-product: { owner: Product Data, context: Product Lifecycle, kind: source-aligned, type: core }
+    messages:
+      ProductSpecificationChanged:
+        traits: [{ $ref: 'envelope.yaml#/components/messageTraits/DroneWebEvent' }]
+        headers:
+          allOf:
+            - $ref: 'envelope.yaml#/components/schemas/CloudEventHeaders'
+            - type: object
+              properties:
+                ce_type: { const: tech.drone-web.product.specification.changed }
+        payload: { $ref: '#/components/schemas/ProductSpecification' }
+  productImported:
+    address: product.imported
+    description: |
+      Bulk Ingestion (Product Data team). One per imported item that changed a product. Closes the
+      gap where no event recorded the step from external source to curated data.
+    x-data-product: { owner: Product Data, context: Bulk Ingestion, kind: source-aligned, type: supporting }
+    messages:
+      ProductImported:
+        traits: [{ $ref: 'envelope.yaml#/components/messageTraits/DroneWebEvent' }]
+        headers:
+          allOf:
+            - $ref: 'envelope.yaml#/components/schemas/CloudEventHeaders'
+            - type: object
+              properties:
+                ce_type: { const: tech.drone-web.product.imported }
+        payload: { $ref: '#/components/schemas/ProductImport' }
+  categoryProductAssignment:
+    address: category.product-assignment
+    description: Category and Faceting (Product Data team). The product's current categories and facet values.
+    x-data-product: { owner: Product Data, context: Category and Faceting, kind: source-aligned, type: supporting }
+    messages:
+      ProductCategoriesChanged:
+        traits: [{ $ref: 'envelope.yaml#/components/messageTraits/DroneWebEvent' }]
+        headers:
+          allOf:
+            - $ref: 'envelope.yaml#/components/schemas/CloudEventHeaders'
+            - type: object
+              properties:
+                ce_type: { const: tech.drone-web.category.product-assignment.changed }
+        payload: { $ref: '#/components/schemas/ProductCategories' }
+  documentProductDocuments:
+    address: document.product-documents
+    description: Technical Documentation (Product Data team). The product's currently published document versions.
+    x-data-product: { owner: Product Data, context: Technical Documentation, kind: source-aligned, type: supporting }
+    messages:
+      ProductDocumentsChanged:
+        traits: [{ $ref: 'envelope.yaml#/components/messageTraits/DroneWebEvent' }]
+        headers:
+          allOf:
+            - $ref: 'envelope.yaml#/components/schemas/CloudEventHeaders'
+            - type: object
+              properties:
+                ce_type: { const: tech.drone-web.document.product-documents.changed }
+        payload: { $ref: '#/components/schemas/ProductDocuments' }
+  priceEffectivePrice:
+    address: price.effective-price
+    description: |
+      Pricing (Commercial team). The computed price per product: base, volume tiers and active
+      promotion already applied. Sent only after approval; a repricing job sends one event per product.
+    x-data-product: { owner: Commercial, context: Pricing and Promotions, kind: source-aligned, type: core }
+    messages:
+      EffectivePriceChanged:
+        traits: [{ $ref: 'envelope.yaml#/components/messageTraits/DroneWebEvent' }]
+        headers:
+          allOf:
+            - $ref: 'envelope.yaml#/components/schemas/CloudEventHeaders'
+            - type: object
+              properties:
+                ce_type: { const: tech.drone-web.price.effective-price.changed }
+        payload: { $ref: '#/components/schemas/EffectivePrice' }
+  inventoryAvailability:
+    address: inventory.availability
+    description: |
+      Inventory (Commercial team). Computed availability per product. Counts start in the ERP and
+      arrive through Inventory's ACL, so the payload carries origin.sourceSystem = erp.
+    x-data-product: { owner: Commercial, context: Inventory and Availability, kind: source-aligned, type: core }
+    messages:
+      AvailabilityChanged:
+        traits: [{ $ref: 'envelope.yaml#/components/messageTraits/DroneWebEvent' }]
+        headers:
+          allOf:
+            - $ref: 'envelope.yaml#/components/schemas/CloudEventHeaders'
+            - type: object
+              properties:
+                ce_type: { const: tech.drone-web.inventory.availability.changed }
+        payload: { $ref: '#/components/schemas/Availability' }
+  # --- Consumer-aligned data product (outbound) -----------------------------------------------
+  partnerCatalogFeed:
+    address: partner.catalog-feed
+    description: |
+      Partner Catalog (Commercial team). The join the Commercial team owns for partners: simplified
+      product, batch price and availability. Uses the derived envelope, so ce_derivedfrom is required.
+      The Catalog API's own product view is internal to Discovery and has no public channel.
+      Compatibility check reads product.specification directly.
+    x-data-product: { owner: Commercial, context: Partner Catalog, kind: consumer-aligned }
+    messages:
+      CatalogFeedEntryChanged:
+        traits: [{ $ref: 'envelope.yaml#/components/messageTraits/DroneWebEvent' }]
+        headers:
+          allOf:
+            - $ref: 'envelope.yaml#/components/schemas/DerivedCloudEventHeaders'
+            - type: object
+              properties:
+                ce_type: { const: tech.drone-web.partner.catalog-feed.changed }
+        payload: { $ref: '#/components/schemas/CatalogFeedEntry' }
+operations:
+  publishProductRecord: { action: send, channel: { $ref: '#/channels/productRecord' } }
+  publishProductSpecification: { action: send, channel: { $ref: '#/channels/productSpecification' } }
+  publishProductImported: { action: send, channel: { $ref: '#/channels/productImported' } }
+  publishCategoryAssignment: { action: send, channel: { $ref: '#/channels/categoryProductAssignment' } }
+  publishProductDocuments: { action: send, channel: { $ref: '#/channels/documentProductDocuments' } }
+  publishEffectivePrice: { action: send, channel: { $ref: '#/channels/priceEffectivePrice' } }
+  publishAvailability: { action: send, channel: { $ref: '#/channels/inventoryAvailability' } }
+  publishPartnerFeed: { action: send, channel: { $ref: '#/channels/partnerCatalogFeed' } }
+components:
+  schemas:
+    Origin:
+      type: object
+      description: |
+        Where a curated fact came from. Domain information: curators and buyers see it.
+        Absent when staff entered the value by hand.
+      required: [sourceSystem]
+      properties:
+        sourceSystem: { type: string, description: 'e.g. erp, supplier-feed:<supplierId>, manual.' }
+        importBatchId: { type: string, format: uuid }
+        importItemKey: { type: string }
+    ProductRecord:
+      type: object
+      required: [sku, name, brand, lifecycleState]
+      properties:
+        sku: { type: string }
+        name: { type: string }
+        brand: { type: string }
+        attributes: { type: object, additionalProperties: true }
+        lifecycleState: { type: string, enum: [draft, active, discontinued] }
+        replacementProductId: { type: string, format: uuid }
+        origin: { $ref: '#/components/schemas/Origin' }
+    ProductSpecification:
+      type: object
+      required: [specSchemaVersion, specifications]
+      properties:
+        specSchemaVersion: { type: string, description: 'Version of the spec model, e.g. 1.2.' }
+        specifications:
+          type: object
+          properties:
+            voltage: { $ref: '#/components/schemas/Range' }
+            maxCurrent: { $ref: '#/components/schemas/Quantity' }
+            mounting: { type: string, description: 'Mounting pattern, e.g. 30.5x30.5-m3.' }
+            protocols: { type: array, items: { type: string } }
+            weight: { $ref: '#/components/schemas/Quantity' }
+          additionalProperties: false
+        origin: { $ref: '#/components/schemas/Origin' }
+    ProductImport:
+      type: object
+      required: [importBatchId, importItemKey, sourceSystem, outcome]
+      properties:
+        importBatchId: { type: string, format: uuid }
+        importItemKey: { type: string }
+        sourceSystem: { type: string }
+        outcome: { type: string, enum: [created, updated, unchanged] }
+        changedSections: { type: array, items: { type: string, enum: [record, specification] } }
+    ProductCategories:
+      type: object
+      required: [categoryIds]
+      properties:
+        categoryIds: { type: array, items: { type: string, format: uuid } }
+        facetValues: { type: object, additionalProperties: { type: string } }
+    ProductDocuments:
+      type: object
+      required: [documents]
+      properties:
+        documents:
+          type: array
+          items:
+            type: object
+            required: [documentId, version, kind, href]
+            properties:
+              documentId: { type: string, format: uuid }
+              version: { type: integer }
+              kind: { type: string, enum: [datasheet, manual, certificate, drawing] }
+              href: { type: string, format: uri }
+    EffectivePrice:
+      type: object
+      required: [currency, unitPrice, effectiveFrom]
+      properties:
+        currency: { type: string }
+        unitPrice: { type: number, description: Price after the active promotion, before volume tiers. }
+        listPrice: { type: number, description: Base price, for showing a discount. }
+        volumeTiers:
+          type: array
+          items: { type: object, required: [minQuantity, unitPrice], properties: { minQuantity: { type: integer }, unitPrice: { type: number } } }
+        effectiveFrom: { type: string, format: date-time }
+        effectiveUntil: { type: string, format: date-time }
+    Availability:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [in-stock, low-stock, backorder, suspended] }
+        leadTimeDays: { type: integer }
+        expectedDate: { type: string, format: date }
+        origin: { $ref: '#/components/schemas/Origin' }
+    CatalogFeedEntry:
+      type: object
+      required: [included]
+      properties:
+        included: { type: boolean, description: "Commercial's own rule for whether partners see the product." }
+        sku: { type: string }
+        name: { type: string }
+        brand: { type: string }
+        currency: { type: string }
+        unitPrice: { type: number }
+        availability: { type: string, enum: [in-stock, low-stock, backorder, suspended] }
+    Quantity:
+      type: object
+      required: [value, unit]
+      properties: { value: { type: number }, unit: { type: string, description: 'SI unit, e.g. A, g.' } }
+    Range:
+      type: object
+      required: [min, max, unit]
+      properties: { min: { type: number }, max: { type: number }, unit: { type: string } }

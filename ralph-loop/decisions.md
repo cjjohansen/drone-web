@@ -25,6 +25,10 @@ This file is the cross-plan decision ledger (ADR-like).
 - **D-035**: Use stable pseudonym mapping instead of generic persona labels.
 - **D-036**: Include producer-informed, domain-credible replacements for portfolio/unit terminology.
 
+## Product Event Contracts
+
+- **D-037**: Source-aligned fact streams in `design/contracts/`; Product Lifecycle is Supporting with a Core spec model.
+
 ## Source of Detailed Entries
 
 - Detailed original entries remain in: `.ralph/agent/decisions.md`

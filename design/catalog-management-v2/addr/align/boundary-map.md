@@ -6,7 +6,7 @@
 
 | Subdomain | Type | Owner Persona | Core Aggregate | Why Separate |
 |-----------|------|---------------|----------------|--------------|
-| Product Lifecycle Management | Core | Product Lifecycle Manager | Product | Owns product master data and lifecycle invariants |
+| Product Lifecycle Management | Supporting (Core spec model) | Product Lifecycle Manager | Product | Owns product identity, master data and lifecycle invariants; the spec model the compatibility rules read is Core |
 | Technical Documentation Management | Supporting | Documentation Steward | Document | Document versioning and association lifecycle differs from product lifecycle |
 | Pricing and Promotions Management | Core | Pricing Analyst | PriceBookEntry | Time-based pricing and discount invariants are distinct |
 | Inventory and Availability Management | Core | Inventory Controller | InventoryPosition | Operational update cadence and constraints are independent |
@@ -27,10 +27,12 @@
 | Pricing and Promotions Management | Catalog Governance Workflow | Command + decision | SubmitPricingChangeForApproval |
 | Compatibility Rules Management | Catalog Governance Workflow | Command + decision | SubmitRuleChangeForApproval |
 | Bulk Ingestion | Product Lifecycle Management | Command dispatch | ApplyImportedProductRecord |
+| Bulk Ingestion | Any consumer that needs lineage | Integration event (fact) | ProductImported (`product.imported`) |
 
 ## Ownership and Invariants
 
 - Product lifecycle state transitions are owned only by Product Lifecycle Management.
+- Product identity, attributes and specifications are owned only by Product Lifecycle Management.
 - Document version chains are owned only by Technical Documentation Management.
 - Effective-date and overlap rules for prices/promotions are owned only by Pricing and Promotions Management.
 - On-hand quantity and lead-time consistency are owned only by Inventory and Availability Management.
@@ -51,3 +53,7 @@
 - Bulk ingestion includes explicit failure handling and replay path (not implicit in JS1 interactive flows).
 - Governance path exists for repricing and compatibility rule changes before external visibility.
 - Temporary Event Storming deferral is compensated by explicit boundaries and EventModel mapping.
+
+## Event Contracts
+
+The integration event contracts between these boundaries now live in [`design/contracts/`](../../../contracts/): one source-aligned fact stream per owning boundary, on a shared envelope. For consumers they supersede the identifier-only events in [`refine/integration-events.yaml`](../refine/integration-events.yaml). See the product event contracts decision in `.ralph/agent/decisions.md`.

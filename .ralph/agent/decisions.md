@@ -231,6 +231,21 @@ Both validate collision constraints after each piece placement and throw on ille
 
 ---
 
+## Product Event Contracts Decisions
+
+### D-037: Product event contracts: source-aligned fact streams
+**Date:** 2026-10-25
+**Decision:** Product facts move between contexts as source-aligned fact streams, defined in `design/contracts/` (`product-facts.asyncapi.yaml` on the shared `envelope.yaml`). For consumers they supersede the identifier-only events in `design/catalog-management-v2/addr/refine/integration-events.yaml`.
+- **Owners publish computed facts, after approval.** Pricing, Inventory, Product Lifecycle and the other owners each publish one stream about their own part of a product, keyed by productId, carrying current state (effective price and availability, not their inputs). When a change needs Governance approval, the owner publishes only after the decision, so consumers never see unapproved facts or apply approval rules.
+- **Consumers own their joins.** Cross-domain rules (for example, when a product counts as sellable) belong to each consumer. The merge mechanics come from one shared platform helper. When two consumers need the same rule, the join becomes a shared Product View with a named owner.
+- **Product Lifecycle is the identity and master data context.** It is a subdomain of Catalog; its bounded context is Product Data (with Documentation and Taxonomy). It owns what a product is (id, SKU, brand, attributes, specs) and where it is in its life (draft, active, discontinued, replaced by). It is on the management (write) side and is not an overview context: it does not gather price, stock, documents or categories.
+- **Product Lifecycle is Supporting, with a Core spec model.** Product records, lifecycle states and replacement links are what every shop has; they can be bought (a PIM) or built thin. The spec model the compatibility rules read (voltage, current, mounting, protocol) is Core and stays in Product Data. The `product.specification` stream is the Core contract and gets the most care in schema design and versioning. The rest of `product.*` may follow a bought hub, translated by an ACL.
+- **Lineage has three places.** Which data product feeds which: EventCatalog at design time, OpenLineage run events from the join helper at runtime. Where a value came from: inside the event, with `origin` (source system, import batch, item key) in the payload, because Product Data is a curated copy of the ERP and supplier files. Technical provenance (`source`, `sourceVersion`, `derivedFrom`, approval) lives in one CloudEvents-based envelope owned by the platform under federated governance; every contract references it. How a message moved: OpenTelemetry `traceparent`, for debugging only, never as lineage.
+- **Ingestion publishes `product.imported`**, one event per imported item that changed a product, so the step from external source to curated data is recorded.
+**Rationale:** Identifier-only events and no synchronous cross-boundary calls left the read sides unable to build their copies. The JTBD personas rate data lineage, a single source of truth and clear ownership as critical. Putting approval and computation at the source keeps every consumer from re-implementing them. Typing Product Lifecycle as Core overstated what differentiates the shop: compatibility does, and it depends only on the spec model.
+
+---
+
 ## Open Questions
 
 | ID | Phase | Question | Status |

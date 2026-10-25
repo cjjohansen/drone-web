@@ -34,7 +34,7 @@ Build what is Core and differentiating. Buy a product for what is Generic. Rent 
 | Boundary | Type | Decision | What we build | What we buy or rent |
 |----------|------|----------|---------------|---------------------|
 | Compatibility Rules Management | Core | **Build** | The rules engine: CompatibilityRule, component groups, and the check behind storefront JS4 | Nothing beyond hosting |
-| Product Lifecycle Management | Core | **Build** | Product master data and lifecycle states (create, activate, discontinue); the one source of product facts | Nothing beyond hosting |
+| Product Lifecycle Management | Supporting, with a Core spec model | **Build** the spec model; **buy or build thin** the rest | The spec model the compatibility rules read and its stream, `product.specification`; product identity, attributes and lifecycle states (create, activate, discontinue) if not bought | Optionally a product information system for records and lifecycle states, behind an ACL |
 | Pricing and Promotions Management | Core | **Build thin** | The PriceBookEntry API, effective-date and overlap rules, the events | Price figures and cost data stay in the system of record the business already uses (see the diagnosis); we do not build a pricing engine |
 | Inventory and Availability Management | Core | **Build thin** | The InventoryPosition API and availability states (in stock, backorder, suspended) | Stock counts come from the warehouse and ERP side; we do not build a warehouse system |
 | Technical Documentation Management | Supporting | **Build thin** | Document metadata, version chains, product associations | **Rent** file storage (object storage) for datasheets, CAD files and certificates |
@@ -65,14 +65,14 @@ Build what is Core and differentiating. Buy a product for what is Generic. Rent 
 
 ### P2. One source of truth for product data (direction)
 
-- Product Lifecycle Management is the only writer of product facts. Every other boundary holds a copy fed by events and never edits it.
-- Each fact has exactly one producing boundary and one owner persona, as in the boundary map's ownership table: prices belong to the Pricing Analyst through Pricing and Promotions Management, stock to the Inventory Controller, documents to the Documentation Steward, and so on.
+- Product Lifecycle Management is the only writer of product identity, attributes, specifications and lifecycle state. Every other boundary holds a copy fed by events and never edits it.
+- Each fact has exactly one producing boundary and one owner persona, as in the boundary map's ownership table: prices belong to the Pricing Analyst through Pricing and Promotions Management, stock to the Inventory Controller, documents to the Documentation Steward, and so on. Each producer publishes its facts as one stream ([`design/contracts/`](../../contracts/)).
 - The read side owns no product facts. The storefront Catalog API is a read model built from write-side events. Its boundaries document currently says it "owns product data" and publishes `catalog.product.*` events; under this policy those events are produced from the write side (see the diagnosis, point 6).
-- Data is checked where it is written, not where it is read: Bulk Ingestion validates every record before it reaches Product Lifecycle Management, and high-risk changes pass the governance gate before they become visible. Issues are found before publication, not by a customer or partner.
+- Data is checked where it is written, not where it is read: Bulk Ingestion validates every record before it reaches Product Lifecycle Management, and high-risk changes pass the governance gate before the owning boundary publishes them. Issues are found before publication, not by a customer or partner.
 
 ### P3. Integrate through events and contracts, never through shared data (direction)
 
-- Boundaries talk to each other only through the integration events in the AsyncAPI contracts ([write side](../../catalog-management-v2/addr/refine/integration-events.yaml), [read side](../../catalog-storefront/addr/refine/integration-events.yaml)) and through their published OpenAPI operations.
+- Boundaries talk to each other only through the integration events in the AsyncAPI contracts ([product facts](../../contracts/product-facts.asyncapi.yaml), which supersede the identifier-only [write side](../../catalog-management-v2/addr/refine/integration-events.yaml) events for consumers; [read side](../../catalog-storefront/addr/refine/integration-events.yaml)) and through their published OpenAPI operations.
 - No synchronous calls between boundaries while handling a request. A boundary that needs another's data keeps a local copy built from events (the storefront design already does this for the Compatibility API).
 - No shared databases, and no reading another boundary's tables.
 - Cross-boundary events are fact events that carry the full state, so consumers can build their copy without calling back (LRN-006).
@@ -107,7 +107,7 @@ Every agent pull request is reviewed by the owner of the boundary it changes. De
 
 ### P7. Where engineering time goes (allocation)
 
-Spend most engineering time on the two Core boundaries we build in full: Compatibility Rules Management and Product Lifecycle Management. As a starting point, at most one day in five goes to the thin boundaries, bought products and rented services together. This number is not from the repository; it is a first guess to be checked with the inspection numbers below.
+Spend most engineering time on the Core parts we build in full: Compatibility Rules Management and the spec model in Product Lifecycle Management. As a starting point, at most one day in five goes to the thin boundaries, bought products and rented services together. This number is not from the repository; it is a first guess to be checked with the inspection numbers below.
 
 ---
 
@@ -157,7 +157,7 @@ Looked at monthly in the contract review. Targets are starting points, not taken
 
 ### The first slice
 
-The first piece built is the narrowest slice that touches both Core boundaries and the two pivotal events that matter most to customers: a Product Lifecycle Manager creates and activates a product (`product.created`, `product.lifecycle-state-changed`), the Compatibility API updates its local copy from those events, and a Professional Integrator runs a compatibility check (storefront JS4) that uses it. It exercises P1, P2 and P3 for real before anything else is built.
+The first piece built is the narrowest slice that touches both Core parts (the compatibility rules and the spec model) and the two pivotal events that matter most to customers: a Product Lifecycle Manager creates and activates a product (`product.created`, `product.lifecycle-state-changed`), the Compatibility API updates its local copy from those events, and a Professional Integrator runs a compatibility check (storefront JS4) that uses it. It exercises P1, P2 and P3 for real before anything else is built.
 
 ### Reviewing the strategy
 
@@ -192,7 +192,7 @@ What the strategy has to deal with, from the repository alone.
 
 1. **There is a design and no system.** The [README](../../../README.md) says there is no runnable application code. Nothing has to be migrated and every build/buy choice is still cheap to make. The designs have not yet met reality: no contract has run against real data.
 
-2. **The write side has eight boundaries, half of them typed Core.** The [boundary map](../../catalog-management-v2/addr/align/boundary-map.md) types four as Core (Product Lifecycle, Pricing and Promotions, Inventory and Availability, Compatibility Rules), three as Supporting (Technical Documentation, Category and Faceting, Bulk Ingestion) and one as Generic (Catalog Governance Workflow), each with one owner persona. Refine contracts exist for all eight (decision D-031). A small shop cannot build half its system as its differentiator; something has to give.
+2. **The write side has eight boundaries, half of them typed Core.** The [boundary map](../../catalog-management-v2/addr/align/boundary-map.md) types four as Core (Product Lifecycle, Pricing and Promotions, Inventory and Availability, Compatibility Rules), three as Supporting (Technical Documentation, Category and Faceting, Bulk Ingestion) and one as Generic (Catalog Governance Workflow), each with one owner persona. Refine contracts exist for all eight (decision D-031). A small shop cannot build half its system as its differentiator; something has to give. Product Lifecycle has since been retyped as Supporting with a Core spec model (see the product event contracts decision in `.ralph/agent/decisions.md`).
 
 3. **The read side has three contexts with different users.** The Catalog API serves the Professional Integrator, Fleet Procurement Buyer and Casual Browser (storefront JS1, JS2, JS3, JS5); the Compatibility API serves storefront JS4; the Partner Catalog API serves the Partner System persona (storefront JS6). They share no synchronous calls and keep local copies built from events.
 
@@ -218,7 +218,7 @@ What we looked at before diagnosing, kept generic. Larson's advice is to survey 
 |--------|---------------|--------------------------------|
 | An all-in-one hosted shop platform with plug-ins | Fast start: catalogue, checkout, payment, hosting in one | Its product model is generic; compatibility rules and lifecycle cascades end up in plug-ins or spreadsheets, which is how data ends up with no owner |
 | Headless commerce: buy cart, checkout and payment, build the rest behind APIs | Keeps the differentiating parts in our hands, buys the standard parts | Fits, if "the rest" is kept small. This is the shape P1 takes |
-| A product information management (PIM) product for product data | Mature data editing, workflows, imports | Strong option for Supporting data; the lifecycle cascade into compatibility and partner feeds still has to be built. Kept as a fallback if Product Lifecycle Management grows beyond its invariants |
+| A product information management (PIM) product for product data | Mature data editing, workflows, imports | Strong option for Supporting data, including Product Lifecycle's records and lifecycle states behind an ACL; the Core spec model and the lifecycle cascade into compatibility and partner feeds still have to be built |
 | Build everything | Full control | Spends Core time on search, payment and workflow, which the market sells |
 
 **What comparable shops tend to do**
