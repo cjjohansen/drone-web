@@ -132,7 +132,7 @@
 ### External Stakeholders (Bottom)
 - Application Technical Specialists
 - Application Content Specialist
-- BIM specialists
+- 3D/CAD specialists
 - Customer Sales and Support Center
 - Data analytics team
 - Product manager

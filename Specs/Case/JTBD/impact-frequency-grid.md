@@ -62,7 +62,7 @@
 | Docs Owner | System / Platform Owners |
 | Data Custodian | Governance & Standards |
 | Application Technical Specialists | Data Curators & Mappers |
-| BIM specialists | Data Curators & Mappers |
+| 3D/CAD specialists | Data Curators & Mappers |
 | Data analytics team | Data Curators & Mappers |
 | Application Content Specialist | Data Curators & Mappers |
 
