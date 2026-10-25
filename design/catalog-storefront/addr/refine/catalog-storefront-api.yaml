@@ -9,10 +9,10 @@ info:
     name: Drone Web API Team
   license:
     name: Proprietary
-    url: https://droneparts.com/terms
+    url: https://example.com/terms
 
 servers:
-  - url: https://api.droneparts.com/catalog/v1
+  - url: https://api.example.com/catalog/v1
     description: Production
 
 security:
@@ -69,7 +69,7 @@ paths:
                     brand: "EMAX"
                     pricing: { basePrice: 18.99, currency: "USD" }
                     availability: { status: "in-stock", quantityAvailable: 342 }
-                    images: ["https://cdn.droneparts.com/img/d290f1ee-6c54-4b01-90e6-d701748f0851-thumb.jpg"]
+                    images: ["https://cdn.example.com/img/d290f1ee-6c54-4b01-90e6-d701748f0851-thumb.jpg"]
                 offset: 0
                 limit: 20
         '400':
@@ -139,8 +139,8 @@ paths:
                 sku: "EMAX-ECO2-2207-1900"
                 status: "active"
                 images:
-                  - "https://cdn.droneparts.com/img/d290f1ee-6c54-4b01-90e6-d701748f0851-main.jpg"
-                  - "https://cdn.droneparts.com/img/d290f1ee-6c54-4b01-90e6-d701748f0851-side.jpg"
+                  - "https://cdn.example.com/img/d290f1ee-6c54-4b01-90e6-d701748f0851-main.jpg"
+                  - "https://cdn.example.com/img/d290f1ee-6c54-4b01-90e6-d701748f0851-side.jpg"
                 specifications:
                   motorSize: "2207"
                   kvRating: 1900
@@ -288,14 +288,14 @@ paths:
                   title: "EMAX ECO II 2207 Datasheet"
                   type: "datasheet"
                   format: "PDF"
-                  url: "https://cdn.droneparts.com/docs/emax-eco2-2207-datasheet.pdf"
+                  url: "https://cdn.example.com/docs/emax-eco2-2207-datasheet.pdf"
                   fileSize: 245760
                 - documentId: "d3456789-e0bf-4a12-8234-56789abcdef0"
                   productId: "d290f1ee-6c54-4b01-90e6-d701748f0851"
                   title: "EMAX ECO II 2207 STEP Model"
                   type: "cad-file"
                   format: "STEP"
-                  url: "https://cdn.droneparts.com/docs/emax-eco2-2207.step"
+                  url: "https://cdn.example.com/docs/emax-eco2-2207.step"
                   fileSize: 1048576
         '404':
           $ref: '#/components/responses/NotFound'
@@ -932,7 +932,7 @@ components:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
           example:
-            type: "https://api.droneparts.com/problems/bad-request"
+            type: "https://api.example.com/problems/bad-request"
             title: "Bad Request"
             status: 400
             detail: "Invalid filter parameters"
@@ -944,7 +944,7 @@ components:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
           example:
-            type: "https://api.droneparts.com/problems/not-found"
+            type: "https://api.example.com/problems/not-found"
             title: "Not Found"
             status: 404
             detail: "The requested resource does not exist"
@@ -958,6 +958,6 @@ components:
       type: oauth2
       flows:
         clientCredentials:
-          tokenUrl: https://auth.droneparts.com/oauth/token
+          tokenUrl: https://auth.example.com/oauth/token
           scopes:
             catalog:read: Read catalog data

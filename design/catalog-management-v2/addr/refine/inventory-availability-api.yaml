@@ -4,9 +4,9 @@ info:
   description: Write-side inventory posture and availability policy management.
   version: 1.0.0
   contact: { name: Drone Web API Team }
-  license: { name: Proprietary, url: https://droneparts.com/terms }
+  license: { name: Proprietary, url: https://example.com/terms }
 servers:
-  - url: https://api.droneparts.com/inventory/v1
+  - url: https://api.example.com/inventory/v1
 security:
   - apiKey: []
   - oauth2: []
@@ -177,7 +177,7 @@ components:
       type: oauth2
       flows:
         clientCredentials:
-          tokenUrl: https://auth.droneparts.com/oauth/token
+          tokenUrl: https://auth.example.com/oauth/token
           scopes: { inventory:write: Manage inventory and availability }
   parameters:
     inventoryId: { name: inventoryId, in: path, required: true, schema: { type: string, format: uuid } }

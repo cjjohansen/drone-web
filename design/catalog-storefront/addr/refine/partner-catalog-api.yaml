@@ -9,10 +9,10 @@ info:
     name: Drone Web API Team
   license:
     name: Proprietary
-    url: https://droneparts.com/terms
+    url: https://example.com/terms
 
 servers:
-  - url: https://api.droneparts.com/partner-catalog/v1
+  - url: https://api.example.com/partner-catalog/v1
     description: Production
 
 security:
@@ -78,7 +78,7 @@ paths:
                     categories: ["Brushless Motors"]
                     pricing: { basePrice: 18.99, currency: "USD" }
                     availability: { status: "in-stock", quantityAvailable: 342 }
-                    images: ["https://cdn.droneparts.com/img/d290f1ee-6c54-4b01-90e6-d701748f0851-main.jpg"]
+                    images: ["https://cdn.example.com/img/d290f1ee-6c54-4b01-90e6-d701748f0851-main.jpg"]
                     updatedDate: "2026-01-20T14:30:00Z"
                   - productId: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
                     name: "T-Motor F45A 4-in-1 ESC"
@@ -91,7 +91,7 @@ paths:
                     categories: ["4-in-1 ESCs"]
                     pricing: { basePrice: 42.99, currency: "USD" }
                     availability: { status: "in-stock", quantityAvailable: 89 }
-                    images: ["https://cdn.droneparts.com/img/f47ac10b-58cc-4372-a567-0e02b2c3d479-main.jpg"]
+                    images: ["https://cdn.example.com/img/f47ac10b-58cc-4372-a567-0e02b2c3d479-main.jpg"]
                     updatedDate: "2026-02-10T09:00:00Z"
                 offset: 0
                 limit: 100

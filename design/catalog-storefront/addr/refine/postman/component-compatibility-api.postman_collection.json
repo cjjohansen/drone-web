@@ -13,7 +13,7 @@
     ]
   },
   "variable": [
-    { "key": "baseUrl", "value": "https://api.droneparts.com/compatibility/v1" },
+    { "key": "baseUrl", "value": "https://api.example.com/compatibility/v1" },
     { "key": "apiKey", "value": "your-api-key" },
     { "key": "checkId", "value": "550e8400-e29b-41d4-a716-446655440000" },
     { "key": "productId", "value": "7c9e6679-7425-40de-944b-e07fc1f90ae7" }

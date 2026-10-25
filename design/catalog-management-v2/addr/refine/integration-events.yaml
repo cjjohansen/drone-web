@@ -9,7 +9,7 @@ info:
     name: Proprietary
 servers:
   production:
-    host: kafka.droneparts.com:9092
+    host: kafka.example.com:9092
     protocol: kafka
 channels:
   product.created:

@@ -4,9 +4,9 @@ info:
   description: Write-side taxonomy hierarchy and facet configuration.
   version: 1.0.0
   contact: { name: Drone Web API Team }
-  license: { name: Proprietary, url: https://droneparts.com/terms }
+  license: { name: Proprietary, url: https://example.com/terms }
 servers:
-  - url: https://api.droneparts.com/taxonomy/v1
+  - url: https://api.example.com/taxonomy/v1
 security:
   - apiKey: []
   - oauth2: []
@@ -158,7 +158,7 @@ components:
       type: oauth2
       flows:
         clientCredentials:
-          tokenUrl: https://auth.droneparts.com/oauth/token
+          tokenUrl: https://auth.example.com/oauth/token
           scopes: { taxonomy:write: Manage categories and facets }
   parameters:
     categoryId: { name: categoryId, in: path, required: true, schema: { type: string } }

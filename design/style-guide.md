@@ -85,7 +85,7 @@ GET  /partner-catalog/v1/feed
 
 ```json
 {
-  "type": "https://api.droneparts.com/problems/not-found",
+  "type": "https://api.example.com/problems/not-found",
   "title": "Product Not Found",
   "status": 404,
   "detail": "Product with ID 'abc-123' does not exist.",
