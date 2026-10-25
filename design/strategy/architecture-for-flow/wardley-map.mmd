@@ -1,0 +1,90 @@
+wardley-beta
+size [1280, 720]
+
+%% Drone Web: a Wardley map of the drone shop's catalog landscape.
+%% Coordinates are [visibility, evolution]. Evolution: genesis 0-0.25, custom built 0.25-0.5,
+%% product 0.5-0.75, commodity 0.75-1. Placement is a judgement from the repo's design
+%% artifacts (see subdomains-and-contexts.md); Core/Supporting/Generic typing from
+%% design/catalog-management-v2/addr/align/boundary-map.md was an input, not the answer.
+
+%% Two users on purpose: the human buyer and the partner system are the two participant
+%% groups the storefront run separated (D-005, D-007). Comparing them is part of the point.
+anchor "Buyer" [0.96, 0.30]
+anchor "Partner system" [0.96, 0.70]
+
+%% Needs. "Find a part" covers storefront JS1, JS2, JS3 and JS5 (search, evaluate, compare,
+%% browse), including volume pricing and lead times for the Fleet Procurement Buyer.
+%% "Verify a build" is storefront JS4. "Catalog feed" is storefront JS6.
+component "Find a part" [0.84, 0.46]
+component "Verify a build" [0.84, 0.20]
+component "Catalog feed" [0.84, 0.66]
+
+component "Product catalog" [0.70, 0.40]
+component "Compatibility rules" [0.68, 0.20] (build)
+component "Search index" [0.58, 0.80] (buy)
+component "Integration events" [0.52, 0.42]
+component "Product data hub" [0.36, 0.30]
+component "Pricing" [0.44, 0.62]
+component "Inventory" [0.30, 0.72]
+component "Governance" [0.12, 0.56] (buy)
+component "Bulk ingestion" [0.20, 0.28]
+component "ERP" [0.04, 0.66] (buy)
+component "Event broker" [0.06, 0.86] (buy)
+
+"Buyer" -> "Find a part"
+"Buyer" -> "Verify a build"
+"Partner system" -> "Catalog feed"
+
+"Find a part" -> "Product catalog"
+"Verify a build" -> "Compatibility rules"
+"Catalog feed" -> "Integration events"
+
+"Product catalog" -> "Search index"
+"Product catalog" -> "Integration events"
+"Compatibility rules" -> "Integration events"
+"Compatibility rules" -> "Governance"
+
+"Integration events" -> "Product data hub"
+"Integration events" -> "Pricing"
+"Integration events" -> "Inventory"
+"Integration events" -> "Event broker"
+
+"Product data hub" -> "Bulk ingestion"
+"Product data hub" -> "Governance"
+"Pricing" -> "Governance"
+"Inventory" -> "ERP"
+"Bulk ingestion" -> "ERP"
+
+%% Product master data management is a product-stage market (PIM tools). What makes the shop
+%% different is the spec data the compatibility rules read, not the tool that stores it.
+evolve "Product data hub" 0.52
+%% Bulk ingestion (Supporting): batch validation, retry and replay are well understood; build it
+%% once as a shared, self-service capability rather than per team.
+evolve "Bulk ingestion" 0.50
+
+%% Today's bottleneck: every interviewed role names unclear ownership and poor data quality in the
+%% product data flow (Specs/Case/JTBD/personas/cross-persona-summary.md). Everything above waits on it.
+%% constraint "Product data hub"
+
+%% comment "Core: the differentiator | build and invest here" "Compatibility rules"
+%% comment "Typed Core, but a product-stage | capability: buy or keep thin?" "Pricing"
+
+%% Review answers that aren't obvious from the links:
+%% Who needs Integration events? The three read-side contexts (Catalog, Compatibility, Partner
+%% Catalog) build their own projections from them; no synchronous cross-boundary calls (D-005).
+%% If Integration events stopped, all three read sides go stale: hence the three links into it.
+%% Integration events is a hub: links leave it in every direction.
+%% allow-crossing "Integration events"
+%% The Buyer link arrives from the left, so the label goes right.
+%% label-side "Find a part" right
+%% Catalog feed needs only the events, never the Catalog API (D-015): no link to Product catalog.
+%% Compatibility rules need Governance: rule changes go through approval before external
+%% visibility (SubmitRuleChangeForApproval in the boundary map).
+%% direct-need "Compatibility rules" "Governance"
+%% Inventory and Bulk ingestion need the ERP: the JTBD interviews name a core ERP as the
+%% source of stock and product records. The map stops there.
+%% leaf "ERP"
+%% Governance is a generic approval workflow; the map stops at the product it would be bought as.
+%% leaf "Governance"
+%% Checkout and payment are out of scope in the repo (event-storming.md: "to cart/checkout,
+%% out of scope"), so they are not on the map.
