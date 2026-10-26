@@ -4,7 +4,8 @@ The event contracts that carry product facts between drone-web's bounded context
 publishes one stream about its own part of a product. Consumers build what they need from those streams.
 
 The decision behind this folder is "Product event contracts: source-aligned fact streams" in
-[`.ralph/agent/decisions.md`](../../.ralph/agent/decisions.md).
+[`.ralph/agent/decisions.md`](../../.ralph/agent/decisions.md). The options compared before this one was chosen are in
+[`research/`](research/README.md).
 
 ## Internal and published events
 
