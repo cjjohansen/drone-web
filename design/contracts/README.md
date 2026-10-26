@@ -6,21 +6,30 @@ publishes one stream about its own part of a product. Consumers build what they 
 The decision behind this folder is "Product event contracts: source-aligned fact streams" in
 [`.ralph/agent/decisions.md`](../../.ralph/agent/decisions.md).
 
-## Internal and published event streams
+## Internal and published events
 
-Everything in this folder is a **published integration event**: an external contract that goes to Kafka
-(and, through the CloudEvents bindings, to other transports such as AMQP or HTTP webhooks).
+Both kinds are domain events. They differ in who may read them.
 
-Each context also has **internal domain events**: the events in its own event store, one stream per
-aggregate, as in the event models (`Product.Created`, `Product.SpecificationUpdated`). They are private to
-that context. They are not contracts, they may change freely, and no other context ever reads them. A
-publisher in the owning context (an outbox or a projection) translates them into the published fact.
+- **Internal events** sit on **internal streams**: the events in a context's own event store, one stream per
+  aggregate, as in the event models (`Product.Created`, `Product.SpecificationUpdated`). They are private to
+  that context. They are not contracts, they may change freely, and no other context ever reads them.
+- **Published events** sit on **published streams**: everything in this folder. Each published stream is a
+  contract and a data product. In DDD terms the contracts here are the Published Language, and each owning
+  context serves them as an Open Host Service. They go to Kafka here, and through the CloudEvents bindings
+  they can go to other transports such as AMQP or HTTP webhooks.
 
-Example: the internal stream of one Product aggregate records `Product.SpecificationUpdated`. Product
+A publisher in the owning context (an outbox or a projection) translates internal events into published
+events. Data that comes in from outside drone-web (the ERP into Inventory, supplier files into Ingestion) is
+**upstream**; it enters through an anticorruption layer and is not a published stream of ours.
+
+Older drone-web docs (the v2 run, the storefront run) say "integration event" for what is now called a
+published event.
+
+Example: the internal stream of one Product aggregate records `Product.SpecificationUpdated` (internal). Product
 Lifecycle's publisher reads the new state of that product and sends `ProductSpecificationChanged` on the
-`product-specifications` channel, with the full current spec, `specSchemaVersion` and `origin`. A consumer
-only ever sees `ProductSpecificationChanged`. Product Lifecycle can split, rename or replay its domain
-events without breaking anyone.
+`product-specifications` published stream, with the full current spec, `specSchemaVersion` and `origin`. A consumer
+only ever sees `ProductSpecificationChanged` (published). Product Lifecycle can split, rename or replay its
+internal events without breaking anyone.
 
 ## Files
 

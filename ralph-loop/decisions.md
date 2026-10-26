@@ -27,7 +27,7 @@ This file is the cross-plan decision ledger (ADR-like).
 
 ## Product Event Contracts
 
-- **D-037**: Source-aligned fact streams (published integration events) in `design/contracts/`; Product Lifecycle is Supporting with a Core spec model.
+- **D-037**: Source-aligned fact streams (published events on published streams) in `design/contracts/`; Product Lifecycle is Supporting with a Core spec model.
 
 ## Source of Detailed Entries
 

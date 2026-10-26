@@ -1,4 +1,4 @@
-# Catalog API Events: published integration events that the Catalog API consumes. Conventions: README.md.
+# Catalog API Events: published events that the Catalog API consumes. Conventions: README.md.
 asyncapi: 3.0.0
 info:
   title: Catalog API Events
@@ -7,9 +7,10 @@ info:
     What the Catalog API consumes to build its own product view. Consumer only: it publishes nothing.
     The view and its cross-domain rules (for example, when a product counts as sellable) are its own.
 
-    Everything in this file is a published integration event: an external contract between bounded
-    contexts. The domain events in each context's own event store are private to that context and are
-    not described here; a publisher in the owning context translates them into these messages.
+    Everything in this file is a published event on a published stream: a contract between bounded
+    contexts and a data product. Each context's internal events (on internal streams, in its own event
+    store) are private to that context and are not described here; a publisher in the owning context
+    translates them into these published events.
 
     Transport: Kafka is the binding used here (servers and channel bindings). Channels, messages and
     the CloudEvents attributes are meant to work on other transports too (AMQP, HTTP webhooks) through
@@ -239,7 +240,7 @@ components:
       title: ProductRecordChanged
       summary: ProductRecordChanged as consumed here; the producer's contract is product-lifecycle.yaml.
       description: |
-        Published integration event, consumed. Model: domain-specific, owned by Product Lifecycle. Headers and payload are the producer's.
+        Published event, consumed. Model: domain-specific, owned by Product Lifecycle. Headers and payload are the producer's.
       contentType: application/json
       x-model: domain-specific
       headers:
@@ -251,7 +252,7 @@ components:
       title: ProductSpecificationChanged
       summary: ProductSpecificationChanged as consumed here; the producer's contract is product-lifecycle.yaml.
       description: |
-        Published integration event, consumed. Model: domain-specific, owned by Product Lifecycle. Headers and payload are the producer's.
+        Published event, consumed. Model: domain-specific, owned by Product Lifecycle. Headers and payload are the producer's.
       contentType: application/json
       x-model: domain-specific
       headers:
@@ -263,7 +264,7 @@ components:
       title: ProductCategoriesAssigned
       summary: ProductCategoriesAssigned as consumed here; the producer's contract is category-faceting.yaml.
       description: |
-        Published integration event, consumed. Model: domain-specific, owned by Category and Faceting. Headers and payload are the producer's.
+        Published event, consumed. Model: domain-specific, owned by Category and Faceting. Headers and payload are the producer's.
       contentType: application/json
       x-model: domain-specific
       headers:
@@ -275,7 +276,7 @@ components:
       title: ProductDocumentsPublished
       summary: ProductDocumentsPublished as consumed here; the producer's contract is technical-documentation.yaml.
       description: |
-        Published integration event, consumed. Model: domain-specific, owned by Technical Documentation. Headers and payload are the producer's.
+        Published event, consumed. Model: domain-specific, owned by Technical Documentation. Headers and payload are the producer's.
       contentType: application/json
       x-model: domain-specific
       headers:
@@ -287,7 +288,7 @@ components:
       title: EffectivePriceChanged
       summary: EffectivePriceChanged as consumed here; the producer's contract is pricing.yaml.
       description: |
-        Published integration event, consumed. Model: domain-specific, owned by Pricing and Promotions. Headers and payload are the producer's.
+        Published event, consumed. Model: domain-specific, owned by Pricing and Promotions. Headers and payload are the producer's.
       contentType: application/json
       x-model: domain-specific
       headers:
@@ -299,7 +300,7 @@ components:
       title: ProductAvailabilityChanged
       summary: ProductAvailabilityChanged as consumed here; the producer's contract is inventory.yaml.
       description: |
-        Published integration event, consumed. Model: domain-specific, owned by Inventory and Availability. Headers and payload are the producer's.
+        Published event, consumed. Model: domain-specific, owned by Inventory and Availability. Headers and payload are the producer's.
       contentType: application/json
       x-model: domain-specific
       headers:

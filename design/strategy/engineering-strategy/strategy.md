@@ -66,13 +66,13 @@ Build what is Core and differentiating. Buy a product for what is Generic. Rent 
 ### P2. One source of truth for product data (direction)
 
 - Product Lifecycle Management is the only writer of product identity, attributes, specifications and lifecycle state. Every other boundary holds a copy fed by events and never edits it.
-- Each fact has exactly one producing boundary and one owner persona, as in the boundary map's ownership table: prices belong to the Pricing Analyst through Pricing and Promotions Management, stock to the Inventory Controller, documents to the Documentation Steward, and so on. Each producer publishes its facts as one stream of integration events ([`design/contracts/`](../../contracts/)); its domain events stay internal.
+- Each fact has exactly one producing boundary and one owner persona, as in the boundary map's ownership table: prices belong to the Pricing Analyst through Pricing and Promotions Management, stock to the Inventory Controller, documents to the Documentation Steward, and so on. Each producer publishes its facts as one published stream ([`design/contracts/`](../../contracts/)); its internal events stay internal.
 - The read side owns no product facts. The storefront Catalog API is a read model built from write-side events. Its boundaries document currently says it "owns product data" and publishes `catalog.product.*` events; under this policy those events are produced from the write side (see the diagnosis, point 6).
 - Data is checked where it is written, not where it is read: Bulk Ingestion validates every record before it reaches Product Lifecycle Management, and high-risk changes pass the governance gate before the owning boundary publishes them. Issues are found before publication, not by a customer or partner.
 
 ### P3. Integrate through events and contracts, never through shared data (direction)
 
-- Boundaries talk to each other only through the integration events in the AsyncAPI contracts ([product facts](../../contracts/), one file per service, which supersede the identifier-only [write side](../../catalog-management-v2/addr/refine/integration-events.yaml) events for consumers; [read side](../../catalog-storefront/addr/refine/integration-events.yaml)) and through their published OpenAPI operations.
+- Boundaries talk to each other only through the published events in the AsyncAPI contracts ([product facts](../../contracts/), one file per service, which supersede the identifier-only [write side](../../catalog-management-v2/addr/refine/integration-events.yaml) events for consumers; [read side](../../catalog-storefront/addr/refine/integration-events.yaml)) and through their published OpenAPI operations.
 - No synchronous calls between boundaries while handling a request. A boundary that needs another's data keeps a local copy built from events (the storefront design already does this for the Compatibility API).
 - No shared databases, and no reading another boundary's tables.
 - Cross-boundary events are fact events that carry the full state, so consumers can build their copy without calling back (LRN-006).
@@ -98,7 +98,7 @@ Drone Web's design was produced with AI agents in the Ralph Loop, and building i
 | AI agents **may** | AI agents **may not** |
 |--------------------|------------------------|
 | Draft ADDR artifacts, OpenAPI and AsyncAPI contracts, event models and code inside one boundary | Change the boundary map or a boundary's Core/Supporting/Generic type |
-| Write and run tests, linters and validators | Change a published integration event or the partner contract without a human-approved contract review |
+| Write and run tests, linters and validators | Change a published event or the partner contract without a human-approved contract review |
 | Propose decisions and learnings in `.ralph/agent/` | Change the approval rules in Catalog Governance Workflow |
 | Open pull requests on their own branch | Merge their own pull requests |
 | Run against test data | Touch production data, credentials or deployment settings (LRN-001, LRN-002) |
@@ -157,7 +157,7 @@ Looked at monthly in the contract review. Targets are starting points, not taken
 
 ### The first slice
 
-The first piece built is the narrowest slice that touches both Core parts (the compatibility rules and the spec model) and the two pivotal events that matter most to customers: a Product Lifecycle Manager creates and activates a product (`product.created`, `product.lifecycle-state-changed`), the Compatibility API updates its local copy from those events, and a Professional Integrator runs a compatibility check (storefront JS4) that uses it. It exercises P1, P2 and P3 for real before anything else is built.
+The first piece built is the narrowest slice that touches both Core parts (the compatibility rules and the spec model) and the two pivotal events that matter most to customers: a Product Lifecycle Manager creates and activates a product with its specs (`ProductRecordChanged` on `product-records`, `ProductSpecificationChanged` on `product-specifications`), the Compatibility API updates its local copy from those published streams, and a Professional Integrator runs a compatibility check (storefront JS4) that uses it. It exercises P1, P2 and P3 for real before anything else is built.
 
 ### Reviewing the strategy
 
@@ -174,7 +174,7 @@ Larson names three ways to test a strategy before committing to it: strategy tes
 Larson recommends Wardley maps when the surroundings are changing and the strategy depends on how they change ([Wardley mapping](https://lethain.com/wardley-mapping/)). For Drone Web the question was where each component sits on the evolution axis, because that decides build or buy. The landscape map is in the Architecture for Flow example ([`design/strategy/architecture-for-flow/`](../architecture-for-flow/)); the [small map in this folder](drone-web-build-buy.svg) zooms in on the build/buy decision. What the mapping showed:
 
 - **Compatibility rules sit furthest left.** Knowledge of which motor works with which ESC, at which voltage and current, with which frame and protocol, is specific to the shop's range and not sold as a product. This is where Drone Web differs from any other parts shop, so it is built.
-- **Product data is custom, not because storage is new, but because the lifecycle is.** A discontinued product has to reach compatibility checks, search and partner feeds without anyone retyping it (pivotal event 2 in the event storming). That cascade is the shop's own; a bought product information system would still need it built around it.
+- **Product data splits in two.** Product records and lifecycle states are what every shop has: buy the product hub or build it thin. The spec model the compatibility rules read is the shop's own, so it is built. A discontinued product still has to reach compatibility checks, search and partner feeds without anyone retyping it (pivotal event 2 in the event storming); that cascade runs on the published streams, whether the hub is bought or built.
 - **Search, approval workflows, payment, brokers and hosting are products or commodities.** Building them would spend Core time on things the market already does well.
 - **The boundary map types Pricing and Promotions and Inventory and Availability as Core, but the map puts them nearer product.** Effective-date pricing and stock positions are what every shop does. What is specific is how they feed compatibility and availability answers. So P1 builds their APIs thin and leaves the figures in the systems of record. This is a disagreement between the map and the boundary map's typing, and it is left as a decision for the owner (see Deferred decisions).
 
@@ -192,7 +192,7 @@ What the strategy has to deal with, from the repository alone.
 
 1. **There is a design and no system.** The [README](../../../README.md) says there is no runnable application code. Nothing has to be migrated and every build/buy choice is still cheap to make. The designs have not yet met reality: no contract has run against real data.
 
-2. **The write side has eight boundaries, half of them typed Core.** The [boundary map](../../catalog-management-v2/addr/align/boundary-map.md) types four as Core (Product Lifecycle, Pricing and Promotions, Inventory and Availability, Compatibility Rules), three as Supporting (Technical Documentation, Category and Faceting, Bulk Ingestion) and one as Generic (Catalog Governance Workflow), each with one owner persona. Refine contracts exist for all eight (decision D-031). A small shop cannot build half its system as its differentiator; something has to give. Product Lifecycle has since been retyped as Supporting with a Core spec model (see the product event contracts decision in `.ralph/agent/decisions.md`).
+2. **The write side has eight boundaries, and the v2 run typed half of them Core.** It typed four as Core (Product Lifecycle, Pricing and Promotions, Inventory and Availability, Compatibility Rules), three as Supporting (Technical Documentation, Category and Faceting, Bulk Ingestion) and one as Generic (Catalog Governance Workflow), each with one owner persona. Refine contracts exist for all eight (decision D-031). A small shop cannot build half its system as its differentiator; something has to give. The [boundary map](../../catalog-management-v2/addr/align/boundary-map.md) now types Product Lifecycle as Supporting with a Core spec model: buy or build thin the product hub, build the spec model the compatibility rules read (see the product event contracts decision in `.ralph/agent/decisions.md`).
 
 3. **The read side has three contexts with different users.** The Catalog API serves the Professional Integrator, Fleet Procurement Buyer and Casual Browser (storefront JS1, JS2, JS3, JS5); the Compatibility API serves storefront JS4; the Partner Catalog API serves the Partner System persona (storefront JS6). They share no synchronous calls and keep local copies built from events.
 

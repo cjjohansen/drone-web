@@ -90,7 +90,7 @@ flowchart TB
     CC["Compatibility<br/>(check)"]
     PC["Partner Catalog"]
   end
-  ERP[("ERP<br/>(external)")]
+  ERP[("ERP<br/>(upstream)")]
   PL{{"Published language:<br/>product fact streams<br/>(design/contracts)"}}
 
   PD -- "OHS" --> PL
@@ -113,8 +113,8 @@ How to read the relationships:
 
 - **Open host service and published language.** Each owning context publishes one stream of facts about its
   own part of a product, and the contracts in [`design/contracts/`](../../contracts/) are the published
-  language (D-008). These are integration events, translated from each context's internal domain events,
-  which never leave the context. They carry the owner's current state, not identifiers only. No read side calls a write
+  language (D-008). These are published events, translated from each context's internal events, which
+  never leave the context. They carry the owner's current state, not identifiers only. No read side calls a write
   side synchronously (storefront `boundaries.md`, section C; v2 `boundaries.md`, section C).
 - **Conformist.** The Catalog takes the published product, category, price and availability facts as they
   are; its job is to make them searchable, not to reinterpret them.
@@ -126,9 +126,9 @@ How to read the relationships:
   `governance.decision-recorded`. Approval happens before the owner publishes, so consumers only ever see
   approved facts.
 - **Ingestion conforms to Product Data.** Bulk Ingestion dispatches `ApplyImportedProductRecord`, so it speaks
-  Product Data's language; any translation from external files or the ERP happens inside Ingestion.
+  Product Data's language; any translation from upstream files or the ERP happens inside Ingestion.
 - **The ERP** is not designed anywhere in the repo. It appears in the JTBD interviews as the core ERP that
-  product and stock data come from; treat it as an external upstream behind an anticorruption layer.
+  product and stock data come from; treat it as an upstream system behind an anticorruption layer.
 
 ## A gap the context map exposes
 

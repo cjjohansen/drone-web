@@ -2,7 +2,11 @@ asyncapi: 3.0.0
 info:
   title: Catalog Management v2 Integration Events
   version: 1.0.0
-  description: Integration events emitted by write-side catalog management boundaries.
+  description: |
+    Integration events emitted by write-side catalog management boundaries.
+
+    Deprecated for consumers: use the published streams in design/contracts/ instead. These
+    identifier-only events remain for history.
   contact:
     name: Drone Web API Team
   license:

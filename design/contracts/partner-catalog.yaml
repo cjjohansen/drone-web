@@ -1,4 +1,4 @@
-# Partner Catalog Events: published integration events of the Partner Catalog Service. Conventions: README.md.
+# Partner Catalog Events: published events of the Partner Catalog Service. Conventions: README.md.
 asyncapi: 3.0.0
 info:
   title: Partner Catalog Events
@@ -7,9 +7,10 @@ info:
     What the Partner Catalog Service consumes (product records, effective prices, availability) and
     the join it publishes for partners. The join and its inclusion rule are the Commercial team's own.
 
-    Everything in this file is a published integration event: an external contract between bounded
-    contexts. The domain events in each context's own event store are private to that context and are
-    not described here; a publisher in the owning context translates them into these messages.
+    Everything in this file is a published event on a published stream: a contract between bounded
+    contexts and a data product. Each context's internal events (on internal streams, in its own event
+    store) are private to that context and are not described here; a publisher in the owning context
+    translates them into these published events.
 
     Transport: Kafka is the binding used here (servers and channel bindings). Channels, messages and
     the CloudEvents attributes are meant to work on other transports too (AMQP, HTTP webhooks) through
@@ -175,7 +176,7 @@ components:
       title: PartnerCatalogEntryChanged
       summary: Current partner catalog entries state for one product, keyed by productId.
       description: |
-        Published integration event. Model: domain-specific, owned by Partner Catalog. Headers use the canonical shared envelope.
+        Published event. Model: domain-specific, owned by Partner Catalog. Headers use the canonical shared envelope.
       contentType: application/json
       x-model: domain-specific
       traits:
@@ -196,7 +197,7 @@ components:
       title: ProductRecordChanged
       summary: ProductRecordChanged as consumed here; the producer's contract is product-lifecycle.yaml.
       description: |
-        Published integration event, consumed. Model: domain-specific, owned by Product Lifecycle. Headers and payload are the producer's.
+        Published event, consumed. Model: domain-specific, owned by Product Lifecycle. Headers and payload are the producer's.
       contentType: application/json
       x-model: domain-specific
       headers:
@@ -208,7 +209,7 @@ components:
       title: EffectivePriceChanged
       summary: EffectivePriceChanged as consumed here; the producer's contract is pricing.yaml.
       description: |
-        Published integration event, consumed. Model: domain-specific, owned by Pricing and Promotions. Headers and payload are the producer's.
+        Published event, consumed. Model: domain-specific, owned by Pricing and Promotions. Headers and payload are the producer's.
       contentType: application/json
       x-model: domain-specific
       headers:
@@ -220,7 +221,7 @@ components:
       title: ProductAvailabilityChanged
       summary: ProductAvailabilityChanged as consumed here; the producer's contract is inventory.yaml.
       description: |
-        Published integration event, consumed. Model: domain-specific, owned by Inventory and Availability. Headers and payload are the producer's.
+        Published event, consumed. Model: domain-specific, owned by Inventory and Availability. Headers and payload are the producer's.
       contentType: application/json
       x-model: domain-specific
       headers:

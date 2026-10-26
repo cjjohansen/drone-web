@@ -1,4 +1,4 @@
-# Category and Faceting Events: published integration events of the Category and Faceting Service. Conventions: README.md.
+# Category and Faceting Events: published events of the Category and Faceting Service. Conventions: README.md.
 asyncapi: 3.0.0
 info:
   title: Category and Faceting Events
@@ -6,9 +6,10 @@ info:
   description: |
     What the Category and Faceting Service publishes: each product's current categories and facet values.
 
-    Everything in this file is a published integration event: an external contract between bounded
-    contexts. The domain events in each context's own event store are private to that context and are
-    not described here; a publisher in the owning context translates them into these messages.
+    Everything in this file is a published event on a published stream: a contract between bounded
+    contexts and a data product. Each context's internal events (on internal streams, in its own event
+    store) are private to that context and are not described here; a publisher in the owning context
+    translates them into these published events.
 
     Transport: Kafka is the binding used here (servers and channel bindings). Channels, messages and
     the CloudEvents attributes are meant to work on other transports too (AMQP, HTTP webhooks) through
@@ -72,7 +73,7 @@ components:
       title: ProductCategoriesAssigned
       summary: Current product category assignments state for one product, keyed by productId.
       description: |
-        Published integration event. Model: domain-specific, owned by Category and Faceting. Headers use the canonical shared envelope.
+        Published event. Model: domain-specific, owned by Category and Faceting. Headers use the canonical shared envelope.
       contentType: application/json
       x-model: domain-specific
       traits:

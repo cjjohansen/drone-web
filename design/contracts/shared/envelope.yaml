@@ -8,17 +8,8 @@ info:
     Owned by the platform team under federated governance; data products reference it with $ref and
     never define envelope fields of their own. Changes go through governance, not through one product.
 
-    Canonical model: shared across domains. It wraps published integration events only, never a
-    context's internal domain events.
-
-    Transport: the CloudEvents attributes are transport-neutral. The header names below (ce_ prefix,
-    content-type) are their mapping in the CloudEvents Kafka binding, the binding used here. On other
-    transports the same attributes map through that transport's CloudEvents binding (for example ce-
-    headers over HTTP webhooks, cloudEvents: properties over AMQP). Kafka-only details (the message
-    key) sit in bindings; the servers are in kafka-servers.yaml.
-
-    Canonical model: shared across domains. It wraps published integration events only, never a
-    context's internal domain events.
+    Canonical model: shared across domains. It wraps published events only, never a context's
+    internal events.
 
     Transport: the CloudEvents attributes are transport-neutral. The header names below (ce_ prefix,
     content-type) are their mapping in the CloudEvents Kafka binding, the binding used here. On other

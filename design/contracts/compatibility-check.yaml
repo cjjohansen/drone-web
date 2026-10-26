@@ -1,4 +1,4 @@
-# Compatibility Check Events: published integration events that the Compatibility Check consumes. Conventions: README.md.
+# Compatibility Check Events: published events that the Compatibility Check consumes. Conventions: README.md.
 asyncapi: 3.0.0
 info:
   title: Compatibility Check Events
@@ -7,9 +7,10 @@ info:
     What the Compatibility Check consumes. Consumer only. It reads product specifications directly,
     and product records for lifecycle state and replacement links.
 
-    Everything in this file is a published integration event: an external contract between bounded
-    contexts. The domain events in each context's own event store are private to that context and are
-    not described here; a publisher in the owning context translates them into these messages.
+    Everything in this file is a published event on a published stream: a contract between bounded
+    contexts and a data product. Each context's internal events (on internal streams, in its own event
+    store) are private to that context and are not described here; a publisher in the owning context
+    translates them into these published events.
 
     Transport: Kafka is the binding used here (servers and channel bindings). Channels, messages and
     the CloudEvents attributes are meant to work on other transports too (AMQP, HTTP webhooks) through
@@ -103,7 +104,7 @@ components:
       title: ProductSpecificationChanged
       summary: ProductSpecificationChanged as consumed here; the producer's contract is product-lifecycle.yaml.
       description: |
-        Published integration event, consumed. Model: domain-specific, owned by Product Lifecycle. Headers and payload are the producer's.
+        Published event, consumed. Model: domain-specific, owned by Product Lifecycle. Headers and payload are the producer's.
       contentType: application/json
       x-model: domain-specific
       headers:
@@ -115,7 +116,7 @@ components:
       title: ProductRecordChanged
       summary: ProductRecordChanged as consumed here; the producer's contract is product-lifecycle.yaml.
       description: |
-        Published integration event, consumed. Model: domain-specific, owned by Product Lifecycle. Headers and payload are the producer's.
+        Published event, consumed. Model: domain-specific, owned by Product Lifecycle. Headers and payload are the producer's.
       contentType: application/json
       x-model: domain-specific
       headers:

@@ -19,15 +19,15 @@
 
 | Producer Boundary | Consuming Boundary | Contract Type | Example Interface |
 |-------------------|--------------------|---------------|-------------------|
-| Product Lifecycle Management | Pricing and Promotions Management | Integration event | ProductActivated |
-| Product Lifecycle Management | Inventory and Availability Management | Integration event | ProductCreated |
-| Product Lifecycle Management | Category and Faceting Management | Integration event | ProductDiscontinued |
-| Product Lifecycle Management | Compatibility Rules Management | Integration event | ProductSpecificationUpdated |
+| Product Lifecycle Management | Pricing and Promotions Management | Published event | ProductActivated |
+| Product Lifecycle Management | Inventory and Availability Management | Published event | ProductCreated |
+| Product Lifecycle Management | Category and Faceting Management | Published event | ProductDiscontinued |
+| Product Lifecycle Management | Compatibility Rules Management | Published event | ProductSpecificationUpdated |
 | Technical Documentation Management | Product Lifecycle Management | Query/lookup | ListDocumentsByProduct |
 | Pricing and Promotions Management | Catalog Governance Workflow | Command + decision | SubmitPricingChangeForApproval |
 | Compatibility Rules Management | Catalog Governance Workflow | Command + decision | SubmitRuleChangeForApproval |
 | Bulk Ingestion | Product Lifecycle Management | Command dispatch | ApplyImportedProductRecord |
-| Bulk Ingestion | Any consumer that needs lineage | Integration event (fact) | ProductImported (`product-imports` channel) |
+| Bulk Ingestion | Any consumer that needs lineage | Published event (fact) | ProductImported (`product-imports` channel) |
 
 ## Ownership and Invariants
 
@@ -56,4 +56,4 @@
 
 ## Event Contracts
 
-The integration event contracts between these boundaries now live in [`design/contracts/`](../../../contracts/): one AsyncAPI file per service, one source-aligned fact stream per owning boundary, on a shared envelope. These are published integration events; each boundary's own domain events stay internal to it. For consumers they supersede the identifier-only events in [`refine/integration-events.yaml`](../refine/integration-events.yaml). See the product event contracts decision in `.ralph/agent/decisions.md`.
+The published event contracts between these boundaries now live in [`design/contracts/`](../../../contracts/): one AsyncAPI file per service, one source-aligned published stream per owning boundary, on a shared envelope. Each boundary's internal events stay internal to it. (Earlier versions of this table said "Integration event" for a published event.) For consumers they supersede the identifier-only events in [`refine/integration-events.yaml`](../refine/integration-events.yaml). See the product event contracts decision in `.ralph/agent/decisions.md`.

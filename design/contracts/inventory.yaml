@@ -1,4 +1,4 @@
-# Inventory Events: published integration events of the Inventory Service. Conventions: README.md.
+# Inventory Events: published events of the Inventory Service. Conventions: README.md.
 asyncapi: 3.0.0
 info:
   title: Inventory Events
@@ -6,9 +6,10 @@ info:
   description: |
     What the Inventory Service publishes: computed availability per product.
 
-    Everything in this file is a published integration event: an external contract between bounded
-    contexts. The domain events in each context's own event store are private to that context and are
-    not described here; a publisher in the owning context translates them into these messages.
+    Everything in this file is a published event on a published stream: a contract between bounded
+    contexts and a data product. Each context's internal events (on internal streams, in its own event
+    store) are private to that context and are not described here; a publisher in the owning context
+    translates them into these published events.
 
     Transport: Kafka is the binding used here (servers and channel bindings). Channels, messages and
     the CloudEvents attributes are meant to work on other transports too (AMQP, HTTP webhooks) through
@@ -73,7 +74,7 @@ components:
       title: ProductAvailabilityChanged
       summary: Current product availabilities state for one product, keyed by productId.
       description: |
-        Published integration event. Model: domain-specific, owned by Inventory and Availability. Headers use the canonical shared envelope and origin uses the canonical shared Origin schema.
+        Published event. Model: domain-specific, owned by Inventory and Availability. Headers use the canonical shared envelope and origin uses the canonical shared Origin schema.
       contentType: application/json
       x-model: domain-specific
       traits:
