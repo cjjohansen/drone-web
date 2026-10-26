@@ -1,0 +1,127 @@
+# Pricing Events: published integration events of the Pricing Service. Conventions: README.md.
+asyncapi: 3.0.0
+info:
+  title: Pricing Events
+  version: 1.0.0
+  description: |
+    What the Pricing Service publishes: the computed, approved effective price per product.
+
+    Everything in this file is a published integration event: an external contract between bounded
+    contexts. The domain events in each context's own event store are private to that context and are
+    not described here; a publisher in the owning context translates them into these messages.
+
+    Transport: Kafka is the binding used here (servers and channel bindings). Channels, messages and
+    the CloudEvents attributes are meant to work on other transports too (AMQP, HTTP webhooks) through
+    their CloudEvents bindings. Messages are JSON (application/json), UTF-8 encoded. The CloudEvents
+    attributes come from the shared envelope (shared/envelope.yaml). Rules and conventions: README.md.
+  tags:
+  - name: domain:Catalog
+    description: The Catalog domain of drone-web.
+  - name: subdomain:Pricing
+    description: Price books, volume tiers, promotions and effective dates.
+  - name: service:PricingService
+    description: Pricing Service (Pricing and Promotions), owned by the Commercial team.
+  - name: channel:EffectivePrices
+    description: The effective-prices channel (effective prices).
+defaultContentType: application/json
+servers:
+  production:
+    $ref: shared/kafka-servers.yaml#/components/servers/production
+channels:
+  effectivePrices:
+    address: effective-prices
+    title: Effective prices
+    description: |
+      Pricing (Commercial team). The computed price per product: base, volume tiers and active
+      promotion already applied. Sent only after approval; a repricing job sends one message per product.
+      Consumed by the Catalog API and Partner Catalog; see their AsyncAPI files.
+    messages:
+      EffectivePriceChanged:
+        $ref: '#/components/messages/EffectivePriceChanged'
+    tags:
+    - name: domain:Catalog
+      description: The Catalog domain of drone-web.
+    - name: subdomain:Pricing
+      description: Price books, volume tiers, promotions and effective dates.
+    - name: service:PricingService
+      description: Pricing Service (Pricing and Promotions), owned by the Commercial team.
+    - name: channel:EffectivePrices
+      description: The effective-prices channel (effective prices).
+    bindings:
+      kafka:
+        topic: effective-prices
+        topicConfiguration:
+          cleanup.policy:
+          - compact
+        bindingVersion: 0.5.0
+    x-data-product:
+      owner: Commercial
+      context: Pricing and Promotions
+      kind: source-aligned
+      type: core
+operations:
+  sendEffectivePriceChanged:
+    action: send
+    channel:
+      $ref: '#/channels/effectivePrices'
+    messages:
+    - $ref: '#/channels/effectivePrices/messages/EffectivePriceChanged'
+components:
+  messages:
+    EffectivePriceChanged:
+      name: EffectivePriceChanged
+      title: EffectivePriceChanged
+      summary: Current effective prices state for one product, keyed by productId.
+      description: |
+        Published integration event. Model: domain-specific, owned by Pricing and Promotions. Headers use the canonical shared envelope.
+      contentType: application/json
+      x-model: domain-specific
+      traits:
+      - $ref: shared/envelope.yaml#/components/messageTraits/DroneWebEvent
+      headers:
+        allOf:
+        - $ref: shared/envelope.yaml#/components/schemas/CloudEventHeaders
+        - type: object
+          properties:
+            ce_type:
+              const: tech.drone-web.catalog.pricing.v1.EffectivePriceChanged
+            ce_dataschema:
+              const: https://schemas.drone-web.tech/catalog/pricing/v1/EffectivePriceChanged.json
+      payload:
+        $ref: '#/components/schemas/EffectivePrice'
+  schemas:
+    EffectivePrice:
+      type: object
+      required:
+      - currency
+      - unitPrice
+      - effectiveFrom
+      properties:
+        currency:
+          type: string
+        unitPrice:
+          type: number
+          description: Price after the active promotion
+          before volume tiers.: null
+        listPrice:
+          type: number
+          description: Base price
+          for showing a discount.: null
+        volumeTiers:
+          type: array
+          items:
+            type: object
+            required:
+            - minQuantity
+            - unitPrice
+            properties:
+              minQuantity:
+                type: integer
+              unitPrice:
+                type: number
+        effectiveFrom:
+          type: string
+          format: date-time
+        effectiveUntil:
+          type: string
+          format: date-time

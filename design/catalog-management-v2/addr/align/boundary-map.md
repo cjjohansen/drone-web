@@ -27,7 +27,7 @@
 | Pricing and Promotions Management | Catalog Governance Workflow | Command + decision | SubmitPricingChangeForApproval |
 | Compatibility Rules Management | Catalog Governance Workflow | Command + decision | SubmitRuleChangeForApproval |
 | Bulk Ingestion | Product Lifecycle Management | Command dispatch | ApplyImportedProductRecord |
-| Bulk Ingestion | Any consumer that needs lineage | Integration event (fact) | ProductImported (`product.imported`) |
+| Bulk Ingestion | Any consumer that needs lineage | Integration event (fact) | ProductImported (`product-imports` channel) |
 
 ## Ownership and Invariants
 
@@ -56,4 +56,4 @@
 
 ## Event Contracts
 
-The integration event contracts between these boundaries now live in [`design/contracts/`](../../../contracts/): one source-aligned fact stream per owning boundary, on a shared envelope. For consumers they supersede the identifier-only events in [`refine/integration-events.yaml`](../refine/integration-events.yaml). See the product event contracts decision in `.ralph/agent/decisions.md`.
+The integration event contracts between these boundaries now live in [`design/contracts/`](../../../contracts/): one AsyncAPI file per service, one source-aligned fact stream per owning boundary, on a shared envelope. These are published integration events; each boundary's own domain events stay internal to it. For consumers they supersede the identifier-only events in [`refine/integration-events.yaml`](../refine/integration-events.yaml). See the product event contracts decision in `.ralph/agent/decisions.md`.

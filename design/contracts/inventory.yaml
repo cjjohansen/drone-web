@@ -1,0 +1,111 @@
+# Inventory Events: published integration events of the Inventory Service. Conventions: README.md.
+asyncapi: 3.0.0
+info:
+  title: Inventory Events
+  version: 1.0.0
+  description: |
+    What the Inventory Service publishes: computed availability per product.
+
+    Everything in this file is a published integration event: an external contract between bounded
+    contexts. The domain events in each context's own event store are private to that context and are
+    not described here; a publisher in the owning context translates them into these messages.
+
+    Transport: Kafka is the binding used here (servers and channel bindings). Channels, messages and
+    the CloudEvents attributes are meant to work on other transports too (AMQP, HTTP webhooks) through
+    their CloudEvents bindings. Messages are JSON (application/json), UTF-8 encoded. The CloudEvents
+    attributes come from the shared envelope (shared/envelope.yaml). Rules and conventions: README.md.
+  tags:
+  - name: domain:Catalog
+    description: The Catalog domain of drone-web.
+  - name: subdomain:Inventory
+    description: Stock positions, lead times, backorders and suspensions.
+  - name: service:InventoryService
+    description: Inventory Service (Inventory and Availability), owned by the Commercial team.
+  - name: channel:ProductAvailabilities
+    description: The product-availabilities channel (product availabilities).
+defaultContentType: application/json
+servers:
+  production:
+    $ref: shared/kafka-servers.yaml#/components/servers/production
+channels:
+  productAvailabilities:
+    address: product-availabilities
+    title: Product availabilities
+    description: |
+      Inventory (Commercial team). Computed availability per product. Counts start in the ERP and
+      arrive through Inventory's ACL, so the payload carries origin.sourceSystem = erp.
+      Consumed by the Catalog API and Partner Catalog; see their AsyncAPI files.
+    messages:
+      ProductAvailabilityChanged:
+        $ref: '#/components/messages/ProductAvailabilityChanged'
+    tags:
+    - name: domain:Catalog
+      description: The Catalog domain of drone-web.
+    - name: subdomain:Inventory
+      description: Stock positions, lead times, backorders and suspensions.
+    - name: service:InventoryService
+      description: Inventory Service (Inventory and Availability), owned by the Commercial team.
+    - name: channel:ProductAvailabilities
+      description: The product-availabilities channel (product availabilities).
+    bindings:
+      kafka:
+        topic: product-availabilities
+        topicConfiguration:
+          cleanup.policy:
+          - compact
+        bindingVersion: 0.5.0
+    x-data-product:
+      owner: Commercial
+      context: Inventory and Availability
+      kind: source-aligned
+      type: core
+operations:
+  sendProductAvailabilityChanged:
+    action: send
+    channel:
+      $ref: '#/channels/productAvailabilities'
+    messages:
+    - $ref: '#/channels/productAvailabilities/messages/ProductAvailabilityChanged'
+components:
+  messages:
+    ProductAvailabilityChanged:
+      name: ProductAvailabilityChanged
+      title: ProductAvailabilityChanged
+      summary: Current product availabilities state for one product, keyed by productId.
+      description: |
+        Published integration event. Model: domain-specific, owned by Inventory and Availability. Headers use the canonical shared envelope and origin uses the canonical shared Origin schema.
+      contentType: application/json
+      x-model: domain-specific
+      traits:
+      - $ref: shared/envelope.yaml#/components/messageTraits/DroneWebEvent
+      headers:
+        allOf:
+        - $ref: shared/envelope.yaml#/components/schemas/CloudEventHeaders
+        - type: object
+          properties:
+            ce_type:
+              const: tech.drone-web.catalog.inventory.v1.ProductAvailabilityChanged
+            ce_dataschema:
+              const: https://schemas.drone-web.tech/catalog/inventory/v1/ProductAvailabilityChanged.json
+      payload:
+        $ref: '#/components/schemas/Availability'
+  schemas:
+    Availability:
+      type: object
+      required:
+      - status
+      properties:
+        status:
+          type: string
+          enum:
+          - in-stock
+          - low-stock
+          - backorder
+          - suspended
+        leadTimeDays:
+          type: integer
+        expectedDate:
+          type: string
+          format: date
+        origin:
+          $ref: shared/common-schemas.yaml#/components/schemas/Origin

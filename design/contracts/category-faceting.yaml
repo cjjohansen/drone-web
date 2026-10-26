@@ -1,0 +1,105 @@
+# Category and Faceting Events: published integration events of the Category and Faceting Service. Conventions: README.md.
+asyncapi: 3.0.0
+info:
+  title: Category and Faceting Events
+  version: 1.0.0
+  description: |
+    What the Category and Faceting Service publishes: each product's current categories and facet values.
+
+    Everything in this file is a published integration event: an external contract between bounded
+    contexts. The domain events in each context's own event store are private to that context and are
+    not described here; a publisher in the owning context translates them into these messages.
+
+    Transport: Kafka is the binding used here (servers and channel bindings). Channels, messages and
+    the CloudEvents attributes are meant to work on other transports too (AMQP, HTTP webhooks) through
+    their CloudEvents bindings. Messages are JSON (application/json), UTF-8 encoded. The CloudEvents
+    attributes come from the shared envelope (shared/envelope.yaml). Rules and conventions: README.md.
+  tags:
+  - name: domain:Catalog
+    description: The Catalog domain of drone-web.
+  - name: subdomain:CategoryFaceting
+    description: The category tree, facet definitions and product category assignments.
+  - name: service:CategoryFacetingService
+    description: Category and Faceting Service, in the Product Data bounded context.
+  - name: channel:ProductCategoryAssignments
+    description: The product-category-assignments channel (product category assignments).
+defaultContentType: application/json
+servers:
+  production:
+    $ref: shared/kafka-servers.yaml#/components/servers/production
+channels:
+  productCategoryAssignments:
+    address: product-category-assignments
+    title: Product category assignments
+    description: |
+      Category and Faceting (Product Data team). The product's current categories and facet values.
+      Consumed by the Catalog API; see their AsyncAPI files.
+    messages:
+      ProductCategoriesAssigned:
+        $ref: '#/components/messages/ProductCategoriesAssigned'
+    tags:
+    - name: domain:Catalog
+      description: The Catalog domain of drone-web.
+    - name: subdomain:CategoryFaceting
+      description: The category tree, facet definitions and product category assignments.
+    - name: service:CategoryFacetingService
+      description: Category and Faceting Service, in the Product Data bounded context.
+    - name: channel:ProductCategoryAssignments
+      description: The product-category-assignments channel (product category assignments).
+    bindings:
+      kafka:
+        topic: product-category-assignments
+        topicConfiguration:
+          cleanup.policy:
+          - compact
+        bindingVersion: 0.5.0
+    x-data-product:
+      owner: Product Data
+      context: Category and Faceting
+      kind: source-aligned
+      type: supporting
+operations:
+  sendProductCategoriesAssigned:
+    action: send
+    channel:
+      $ref: '#/channels/productCategoryAssignments'
+    messages:
+    - $ref: '#/channels/productCategoryAssignments/messages/ProductCategoriesAssigned'
+components:
+  messages:
+    ProductCategoriesAssigned:
+      name: ProductCategoriesAssigned
+      title: ProductCategoriesAssigned
+      summary: Current product category assignments state for one product, keyed by productId.
+      description: |
+        Published integration event. Model: domain-specific, owned by Category and Faceting. Headers use the canonical shared envelope.
+      contentType: application/json
+      x-model: domain-specific
+      traits:
+      - $ref: shared/envelope.yaml#/components/messageTraits/DroneWebEvent
+      headers:
+        allOf:
+        - $ref: shared/envelope.yaml#/components/schemas/CloudEventHeaders
+        - type: object
+          properties:
+            ce_type:
+              const: tech.drone-web.catalog.category-faceting.v1.ProductCategoriesAssigned
+            ce_dataschema:
+              const: https://schemas.drone-web.tech/catalog/category-faceting/v1/ProductCategoriesAssigned.json
+      payload:
+        $ref: '#/components/schemas/ProductCategories'
+  schemas:
+    ProductCategories:
+      type: object
+      required:
+      - categoryIds
+      properties:
+        categoryIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        facetValues:
+          type: object
+          additionalProperties:
+            type: string

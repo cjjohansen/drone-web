@@ -96,7 +96,7 @@ flowchart TB
   PD -- "OHS" --> PL
   PR -- "OHS" --> PL
   INV -- "OHS" --> PL
-  ING -- "OHS: product.imported" --> PL
+  ING -- "OHS: product-imports" --> PL
   PL -- "conformist" --> CAT
   PL -- "ACL: specs to component attributes" --> CC
   PL -- "ACL: partner projection" --> PC
@@ -113,7 +113,8 @@ How to read the relationships:
 
 - **Open host service and published language.** Each owning context publishes one stream of facts about its
   own part of a product, and the contracts in [`design/contracts/`](../../contracts/) are the published
-  language (D-008). Events carry the owner's current state, not identifiers only. No read side calls a write
+  language (D-008). These are integration events, translated from each context's internal domain events,
+  which never leave the context. They carry the owner's current state, not identifiers only. No read side calls a write
   side synchronously (storefront `boundaries.md`, section C; v2 `boundaries.md`, section C).
 - **Conformist.** The Catalog takes the published product, category, price and availability facts as they
   are; its job is to make them searchable, not to reinterpret them.
@@ -146,6 +147,6 @@ single price change or a specification update, which the storefront's Compatibil
 consume. The next file, [team-design.md](team-design.md), shows why one team never noticed.
 
 The answer is now in [`design/contracts/`](../../contracts/): the write side publishes facts. Each owner
-publishes a source-aligned stream (`product.record`, `product.specification`, `price.effective-price`,
-`inventory.availability`, and others), each consumer builds its own join, and the partner feed is a join that
+publishes a source-aligned stream (`product-records`, `product-specifications`, `effective-prices`,
+`product-availabilities`, and others), each consumer builds its own join, and the partner feed is a join that
 the Partner Catalog owns. For consumers these streams supersede the identifier-only v2 events.

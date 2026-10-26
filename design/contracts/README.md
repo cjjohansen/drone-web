@@ -6,38 +6,72 @@ publishes one stream about its own part of a product. Consumers build what they 
 The decision behind this folder is "Product event contracts: source-aligned fact streams" in
 [`.ralph/agent/decisions.md`](../../.ralph/agent/decisions.md).
 
+## Internal and published event streams
+
+Everything in this folder is a **published integration event**: an external contract that goes to Kafka
+(and, through the CloudEvents bindings, to other transports such as AMQP or HTTP webhooks).
+
+Each context also has **internal domain events**: the events in its own event store, one stream per
+aggregate, as in the event models (`Product.Created`, `Product.SpecificationUpdated`). They are private to
+that context. They are not contracts, they may change freely, and no other context ever reads them. A
+publisher in the owning context (an outbox or a projection) translates them into the published fact.
+
+Example: the internal stream of one Product aggregate records `Product.SpecificationUpdated`. Product
+Lifecycle's publisher reads the new state of that product and sends `ProductSpecificationChanged` on the
+`product-specifications` channel, with the full current spec, `specSchemaVersion` and `origin`. A consumer
+only ever sees `ProductSpecificationChanged`. Product Lifecycle can split, rename or replay its domain
+events without breaking anyone.
+
 ## Files
 
-| File | What it is | Owner |
-| --- | --- | --- |
-| [`envelope.yaml`](envelope.yaml) | The shared event envelope: CloudEvents 1.0 in Kafka binary mode, with drone-web's lineage extensions (`ce_sourceversion`, `ce_derivedfrom`, `ce_approvalcaseid`, `ce_correlationid`) and the OpenTelemetry trace headers. | Platform team, under federated governance |
-| [`product-facts.asyncapi.yaml`](product-facts.asyncapi.yaml) | One channel per data product. Defines only each product's payload; the headers come from `envelope.yaml` by `$ref`. | Each channel's owner (table below) |
+One AsyncAPI file per service. A file lists what the service publishes (`send`) and, where relevant, what
+it consumes (`receive`).
 
-Validate both with `npx -y @asyncapi/cli@latest validate <file>`. Run it from this folder, so the
-relative `$ref` to `envelope.yaml` resolves.
+| File | Service | Publishes | Consumes |
+| --- | --- | --- | --- |
+| [`product-lifecycle.yaml`](product-lifecycle.yaml) | Product Lifecycle Service | `product-records`, `product-specifications` | |
+| [`bulk-ingestion.yaml`](bulk-ingestion.yaml) | Bulk Ingestion Service | `product-imports` | |
+| [`category-faceting.yaml`](category-faceting.yaml) | Category and Faceting Service | `product-category-assignments` | |
+| [`technical-documentation.yaml`](technical-documentation.yaml) | Technical Documentation Service | `product-documents` | |
+| [`pricing.yaml`](pricing.yaml) | Pricing Service | `effective-prices` | |
+| [`inventory.yaml`](inventory.yaml) | Inventory Service | `product-availabilities` | |
+| [`partner-catalog.yaml`](partner-catalog.yaml) | Partner Catalog Service | `partner-catalog-entries` | `product-records`, `effective-prices`, `product-availabilities` |
+| [`catalog-api.yaml`](catalog-api.yaml) | Catalog API | | `product-records`, `product-specifications`, `product-category-assignments`, `product-documents`, `effective-prices`, `product-availabilities` |
+| [`compatibility-check.yaml`](compatibility-check.yaml) | Compatibility Check | | `product-specifications`, `product-records` |
+
+Shared files, owned by the platform team under federated governance:
+
+| File | What it is |
+| --- | --- |
+| [`shared/envelope.yaml`](shared/envelope.yaml) | The CloudEvents envelope: `CloudEventHeaders` and `DerivedCloudEventHeaders`, with drone-web's lineage extensions (`ce_sourceversion`, `ce_derivedfrom`, `ce_approvalcaseid`, `ce_correlationid`) and the OpenTelemetry trace headers. |
+| [`shared/kafka-servers.yaml`](shared/kafka-servers.yaml) | The Kafka server definition every service file references. |
+| [`shared/common-schemas.yaml`](shared/common-schemas.yaml) | Canonical payload models shared across domains. Today only `Origin`. |
+
+Validate each file with `npx -y @asyncapi/cli@latest validate <file>`, run from this folder so the
+relative `$ref`s resolve.
 
 ## Who owns which stream
 
-Every channel declares its owner in `x-data-product`. Topics are compacted and keyed by `productId`.
+Every producing channel declares its owner in `x-data-product`. Topics are compacted and keyed by `productId`.
 
-| Stream | Owner team | Context | Kind | Type |
-| --- | --- | --- | --- | --- |
-| `product.record` | Product Data | Product Lifecycle | source-aligned | Supporting |
-| `product.specification` | Product Data | Product Lifecycle | source-aligned | **Core** |
-| `product.imported` | Product Data | Bulk Ingestion | source-aligned | Supporting |
-| `category.product-assignment` | Product Data | Category and Faceting | source-aligned | Supporting |
-| `document.product-documents` | Product Data | Technical Documentation | source-aligned | Supporting |
-| `price.effective-price` | Commercial | Pricing and Promotions | source-aligned | Core |
-| `inventory.availability` | Commercial | Inventory and Availability | source-aligned | Core |
-| `partner.catalog-feed` | Commercial | Partner Catalog | consumer-aligned | (a join) |
+| Channel | Message | Owner team | Context | Kind | Type |
+| --- | --- | --- | --- | --- | --- |
+| `product-records` | `ProductRecordChanged` | Product Data | Product Lifecycle | source-aligned | Supporting |
+| `product-specifications` | `ProductSpecificationChanged` | Product Data | Product Lifecycle | source-aligned | **Core** |
+| `product-imports` | `ProductImported` | Product Data | Bulk Ingestion | source-aligned | Supporting |
+| `product-category-assignments` | `ProductCategoriesAssigned` | Product Data | Category and Faceting | source-aligned | Supporting |
+| `product-documents` | `ProductDocumentsPublished` | Product Data | Technical Documentation | source-aligned | Supporting |
+| `effective-prices` | `EffectivePriceChanged` | Commercial | Pricing and Promotions | source-aligned | Core |
+| `product-availabilities` | `ProductAvailabilityChanged` | Commercial | Inventory and Availability | source-aligned | Core |
+| `partner-catalog-entries` | `PartnerCatalogEntryChanged` | Commercial | Partner Catalog | consumer-aligned | (a join) |
 
 ## The rules
 
 1. **Owners publish computed facts, not inputs.** Pricing publishes the effective price with the active
-   promotion and volume tiers applied. Inventory publishes availability, not raw counts. Each event carries
+   promotion and volume tiers applied. Inventory publishes availability, not raw counts. Each message carries
    the owner's current state for that product, never IDs only.
 2. **Approval happens before an owner publishes.** When a change needs Governance approval, the owner waits
-   for the decision and only then publishes. The event carries `ce_approvalcaseid`. Consumers never see
+   for the decision and only then publishes. The message carries `ce_approvalcaseid`. Consumers never see
    unapproved facts and never apply approval rules themselves.
 3. **Consumers own their joins.** A consumer that needs price, stock and product data together builds that
    join itself. Rules that cross domains (for example, when a product counts as sellable) stay with the
@@ -49,15 +83,39 @@ Every channel declares its owner in `x-data-product`. Topics are compacted and k
    true source. Where a value came from (`origin`: source system, import batch, item key) is domain
    information that curators and buyers see, so it is a field of the payload.
 6. **Technical provenance goes in the envelope.** `ce_source`, `ce_sourceversion`, `ce_derivedfrom` and the
-   approval attributes are headers from the shared envelope. No product defines its own. Derived products
-   (like the partner feed) must set `ce_derivedfrom`.
+   approval attributes come from the shared envelope. No service defines its own. Derived products (like the
+   partner catalog entries) must set `ce_derivedfrom`.
 7. **OpenTelemetry is for runtime only.** `traceparent` shows how a message moved, for debugging. It is never
    read as lineage, because traces are sampled and kept for days. Which product feeds which is recorded in
    EventCatalog at design time, and as OpenLineage run events from the join helper at runtime.
-8. **The spec stream is the Core contract.** `product.specification` is what the compatibility rules read
+8. **The spec channel is the Core contract.** `product-specifications` is what the compatibility rules read
    (voltage, current, mounting, protocol, weight). Its schema design and versioning get the most care: typed
-   fields with units, an explicit `specSchemaVersion`, and a new major version on a parallel topic for a
-   breaking change. The rest of `product.*` may follow a bought product hub, translated by an ACL.
+   fields with units, an explicit `specSchemaVersion`, and a new major version on a parallel channel for a
+   breaking change. The rest of Product Lifecycle's channels may follow a bought product hub, translated by an ACL.
+
+## Conventions
+
+1. **Service-centric files.** One AsyncAPI file per service, with what it sends and, where relevant, what it
+   receives. Each producing channel names its known consumers in its description.
+2. **Consumers define their own channels.** A consumer defines the channel inline (it does not `$ref` the
+   producer's channel) and points to a local message under `components/messages`, marked
+   `x-eventcatalog-role: client`. The local message `$ref`s the producer's headers and payload.
+3. **Channel addresses** are the real topic names: kebab-case, plural nouns, no "events" suffix
+   (`effective-prices`). Channel keys and operation ids are lowerCamelCase (`effectivePrices`,
+   `sendEffectivePriceChanged`, `receiveEffectivePriceChanged`).
+4. **Message names** are PascalCase domain names in the past tense, without an "Event" suffix
+   (`EffectivePriceChanged`).
+5. **Message types** are reverse-DNS with a major version: `<prefix>.<domain>.<subdomain>.v<major>.<MessageName>`,
+   for example `tech.drone-web.catalog.pricing.v1.EffectivePriceChanged` in `ce_type`. `ce_dataschema` follows
+   the same versioning (`https://schemas.drone-web.tech/catalog/pricing/v1/EffectivePriceChanged.json`).
+6. **Tags.** Each file defines `domain:Catalog`, `subdomain:<Subdomain>`, `service:<ServiceName>` and
+   `channel:<ChannelName>` in `info.tags`, each with a description, and applies them to its channels.
+7. **Titles** name the business domain and end in "Events" ("Pricing Events"). The protocol is explicit
+   (Kafka, in `shared/kafka-servers.yaml` and the channel bindings); messages are `application/json`, UTF-8.
+   Messages, channels and the CloudEvents attributes stay transport-neutral; Kafka details live only in
+   bindings and the server file.
+8. **Shared files** live in `shared/`, and every service file `$ref`s them. Each message states whether its
+   model is canonical (shared across domains) or domain-specific (`x-model`).
 
 ## What this replaces
 
@@ -67,7 +125,7 @@ publishes identifier-only events (`product.created`, `product.lifecycle-state-ch
 `price.group-repricing-requested`, `inventory.quantity-updated`, ...). A consumer cannot build its copy from
 those without calling back, and there is no event for a single price change or a spec update.
 
-For consumers, the streams in this folder supersede those events. Catalog, Compatibility and Partner Catalog
-read the fact streams here. The v2 file stays as the record of the write-side design run; its events can
-remain internal to the owning contexts. The gap is described in
+For consumers, the channels in this folder supersede those events. The Catalog API, the Compatibility Check
+and Partner Catalog read the channels here. The v2 file stays as the record of the write-side design run.
+The gap is described in
 [`strategy/architecture-for-flow/subdomains-and-contexts.md`](../strategy/architecture-for-flow/subdomains-and-contexts.md).

@@ -1,12 +1,30 @@
 asyncapi: 3.0.0
 info:
   title: drone-web Event Envelope (shared, platform-owned)
-  version: 0.2.0
+  version: 0.3.0
   description: |
     The one envelope every drone-web data product uses. Why: see README.md and the decision
     "Product event contracts: source-aligned fact streams" in .ralph/agent/decisions.md.
     Owned by the platform team under federated governance; data products reference it with $ref and
     never define envelope fields of their own. Changes go through governance, not through one product.
+
+    Canonical model: shared across domains. It wraps published integration events only, never a
+    context's internal domain events.
+
+    Transport: the CloudEvents attributes are transport-neutral. The header names below (ce_ prefix,
+    content-type) are their mapping in the CloudEvents Kafka binding, the binding used here. On other
+    transports the same attributes map through that transport's CloudEvents binding (for example ce-
+    headers over HTTP webhooks, cloudEvents: properties over AMQP). Kafka-only details (the message
+    key) sit in bindings; the servers are in kafka-servers.yaml.
+
+    Canonical model: shared across domains. It wraps published integration events only, never a
+    context's internal domain events.
+
+    Transport: the CloudEvents attributes are transport-neutral. The header names below (ce_ prefix,
+    content-type) are their mapping in the CloudEvents Kafka binding, the binding used here. On other
+    transports the same attributes map through that transport's CloudEvents binding (for example ce-
+    headers over HTTP webhooks, cloudEvents: properties over AMQP). Kafka-only details (the message
+    key) sit in bindings; the servers are in kafka-servers.yaml.
 
     Basis: CloudEvents 1.0, Kafka protocol binding, binary mode. The CloudEvents attributes travel
     as Kafka headers with the ce_ prefix, and the message value is the data product's `data` only
@@ -39,10 +57,10 @@ components:
         ce_specversion: { type: string, const: '1.0' }
         ce_id: { type: string, format: uuid, description: Unique per event; consumers deduplicate on ce_source + ce_id. }
         ce_source: { type: string, format: uri-reference, description: 'Producing context, e.g. /drone-web/pricing.' }
-        ce_type: { type: string, description: 'Reverse-DNS event type, e.g. tech.drone-web.price.effective-price.changed.' }
+        ce_type: { type: string, description: 'Reverse-DNS, versioned message type: <prefix>.<domain>.<subdomain>.v<major>.<MessageName>, e.g. tech.drone-web.catalog.pricing.v1.EffectivePriceChanged.' }
         ce_subject: { type: string, format: uuid, description: The productId; also the Kafka message key. }
         ce_time: { type: string, format: date-time, description: When the fact changed in the owning context (UTC). }
-        ce_dataschema: { type: string, format: uri, description: 'Versioned JSON Schema of the payload, e.g. .../price/effective-price/1.2.json.' }
+        ce_dataschema: { type: string, format: uri, description: 'Versioned JSON Schema of the payload, same versioning as ce_type, e.g. https://schemas.drone-web.tech/catalog/pricing/v1/EffectivePriceChanged.json.' }
         content-type: { type: string, const: application/json, description: Kafka binding name for datacontenttype. }
         # --- drone-web lineage extensions ---------------------------------------------------
         ce_sourceversion:
@@ -70,7 +88,7 @@ components:
       type: string
       description: |
         The source events this fact was built from: a space-separated list of
-        <stream>/<subject>@<sourceversion>, e.g.
-        "price.effective-price/6b1f...@7 inventory.availability/6b1f...@12 product.record/6b1f...@3".
+        <channel>/<subject>@<sourceversion>, e.g.
+        "effective-prices/6b1f...@7 product-availabilities/6b1f...@12 product-records/6b1f...@3".
         A string because CloudEvents extension attributes must be scalars. Maps to W3C PROV wasDerivedFrom.
       pattern: '^[a-z0-9.-]+/[^\s/@]+@[0-9]+( [a-z0-9.-]+/[^\s/@]+@[0-9]+)*$'
