@@ -1,0 +1,27 @@
+# Shared canonical payload schemas. Conventions: README.md.
+asyncapi: 3.0.0
+info:
+  title: drone-web Common Schemas (shared, platform-owned)
+  version: 1.0.0
+  description: |
+    Canonical payload models shared across domains. Owned by the platform team under
+    federated governance.
+components:
+  schemas:
+    Origin:
+      type: object
+      description: |
+        Canonical model, shared across domains. Where a curated fact came from. Domain
+        information: curators and buyers see it. Absent when staff entered the value by hand.
+      required:
+      - sourceSystem
+      properties:
+        sourceSystem:
+          type: string
+          description: e.g. erp, supplier-feed:<supplierId>, manual.
+        importBatchId:
+          type: string
+          format: uuid
+        importItemKey:
+          type: string
+      x-model: canonical

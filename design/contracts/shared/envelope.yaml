@@ -1,0 +1,85 @@
+asyncapi: 3.0.0
+info:
+  title: drone-web Event Envelope (shared, platform-owned)
+  version: 0.3.0
+  description: |
+    The one envelope every drone-web data product uses. Why: see README.md and the decision
+    "Product event contracts: source-aligned fact streams" in .ralph/agent/decisions.md.
+    Owned by the platform team under federated governance; data products reference it with $ref and
+    never define envelope fields of their own. Changes go through governance, not through one product.
+
+    Canonical model: shared across domains. It wraps published events only, never a context's
+    internal events.
+
+    Transport: the CloudEvents attributes are transport-neutral. The header names below (ce_ prefix,
+    content-type) are their mapping in the CloudEvents Kafka binding, the binding used here. On other
+    transports the same attributes map through that transport's CloudEvents binding (for example ce-
+    headers over HTTP webhooks, cloudEvents: properties over AMQP). Kafka-only details (the message
+    key) sit in bindings; the servers are in kafka-servers.yaml.
+
+    Basis: CloudEvents 1.0, Kafka protocol binding, binary mode. The CloudEvents attributes travel
+    as Kafka headers with the ce_ prefix, and the message value is the data product's `data` only
+    (content-type application/json). Brokers, routers and the lineage tooling can read the headers
+    without parsing the payload. The Kafka message key is the subject (productId), which is also how
+    the CloudEvents Kafka binding maps the partition key.
+
+    Three kinds of lineage, three places:
+    1. Which data product feeds which: EventCatalog (x-data-product on each channel), and OpenLineage
+       run events emitted by the platform's join helper when a consumer builds a join. Not in messages.
+    2. Where this value came from: these headers (technical provenance) plus the product's own
+       `origin` field in the payload where the origin is domain information.
+    3. How this message moved at runtime: OpenTelemetry trace context in the plain W3C headers
+       traceparent and tracestate. Debugging only; never read as lineage, because traces are sampled
+       and kept for days.
+components:
+  messageTraits:
+    DroneWebEvent:
+      contentType: application/json
+      bindings:
+        kafka:
+          key: { type: string, format: uuid, description: Same value as ce_subject (productId). }
+  schemas:
+    CloudEventHeaders:
+      type: object
+      description: Kafka headers for facts published by an owning context (source-aligned data products).
+      required: [ce_specversion, ce_id, ce_source, ce_type, ce_subject, ce_time, ce_sourceversion, content-type]
+      properties:
+        # --- CloudEvents core attributes ------------------------------------------------------
+        ce_specversion: { type: string, const: '1.0' }
+        ce_id: { type: string, format: uuid, description: Unique per event; consumers deduplicate on ce_source + ce_id. }
+        ce_source: { type: string, format: uri-reference, description: 'Producing context, e.g. /drone-web/pricing.' }
+        ce_type: { type: string, description: 'Reverse-DNS, versioned message type: <prefix>.<domain>.<subdomain>.v<major>.<MessageName>, e.g. tech.drone-web.catalog.pricing.v1.EffectivePriceChanged.' }
+        ce_subject: { type: string, format: uuid, description: The productId; also the Kafka message key. }
+        ce_time: { type: string, format: date-time, description: When the fact changed in the owning context (UTC). }
+        ce_dataschema: { type: string, format: uri, description: 'Versioned JSON Schema of the payload, same versioning as ce_type, e.g. https://schemas.drone-web.tech/catalog/pricing/v1/EffectivePriceChanged.json.' }
+        content-type: { type: string, const: application/json, description: Kafka binding name for datacontenttype. }
+        # --- drone-web lineage extensions ---------------------------------------------------
+        ce_sourceversion:
+          type: integer
+          minimum: 1
+          description: Per-subject version in the producing context. Consumers keep the highest and drop older ones.
+        ce_derivedfrom: { $ref: '#/components/schemas/DerivedFrom' }
+        ce_approvalcaseid:
+          type: string
+          format: uuid
+          description: Governance approval case, present when the change was approved before publishing.
+        ce_approvaldecidedat: { type: string, format: date-time }
+        ce_correlationid:
+          type: string
+          description: Ties together events caused by one business action, e.g. one repricing job or one import batch.
+        # --- Runtime trace context (OpenTelemetry) --------------------------------------------
+        traceparent: { type: string, description: 'W3C Trace Context. Runtime only, not lineage.' }
+        tracestate: { type: string, description: 'W3C Trace Context vendor state. Runtime only.' }
+    DerivedCloudEventHeaders:
+      description: Headers for facts built from other data products (aggregate or consumer-aligned).
+      allOf:
+        - $ref: '#/components/schemas/CloudEventHeaders'
+        - { type: object, required: [ce_derivedfrom] }
+    DerivedFrom:
+      type: string
+      description: |
+        The source events this fact was built from: a space-separated list of
+        <channel>/<subject>@<sourceversion>, e.g.
+        "effective-prices/6b1f...@7 product-availabilities/6b1f...@12 product-records/6b1f...@3".
+        A string because CloudEvents extension attributes must be scalars. Maps to W3C PROV wasDerivedFrom.
+      pattern: '^[a-z0-9.-]+/[^\s/@]+@[0-9]+( [a-z0-9.-]+/[^\s/@]+@[0-9]+)*$'

@@ -1,0 +1,121 @@
+# Bulk Ingestion Events: published events of the Bulk Ingestion Service. Conventions: README.md.
+asyncapi: 3.0.0
+info:
+  title: Bulk Ingestion Events
+  version: 1.0.0
+  description: |
+    What the Bulk Ingestion Service publishes: one fact per imported item that changed a product.
+
+    Everything in this file is a published event on a published stream: a contract between bounded
+    contexts and a data product. Each context's internal events (on internal streams, in its own event
+    store) are private to that context and are not described here; a publisher in the owning context
+    translates them into these published events.
+
+    Transport: Kafka is the binding used here (servers and channel bindings). Channels, messages and
+    the CloudEvents attributes are meant to work on other transports too (AMQP, HTTP webhooks) through
+    their CloudEvents bindings. Messages are JSON (application/json), UTF-8 encoded. The CloudEvents
+    attributes come from the shared envelope (shared/envelope.yaml). Rules and conventions: README.md.
+  tags:
+  - name: domain:Catalog
+    description: The Catalog domain of drone-web.
+  - name: subdomain:BulkIngestion
+    description: Validated imports from the ERP and supplier files into Product Data.
+  - name: service:BulkIngestionService
+    description: Bulk Ingestion Service, owned by the Product Data team.
+  - name: channel:ProductImports
+    description: The product-imports channel (product imports).
+defaultContentType: application/json
+servers:
+  production:
+    $ref: shared/kafka-servers.yaml#/components/servers/production
+channels:
+  productImports:
+    address: product-imports
+    title: Product imports
+    description: |
+      Bulk Ingestion (Product Data team). One per imported item that changed a product. Records the
+      step from an upstream source (ERP, supplier file) to curated data.
+      No consumer contract yet; read by lineage tooling and curators.
+    messages:
+      ProductImported:
+        $ref: '#/components/messages/ProductImported'
+    tags:
+    - name: domain:Catalog
+      description: The Catalog domain of drone-web.
+    - name: subdomain:BulkIngestion
+      description: Validated imports from the ERP and supplier files into Product Data.
+    - name: service:BulkIngestionService
+      description: Bulk Ingestion Service, owned by the Product Data team.
+    - name: channel:ProductImports
+      description: The product-imports channel (product imports).
+    bindings:
+      kafka:
+        topic: product-imports
+        topicConfiguration:
+          cleanup.policy:
+          - compact
+        bindingVersion: 0.5.0
+    x-data-product:
+      owner: Product Data
+      context: Bulk Ingestion
+      kind: source-aligned
+      type: supporting
+operations:
+  sendProductImported:
+    action: send
+    channel:
+      $ref: '#/channels/productImports'
+    messages:
+    - $ref: '#/channels/productImports/messages/ProductImported'
+components:
+  messages:
+    ProductImported:
+      name: ProductImported
+      title: ProductImported
+      summary: Current product imports state for one product, keyed by productId.
+      description: |
+        Published event. Model: domain-specific, owned by Bulk Ingestion. Headers use the canonical shared envelope.
+      contentType: application/json
+      x-model: domain-specific
+      traits:
+      - $ref: shared/envelope.yaml#/components/messageTraits/DroneWebEvent
+      headers:
+        allOf:
+        - $ref: shared/envelope.yaml#/components/schemas/CloudEventHeaders
+        - type: object
+          properties:
+            ce_type:
+              const: tech.drone-web.catalog.bulk-ingestion.v1.ProductImported
+            ce_dataschema:
+              const: https://schemas.drone-web.tech/catalog/bulk-ingestion/v1/ProductImported.json
+      payload:
+        $ref: '#/components/schemas/ProductImport'
+  schemas:
+    ProductImport:
+      type: object
+      required:
+      - importBatchId
+      - importItemKey
+      - sourceSystem
+      - outcome
+      properties:
+        importBatchId:
+          type: string
+          format: uuid
+        importItemKey:
+          type: string
+        sourceSystem:
+          type: string
+        outcome:
+          type: string
+          enum:
+          - created
+          - updated
+          - unchanged
+        changedSections:
+          type: array
+          items:
+            type: string
+            enum:
+            - record
+            - specification

@@ -1,0 +1,14 @@
+# Shared Kafka server definition. Conventions: README.md.
+asyncapi: 3.0.0
+info:
+  title: drone-web Kafka Servers (shared, platform-owned)
+  version: 1.0.0
+  description: |
+    The Kafka cluster every drone-web service file references. Owned by the platform
+    team. Kafka-specific settings live here and in channel bindings, not in messages.
+components:
+  servers:
+    production:
+      host: kafka.example.com:9092
+      protocol: kafka
+      description: Production Kafka cluster. Topics are compacted and keyed by productId.

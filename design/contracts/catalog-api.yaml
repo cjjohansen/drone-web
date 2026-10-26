@@ -1,0 +1,309 @@
+# Catalog API Events: published events that the Catalog API consumes. Conventions: README.md.
+asyncapi: 3.0.0
+info:
+  title: Catalog API Events
+  version: 1.0.0
+  description: |
+    What the Catalog API consumes to build its own product view. Consumer only: it publishes nothing.
+    The view and its cross-domain rules (for example, when a product counts as sellable) are its own.
+
+    Everything in this file is a published event on a published stream: a contract between bounded
+    contexts and a data product. Each context's internal events (on internal streams, in its own event
+    store) are private to that context and are not described here; a publisher in the owning context
+    translates them into these published events.
+
+    Transport: Kafka is the binding used here (servers and channel bindings). Channels, messages and
+    the CloudEvents attributes are meant to work on other transports too (AMQP, HTTP webhooks) through
+    their CloudEvents bindings. Messages are JSON (application/json), UTF-8 encoded. The CloudEvents
+    attributes come from the shared envelope (shared/envelope.yaml). Rules and conventions: README.md.
+  tags:
+  - name: domain:Catalog
+    description: The Catalog domain of drone-web.
+  - name: subdomain:ProductDiscovery
+    description: Search, browse, evaluate and compare on the storefront.
+  - name: service:CatalogApiService
+    description: The Catalog API (read side). Its product view is internal and has no published channel.
+  - name: channel:ProductRecords
+    description: The product-records channel (product records).
+  - name: channel:ProductSpecifications
+    description: The product-specifications channel (product specifications).
+  - name: channel:ProductCategoryAssignments
+    description: The product-category-assignments channel (product category assignments).
+  - name: channel:ProductDocuments
+    description: The product-documents channel (product documents).
+  - name: channel:EffectivePrices
+    description: The effective-prices channel (effective prices).
+  - name: channel:ProductAvailabilities
+    description: The product-availabilities channel (product availabilities).
+defaultContentType: application/json
+servers:
+  production:
+    $ref: shared/kafka-servers.yaml#/components/servers/production
+channels:
+  productRecords:
+    address: product-records
+    title: Product records
+    description: |
+      Consumed from the Product Lifecycle Service (Product Data team). Defined here, not referenced, so this
+      file states what the Catalog API relies on. Producer contract: product-lifecycle.yaml.
+    messages:
+      ProductRecordChanged:
+        $ref: '#/components/messages/ProductRecordChanged'
+        x-eventcatalog-role: client
+    tags:
+    - name: domain:Catalog
+      description: The Catalog domain of drone-web.
+    - name: subdomain:ProductDiscovery
+      description: Search, browse, evaluate and compare on the storefront.
+    - name: service:CatalogApiService
+      description: The Catalog API (read side). Its product view is internal and has no published channel.
+    - name: channel:ProductRecords
+      description: The product-records channel (product records).
+    bindings:
+      kafka:
+        topic: product-records
+        topicConfiguration:
+          cleanup.policy:
+          - compact
+        bindingVersion: 0.5.0
+  productSpecifications:
+    address: product-specifications
+    title: Product specifications
+    description: |
+      Consumed from the Product Lifecycle Service (Product Data team). Defined here, not referenced, so this
+      file states what the Catalog API relies on. Producer contract: product-lifecycle.yaml.
+    messages:
+      ProductSpecificationChanged:
+        $ref: '#/components/messages/ProductSpecificationChanged'
+        x-eventcatalog-role: client
+    tags:
+    - name: domain:Catalog
+      description: The Catalog domain of drone-web.
+    - name: subdomain:ProductDiscovery
+      description: Search, browse, evaluate and compare on the storefront.
+    - name: service:CatalogApiService
+      description: The Catalog API (read side). Its product view is internal and has no published channel.
+    - name: channel:ProductSpecifications
+      description: The product-specifications channel (product specifications).
+    bindings:
+      kafka:
+        topic: product-specifications
+        topicConfiguration:
+          cleanup.policy:
+          - compact
+        bindingVersion: 0.5.0
+  productCategoryAssignments:
+    address: product-category-assignments
+    title: Product category assignments
+    description: |
+      Consumed from the Category and Faceting Service (Product Data team). Defined here, not referenced, so this
+      file states what the Catalog API relies on. Producer contract: category-faceting.yaml.
+    messages:
+      ProductCategoriesAssigned:
+        $ref: '#/components/messages/ProductCategoriesAssigned'
+        x-eventcatalog-role: client
+    tags:
+    - name: domain:Catalog
+      description: The Catalog domain of drone-web.
+    - name: subdomain:ProductDiscovery
+      description: Search, browse, evaluate and compare on the storefront.
+    - name: service:CatalogApiService
+      description: The Catalog API (read side). Its product view is internal and has no published channel.
+    - name: channel:ProductCategoryAssignments
+      description: The product-category-assignments channel (product category assignments).
+    bindings:
+      kafka:
+        topic: product-category-assignments
+        topicConfiguration:
+          cleanup.policy:
+          - compact
+        bindingVersion: 0.5.0
+  productDocuments:
+    address: product-documents
+    title: Product documents
+    description: |
+      Consumed from the Technical Documentation Service (Product Data team). Defined here, not referenced, so this
+      file states what the Catalog API relies on. Producer contract: technical-documentation.yaml.
+    messages:
+      ProductDocumentsPublished:
+        $ref: '#/components/messages/ProductDocumentsPublished'
+        x-eventcatalog-role: client
+    tags:
+    - name: domain:Catalog
+      description: The Catalog domain of drone-web.
+    - name: subdomain:ProductDiscovery
+      description: Search, browse, evaluate and compare on the storefront.
+    - name: service:CatalogApiService
+      description: The Catalog API (read side). Its product view is internal and has no published channel.
+    - name: channel:ProductDocuments
+      description: The product-documents channel (product documents).
+    bindings:
+      kafka:
+        topic: product-documents
+        topicConfiguration:
+          cleanup.policy:
+          - compact
+        bindingVersion: 0.5.0
+  effectivePrices:
+    address: effective-prices
+    title: Effective prices
+    description: |
+      Consumed from the Pricing Service (Commercial team). Defined here, not referenced, so this
+      file states what the Catalog API relies on. Producer contract: pricing.yaml.
+    messages:
+      EffectivePriceChanged:
+        $ref: '#/components/messages/EffectivePriceChanged'
+        x-eventcatalog-role: client
+    tags:
+    - name: domain:Catalog
+      description: The Catalog domain of drone-web.
+    - name: subdomain:ProductDiscovery
+      description: Search, browse, evaluate and compare on the storefront.
+    - name: service:CatalogApiService
+      description: The Catalog API (read side). Its product view is internal and has no published channel.
+    - name: channel:EffectivePrices
+      description: The effective-prices channel (effective prices).
+    bindings:
+      kafka:
+        topic: effective-prices
+        topicConfiguration:
+          cleanup.policy:
+          - compact
+        bindingVersion: 0.5.0
+  productAvailabilities:
+    address: product-availabilities
+    title: Product availabilities
+    description: |
+      Consumed from the Inventory Service (Commercial team). Defined here, not referenced, so this
+      file states what the Catalog API relies on. Producer contract: inventory.yaml.
+    messages:
+      ProductAvailabilityChanged:
+        $ref: '#/components/messages/ProductAvailabilityChanged'
+        x-eventcatalog-role: client
+    tags:
+    - name: domain:Catalog
+      description: The Catalog domain of drone-web.
+    - name: subdomain:ProductDiscovery
+      description: Search, browse, evaluate and compare on the storefront.
+    - name: service:CatalogApiService
+      description: The Catalog API (read side). Its product view is internal and has no published channel.
+    - name: channel:ProductAvailabilities
+      description: The product-availabilities channel (product availabilities).
+    bindings:
+      kafka:
+        topic: product-availabilities
+        topicConfiguration:
+          cleanup.policy:
+          - compact
+        bindingVersion: 0.5.0
+operations:
+  receiveProductRecordChanged:
+    action: receive
+    channel:
+      $ref: '#/channels/productRecords'
+    messages:
+    - $ref: '#/channels/productRecords/messages/ProductRecordChanged'
+  receiveProductSpecificationChanged:
+    action: receive
+    channel:
+      $ref: '#/channels/productSpecifications'
+    messages:
+    - $ref: '#/channels/productSpecifications/messages/ProductSpecificationChanged'
+  receiveProductCategoriesAssigned:
+    action: receive
+    channel:
+      $ref: '#/channels/productCategoryAssignments'
+    messages:
+    - $ref: '#/channels/productCategoryAssignments/messages/ProductCategoriesAssigned'
+  receiveProductDocumentsPublished:
+    action: receive
+    channel:
+      $ref: '#/channels/productDocuments'
+    messages:
+    - $ref: '#/channels/productDocuments/messages/ProductDocumentsPublished'
+  receiveEffectivePriceChanged:
+    action: receive
+    channel:
+      $ref: '#/channels/effectivePrices'
+    messages:
+    - $ref: '#/channels/effectivePrices/messages/EffectivePriceChanged'
+  receiveProductAvailabilityChanged:
+    action: receive
+    channel:
+      $ref: '#/channels/productAvailabilities'
+    messages:
+    - $ref: '#/channels/productAvailabilities/messages/ProductAvailabilityChanged'
+components:
+  messages:
+    ProductRecordChanged:
+      name: ProductRecordChanged
+      title: ProductRecordChanged
+      summary: ProductRecordChanged as consumed here; the producer's contract is product-lifecycle.yaml.
+      description: |
+        Published event, consumed. Model: domain-specific, owned by Product Lifecycle. Headers and payload are the producer's.
+      contentType: application/json
+      x-model: domain-specific
+      headers:
+        $ref: product-lifecycle.yaml#/components/messages/ProductRecordChanged/headers
+      payload:
+        $ref: product-lifecycle.yaml#/components/schemas/ProductRecord
+    ProductSpecificationChanged:
+      name: ProductSpecificationChanged
+      title: ProductSpecificationChanged
+      summary: ProductSpecificationChanged as consumed here; the producer's contract is product-lifecycle.yaml.
+      description: |
+        Published event, consumed. Model: domain-specific, owned by Product Lifecycle. Headers and payload are the producer's.
+      contentType: application/json
+      x-model: domain-specific
+      headers:
+        $ref: product-lifecycle.yaml#/components/messages/ProductSpecificationChanged/headers
+      payload:
+        $ref: product-lifecycle.yaml#/components/schemas/ProductSpecification
+    ProductCategoriesAssigned:
+      name: ProductCategoriesAssigned
+      title: ProductCategoriesAssigned
+      summary: ProductCategoriesAssigned as consumed here; the producer's contract is category-faceting.yaml.
+      description: |
+        Published event, consumed. Model: domain-specific, owned by Category and Faceting. Headers and payload are the producer's.
+      contentType: application/json
+      x-model: domain-specific
+      headers:
+        $ref: category-faceting.yaml#/components/messages/ProductCategoriesAssigned/headers
+      payload:
+        $ref: category-faceting.yaml#/components/schemas/ProductCategories
+    ProductDocumentsPublished:
+      name: ProductDocumentsPublished
+      title: ProductDocumentsPublished
+      summary: ProductDocumentsPublished as consumed here; the producer's contract is technical-documentation.yaml.
+      description: |
+        Published event, consumed. Model: domain-specific, owned by Technical Documentation. Headers and payload are the producer's.
+      contentType: application/json
+      x-model: domain-specific
+      headers:
+        $ref: technical-documentation.yaml#/components/messages/ProductDocumentsPublished/headers
+      payload:
+        $ref: technical-documentation.yaml#/components/schemas/ProductDocuments
+    EffectivePriceChanged:
+      name: EffectivePriceChanged
+      title: EffectivePriceChanged
+      summary: EffectivePriceChanged as consumed here; the producer's contract is pricing.yaml.
+      description: |
+        Published event, consumed. Model: domain-specific, owned by Pricing and Promotions. Headers and payload are the producer's.
+      contentType: application/json
+      x-model: domain-specific
+      headers:
+        $ref: pricing.yaml#/components/messages/EffectivePriceChanged/headers
+      payload:
+        $ref: pricing.yaml#/components/schemas/EffectivePrice
+    ProductAvailabilityChanged:
+      name: ProductAvailabilityChanged
+      title: ProductAvailabilityChanged
+      summary: ProductAvailabilityChanged as consumed here; the producer's contract is inventory.yaml.
+      description: |
+        Published event, consumed. Model: domain-specific, owned by Inventory and Availability. Headers and payload are the producer's.
+      contentType: application/json
+      x-model: domain-specific
+      headers:
+        $ref: inventory.yaml#/components/messages/ProductAvailabilityChanged/headers
+      payload:
+        $ref: inventory.yaml#/components/schemas/Availability

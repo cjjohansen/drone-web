@@ -1,0 +1,125 @@
+# Compatibility Check Events: published events that the Compatibility Check consumes. Conventions: README.md.
+asyncapi: 3.0.0
+info:
+  title: Compatibility Check Events
+  version: 1.0.0
+  description: |
+    What the Compatibility Check consumes. Consumer only. It reads product specifications directly,
+    and product records for lifecycle state and replacement links.
+
+    Everything in this file is a published event on a published stream: a contract between bounded
+    contexts and a data product. Each context's internal events (on internal streams, in its own event
+    store) are private to that context and are not described here; a publisher in the owning context
+    translates them into these published events.
+
+    Transport: Kafka is the binding used here (servers and channel bindings). Channels, messages and
+    the CloudEvents attributes are meant to work on other transports too (AMQP, HTTP webhooks) through
+    their CloudEvents bindings. Messages are JSON (application/json), UTF-8 encoded. The CloudEvents
+    attributes come from the shared envelope (shared/envelope.yaml). Rules and conventions: README.md.
+  tags:
+  - name: domain:Catalog
+    description: The Catalog domain of drone-web.
+  - name: subdomain:CompatibilityVerification
+    description: Checking whether a set of components works together. The core differentiator.
+  - name: service:CompatibilityCheckService
+    description: The Compatibility Check (read side of the Compatibility context).
+  - name: channel:ProductSpecifications
+    description: The product-specifications channel (product specifications).
+  - name: channel:ProductRecords
+    description: The product-records channel (product records).
+defaultContentType: application/json
+servers:
+  production:
+    $ref: shared/kafka-servers.yaml#/components/servers/production
+channels:
+  productSpecifications:
+    address: product-specifications
+    title: Product specifications
+    description: |
+      Consumed from the Product Lifecycle Service (Product Data team). Defined here, not referenced, so this
+      file states what the Compatibility Check relies on. Producer contract: product-lifecycle.yaml.
+    messages:
+      ProductSpecificationChanged:
+        $ref: '#/components/messages/ProductSpecificationChanged'
+        x-eventcatalog-role: client
+    tags:
+    - name: domain:Catalog
+      description: The Catalog domain of drone-web.
+    - name: subdomain:CompatibilityVerification
+      description: Checking whether a set of components works together. The core differentiator.
+    - name: service:CompatibilityCheckService
+      description: The Compatibility Check (read side of the Compatibility context).
+    - name: channel:ProductSpecifications
+      description: The product-specifications channel (product specifications).
+    bindings:
+      kafka:
+        topic: product-specifications
+        topicConfiguration:
+          cleanup.policy:
+          - compact
+        bindingVersion: 0.5.0
+  productRecords:
+    address: product-records
+    title: Product records
+    description: |
+      Consumed from the Product Lifecycle Service (Product Data team). Defined here, not referenced, so this
+      file states what the Compatibility Check relies on. Producer contract: product-lifecycle.yaml.
+    messages:
+      ProductRecordChanged:
+        $ref: '#/components/messages/ProductRecordChanged'
+        x-eventcatalog-role: client
+    tags:
+    - name: domain:Catalog
+      description: The Catalog domain of drone-web.
+    - name: subdomain:CompatibilityVerification
+      description: Checking whether a set of components works together. The core differentiator.
+    - name: service:CompatibilityCheckService
+      description: The Compatibility Check (read side of the Compatibility context).
+    - name: channel:ProductRecords
+      description: The product-records channel (product records).
+    bindings:
+      kafka:
+        topic: product-records
+        topicConfiguration:
+          cleanup.policy:
+          - compact
+        bindingVersion: 0.5.0
+operations:
+  receiveProductSpecificationChanged:
+    action: receive
+    channel:
+      $ref: '#/channels/productSpecifications'
+    messages:
+    - $ref: '#/channels/productSpecifications/messages/ProductSpecificationChanged'
+  receiveProductRecordChanged:
+    action: receive
+    channel:
+      $ref: '#/channels/productRecords'
+    messages:
+    - $ref: '#/channels/productRecords/messages/ProductRecordChanged'
+components:
+  messages:
+    ProductSpecificationChanged:
+      name: ProductSpecificationChanged
+      title: ProductSpecificationChanged
+      summary: ProductSpecificationChanged as consumed here; the producer's contract is product-lifecycle.yaml.
+      description: |
+        Published event, consumed. Model: domain-specific, owned by Product Lifecycle. Headers and payload are the producer's.
+      contentType: application/json
+      x-model: domain-specific
+      headers:
+        $ref: product-lifecycle.yaml#/components/messages/ProductSpecificationChanged/headers
+      payload:
+        $ref: product-lifecycle.yaml#/components/schemas/ProductSpecification
+    ProductRecordChanged:
+      name: ProductRecordChanged
+      title: ProductRecordChanged
+      summary: ProductRecordChanged as consumed here; the producer's contract is product-lifecycle.yaml.
+      description: |
+        Published event, consumed. Model: domain-specific, owned by Product Lifecycle. Headers and payload are the producer's.
+      contentType: application/json
+      x-model: domain-specific
+      headers:
+        $ref: product-lifecycle.yaml#/components/messages/ProductRecordChanged/headers
+      payload:
+        $ref: product-lifecycle.yaml#/components/schemas/ProductRecord

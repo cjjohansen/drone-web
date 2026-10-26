@@ -1,0 +1,122 @@
+# Technical Documentation Events: published events of the Technical Documentation Service. Conventions: README.md.
+asyncapi: 3.0.0
+info:
+  title: Technical Documentation Events
+  version: 1.0.0
+  description: |
+    What the Technical Documentation Service publishes: each product's currently published documents.
+
+    Everything in this file is a published event on a published stream: a contract between bounded
+    contexts and a data product. Each context's internal events (on internal streams, in its own event
+    store) are private to that context and are not described here; a publisher in the owning context
+    translates them into these published events.
+
+    Transport: Kafka is the binding used here (servers and channel bindings). Channels, messages and
+    the CloudEvents attributes are meant to work on other transports too (AMQP, HTTP webhooks) through
+    their CloudEvents bindings. Messages are JSON (application/json), UTF-8 encoded. The CloudEvents
+    attributes come from the shared envelope (shared/envelope.yaml). Rules and conventions: README.md.
+  tags:
+  - name: domain:Catalog
+    description: The Catalog domain of drone-web.
+  - name: subdomain:TechnicalDocumentation
+    description: Datasheets, manuals, certificates and drawings, with version chains.
+  - name: service:TechnicalDocumentationService
+    description: Technical Documentation Service, in the Product Data bounded context.
+  - name: channel:ProductDocuments
+    description: The product-documents channel (product documents).
+defaultContentType: application/json
+servers:
+  production:
+    $ref: shared/kafka-servers.yaml#/components/servers/production
+channels:
+  productDocuments:
+    address: product-documents
+    title: Product documents
+    description: |
+      Technical Documentation (Product Data team). The product's currently published document versions.
+      Consumed by the Catalog API; see their AsyncAPI files.
+    messages:
+      ProductDocumentsPublished:
+        $ref: '#/components/messages/ProductDocumentsPublished'
+    tags:
+    - name: domain:Catalog
+      description: The Catalog domain of drone-web.
+    - name: subdomain:TechnicalDocumentation
+      description: Datasheets, manuals, certificates and drawings, with version chains.
+    - name: service:TechnicalDocumentationService
+      description: Technical Documentation Service, in the Product Data bounded context.
+    - name: channel:ProductDocuments
+      description: The product-documents channel (product documents).
+    bindings:
+      kafka:
+        topic: product-documents
+        topicConfiguration:
+          cleanup.policy:
+          - compact
+        bindingVersion: 0.5.0
+    x-data-product:
+      owner: Product Data
+      context: Technical Documentation
+      kind: source-aligned
+      type: supporting
+operations:
+  sendProductDocumentsPublished:
+    action: send
+    channel:
+      $ref: '#/channels/productDocuments'
+    messages:
+    - $ref: '#/channels/productDocuments/messages/ProductDocumentsPublished'
+components:
+  messages:
+    ProductDocumentsPublished:
+      name: ProductDocumentsPublished
+      title: ProductDocumentsPublished
+      summary: Current product documents state for one product, keyed by productId.
+      description: |
+        Published event. Model: domain-specific, owned by Technical Documentation. Headers use the canonical shared envelope.
+      contentType: application/json
+      x-model: domain-specific
+      traits:
+      - $ref: shared/envelope.yaml#/components/messageTraits/DroneWebEvent
+      headers:
+        allOf:
+        - $ref: shared/envelope.yaml#/components/schemas/CloudEventHeaders
+        - type: object
+          properties:
+            ce_type:
+              const: tech.drone-web.catalog.technical-documentation.v1.ProductDocumentsPublished
+            ce_dataschema:
+              const: https://schemas.drone-web.tech/catalog/technical-documentation/v1/ProductDocumentsPublished.json
+      payload:
+        $ref: '#/components/schemas/ProductDocuments'
+  schemas:
+    ProductDocuments:
+      type: object
+      required:
+      - documents
+      properties:
+        documents:
+          type: array
+          items:
+            type: object
+            required:
+            - documentId
+            - version
+            - kind
+            - href
+            properties:
+              documentId:
+                type: string
+                format: uuid
+              version:
+                type: integer
+              kind:
+                type: string
+                enum:
+                - datasheet
+                - manual
+                - certificate
+                - drawing
+              href:
+                type: string
+                format: uri

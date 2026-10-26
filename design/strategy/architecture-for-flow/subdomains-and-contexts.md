@@ -19,7 +19,7 @@ commodity and are bought or outsourced. Where the repo's typing and the map disa
 | --- | --- | --- | --- | --- | --- |
 | Compatibility Verification (storefront JS4) | read | **Core** (proposed; the Event Storming calls the check "the key differentiator of the platform") | Verify a build | Genesis | Build, invest most |
 | Compatibility Rules Management (management JS6) | write | Core | Compatibility rules | Genesis | Build, together with the check |
-| Product Lifecycle Management (management JS1) | write | Core | Product data hub | Custom built, moving to product | Split: buy the hub, build the spec model the compatibility rules read |
+| Product Lifecycle Management (management JS1) | write | Supporting, with a **Core** spec model | Product data hub | Custom built, moving to product | Split: buy the hub (or build it thin) behind an ACL; build the spec model the compatibility rules read, which stays in Product Data |
 | Pricing and Promotions Management (management JS3) | write | Core | Pricing | Product | **Tension**: typed Core, but price books with effective dates and volume tiers are a product-stage capability |
 | Inventory and Availability Management (management JS4) | write | Core | Inventory | Product | **Tension**: typed Core, but stock and lead times are fed by the ERP |
 | Technical Documentation Management (management JS2) | write | Supporting | (inside Product data hub) | Product | Buy or keep thin |
@@ -35,8 +35,9 @@ Two things stand out.
    prices, stock) sits in product. What a buyer cannot get elsewhere is the answer to "will these parts work
    together?" (voltage, current, physical fit, protocol, weight and thrust). That is where the investment
    belongs.
-2. **Four Core types is a lot.** The v2 run typed Product Lifecycle, Pricing, Inventory and Compatibility Rules
-   as Core. If Pricing and Inventory really differentiate the shop (for example through fleet volume tiers and
+2. **Four Core types was a lot.** The v2 run typed Product Lifecycle, Pricing, Inventory and Compatibility Rules
+   as Core. Product Lifecycle is now Supporting with a Core spec model (the product event contracts decision in [`.ralph/agent/decisions.md`](../../../.ralph/agent/decisions.md)): records and lifecycle states are
+   what every shop has, while the spec model is what compatibility depends on. If Pricing and Inventory really differentiate the shop (for example through fleet volume tiers and
    guaranteed lead times for the Fleet Procurement Buyer), they belong further left on the map. If not, they
    are supporting. This is a decision for the business, not for this example.
 
@@ -67,6 +68,11 @@ Why Product Data groups three write APIs: product records, documents and categor
 Documentation Steward, Taxonomy Manager) and the same job: getting a product ready for the storefront. Whether
 they stay one context or become three is a later call.
 
+Product Data's role is identity and master data: what a product is (id, SKU, brand, attributes, specs) and
+where it is in its life (draft, active, discontinued, replaced by). It sits on the management (write) side. It
+is not an overview context: it does not gather price, stock, documents or categories. That overview lives with
+each consumer, or later in a shared Product View once two consumers need the same rule.
+
 ## Context map
 
 ```mermaid
@@ -84,12 +90,13 @@ flowchart TB
     CC["Compatibility<br/>(check)"]
     PC["Partner Catalog"]
   end
-  ERP[("ERP<br/>(external)")]
-  PL{{"Published language:<br/>catalog integration events<br/>(AsyncAPI)"}}
+  ERP[("ERP<br/>(upstream)")]
+  PL{{"Published language:<br/>product fact streams<br/>(design/contracts)"}}
 
   PD -- "OHS" --> PL
   PR -- "OHS" --> PL
   INV -- "OHS" --> PL
+  ING -- "OHS: product-imports" --> PL
   PL -- "conformist" --> CAT
   PL -- "ACL: specs to component attributes" --> CC
   PL -- "ACL: partner projection" --> PC
@@ -104,9 +111,11 @@ flowchart TB
 
 How to read the relationships:
 
-- **Open host service and published language.** The write-side contexts publish integration events, and
-  the AsyncAPI files are the published language (D-008). No read side calls a write side synchronously
-  (storefront `boundaries.md`, section C; v2 `boundaries.md`, section C).
+- **Open host service and published language.** Each owning context publishes one stream of facts about its
+  own part of a product, and the contracts in [`design/contracts/`](../../contracts/) are the published
+  language (D-008). These are published events, translated from each context's internal events, which
+  never leave the context. They carry the owner's current state, not identifiers only. No read side calls a write
+  side synchronously (storefront `boundaries.md`, section C; v2 `boundaries.md`, section C).
 - **Conformist.** The Catalog takes the published product, category, price and availability facts as they
   are; its job is to make them searchable, not to reinterpret them.
 - **Anticorruption layer.** Partner Catalog translates catalog products into a simplified partner projection
@@ -114,11 +123,12 @@ How to read the relationships:
   into the component attributes its rules evaluate (voltage range, current rating, mounting, protocol).
 - **Customer / supplier with Governance.** Pricing, Compatibility Rules and Product Lifecycle submit high-risk
   changes for approval (`SubmitPricingChangeForApproval`, `SubmitRuleChangeForApproval`) and react to
-  `governance.decision-recorded`.
+  `governance.decision-recorded`. Approval happens before the owner publishes, so consumers only ever see
+  approved facts.
 - **Ingestion conforms to Product Data.** Bulk Ingestion dispatches `ApplyImportedProductRecord`, so it speaks
-  Product Data's language; any translation from external files or the ERP happens inside Ingestion.
+  Product Data's language; any translation from upstream files or the ERP happens inside Ingestion.
 - **The ERP** is not designed anywhere in the repo. It appears in the JTBD interviews as the core ERP that
-  product and stock data come from; treat it as an external upstream behind an anticorruption layer.
+  product and stock data come from; treat it as an upstream system behind an anticorruption layer.
 
 ## A gap the context map exposes
 
@@ -135,3 +145,8 @@ projections. Either the write side publishes facts (event-carried state), or som
 `catalog.*` snapshot from the v2 events, and that something needs an owner. There is also no v2 event for a
 single price change or a specification update, which the storefront's Compatibility and Partner contexts both
 consume. The next file, [team-design.md](team-design.md), shows why one team never noticed.
+
+The answer is now in [`design/contracts/`](../../contracts/): the write side publishes facts. Each owner
+publishes a source-aligned stream (`product-records`, `product-specifications`, `effective-prices`,
+`product-availabilities`, and others), each consumer builds its own join, and the partner feed is a join that
+the Partner Catalog owns. For consumers these streams supersede the identifier-only v2 events.
