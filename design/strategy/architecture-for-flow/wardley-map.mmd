@@ -23,13 +23,14 @@ component "Product catalog" [0.70, 0.40]
 component "Compatibility rules" [0.68, 0.20] (build)
 component "Search index" [0.58, 0.80] (buy)
 component "Integration events" [0.52, 0.42]
-component "Product data hub" [0.36, 0.30]
+component "Spec model" [0.40, 0.30] (build)
+component "Product data hub" [0.25, 0.58] (buy)
 component "Pricing" [0.44, 0.62]
-component "Inventory" [0.30, 0.72]
-component "Governance" [0.12, 0.56] (buy)
+component "Inventory" [0.32, 0.74]
+component "Governance" [0.10, 0.54] (buy)
 component "Bulk ingestion" [0.20, 0.28]
-component "ERP" [0.04, 0.66] (buy)
-component "Event broker" [0.06, 0.86] (buy)
+component "ERP" [0.04, 0.71] (buy)
+component "Event broker" [0.08, 0.95] (buy)
 
 "Buyer" -> "Find a part"
 "Buyer" -> "Verify a build"
@@ -44,20 +45,26 @@ component "Event broker" [0.06, 0.86] (buy)
 "Compatibility rules" -> "Integration events"
 "Compatibility rules" -> "Governance"
 
+"Integration events" -> "Spec model"
 "Integration events" -> "Product data hub"
 "Integration events" -> "Pricing"
 "Integration events" -> "Inventory"
 "Integration events" -> "Event broker"
 
+"Spec model" -> "Product data hub"
 "Product data hub" -> "Bulk ingestion"
 "Product data hub" -> "Governance"
 "Pricing" -> "Governance"
 "Inventory" -> "ERP"
 "Bulk ingestion" -> "ERP"
 
-%% Product master data management is a product-stage market (PIM tools). What makes the shop
-%% different is the spec data the compatibility rules read, not the tool that stores it.
-evolve "Product data hub" 0.52
+%% Product Lifecycle is Supporting, with a Core spec model (D-037, product event contracts, in
+%% .ralph/agent/decisions.md). Its two parts sit at different stages, so the map shows them apart.
+%% Product data hub: product records, lifecycle states and replacement links. Product master data
+%% management is a product-stage market (PIM tools): buy the hub, or build it thin, behind an ACL.
+%% Spec model: the specs the compatibility rules read (voltage, current, mounting, protocol). It is
+%% the shop's own, so it is custom built. It stays in Product Data; it does not move to Compatibility.
+%% The spec model needs the hub: specs describe a product that the hub identifies.
 %% Bulk ingestion (Supporting): batch validation, retry and replay are well understood; build it
 %% once as a shared, self-service capability rather than per team.
 evolve "Bulk ingestion" 0.50
@@ -73,10 +80,18 @@ evolve "Bulk ingestion" 0.50
 %% Who needs Integration events? The three read-side contexts (Catalog, Compatibility, Partner
 %% Catalog) build their own projections from them; no synchronous cross-boundary calls (D-005).
 %% If Integration events stopped, all three read sides go stale: hence the three links into it.
+%% Compatibility rules reach the spec model through the published spec stream (an ACL turns specs
+%% into component attributes), never by a direct call: so that link runs through Integration events.
+%% Integration events also need the hub directly, not only through the spec model: the Catalog and
+%% the partner feed read the product record stream (identity, lifecycle state), which the hub owns.
+%% direct-need "Integration events" "Product data hub"
 %% Integration events is a hub: links leave it in every direction.
 %% allow-crossing "Integration events"
 %% The Buyer link arrives from the left, so the label goes right.
 %% label-side "Find a part" right
+%% Event broker sits at the right edge, and links reach Governance from both sides: labels go below.
+%% label-side "Event broker" below
+%% label-side "Governance" below
 %% Catalog feed needs only the events, never the Catalog API (D-015): no link to Product catalog.
 %% Compatibility rules need Governance: rule changes go through approval before external
 %% visibility (SubmitRuleChangeForApproval in the boundary map).
