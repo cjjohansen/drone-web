@@ -6,11 +6,14 @@ component "Verify a build" [0.84, 0.28]
 component "Find parts" [0.84, 0.62]
 component "Buy parts" [0.84, 0.82]
 component "Compatibility rules" [0.66, 0.18] (build)
-component "Search" [0.66, 0.70] (buy)
-component "Product data" [0.52, 0.38] (build)
+component "Search" [0.66, 0.62] (buy)
+component "Spec model" [0.56, 0.30] (build)
+component "Product data hub" [0.46, 0.56] (buy)
+component "Inventory" [0.54, 0.74]
+component "ERP" [0.38, 0.74] (buy)
 component "Payment" [0.62, 0.90] (outsource)
-component "Approval workflow" [0.36, 0.56] (buy)
-component "Event broker" [0.26, 0.80] (outsource)
+component "Approval workflow" [0.30, 0.56] (buy)
+component "Event broker" [0.22, 0.80] (outsource)
 component "Cloud hosting" [0.08, 0.93] (outsource)
 
 "Integrator" -> "Verify a build"
@@ -19,11 +22,14 @@ component "Cloud hosting" [0.08, 0.93] (outsource)
 "Verify a build" -> "Compatibility rules"
 "Find parts" -> "Search"
 "Buy parts" -> "Payment"
-"Buy parts" -> "Product data"
-"Compatibility rules" -> "Product data"
-"Search" -> "Product data"
-"Product data" -> "Approval workflow"
-"Product data" -> "Event broker"
+"Buy parts" -> "Product data hub"
+"Buy parts" -> "Inventory"
+"Compatibility rules" -> "Spec model"
+"Search" -> "Product data hub"
+"Spec model" -> "Product data hub"
+"Inventory" -> "ERP"
+"Product data hub" -> "Approval workflow"
+"Product data hub" -> "Event broker"
 "Approval workflow" -> "Cloud hosting"
 "Event broker" -> "Cloud hosting"
 
@@ -35,9 +41,20 @@ component "Cloud hosting" [0.08, 0.93] (outsource)
 %% the map readable: the build/buy point does not depend on it.
 %% Payment is rented as a service: the provider runs it, so the map stops there.
 %% leaf "Payment"
-%% Product data: Product Lifecycle Management, the one source of truth, publishes events.
+%% Product Lifecycle Management, the one source of truth for product data, is Supporting with a
+%% Core spec model (D-037 in .ralph/agent/decisions.md). So it shows as two components:
+%% Spec model: the specs the compatibility rules read (voltage, current, mounting, protocol).
+%% It is the shop's own, so it is built (P1, P7). Its stream, product-specifications, is the
+%% Core contract.
+%% Product data hub: product records, lifecycle states and replacement links. Every shop has
+%% them, so buy a product information system behind an ACL, or build the hub thin (P1).
+%% The spec model needs the hub: specs describe a product that the hub identifies.
+%% Inventory: built thin (P1), so it has no build or buy mark. Stock counts come from the ERP
+%% (P1, diagnosis point 7). The ERP is the system of record the business already uses; it is
+%% bought, not designed here, so the map stops there.
+%% leaf "ERP"
 %% Approval workflow: Catalog Governance Workflow, the one boundary typed Generic.
 note "Build left of centre, buy or rent right of it" [0.04, 0.04]
-%% label-side "Cloud hosting" left
-%% label-side "Product data" left
+%% label-side "Cloud hosting" below
+%% label-side "Product data hub" right
 %% label-side "Approval workflow" left
