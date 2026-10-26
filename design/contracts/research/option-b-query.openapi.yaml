@@ -1,0 +1,153 @@
+# Research draft (option B, query API), kept as a record. Not a contract.
+# Option D was chosen (D-037 in .ralph/agent/decisions.md); its published contracts are in
+# design/contracts/, where the channels were renamed. See design/contracts/README.md.
+openapi: 3.1.0
+info:
+  title: Product Query API (Option B callback)
+  version: 0.1.0
+  description: |
+    Read endpoints the storefront projectors (Catalog, Compatibility, Partner Catalog) call after
+    receiving a thin event from option-b.yaml. Owned by the write-side boundaries that own the facts.
+    Called asynchronously from projectors, never while serving a buyer request.
+  license:
+    name: Proprietary
+    url: https://api.droneweb.internal/terms
+servers:
+  - url: https://api.droneweb.internal
+security:
+  - serviceToken: []
+paths:
+  /product-lifecycle/v1/products/{productId}:
+    get:
+      operationId: getProduct
+      summary: Current (or a specific) version of a product record
+      tags: [ProductLifecycle]
+      parameters:
+        - $ref: '#/components/parameters/productId'
+        - name: version
+          in: query
+          required: false
+          description: Version from the event. If given and older than current, the current version is returned (409 is not used).
+          schema: { type: integer, minimum: 1 }
+        - name: If-None-Match
+          in: header
+          required: false
+          description: ETag of the copy the consumer already holds.
+          schema: { type: string }
+      responses:
+        '200':
+          description: Product record
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+            Product-Version: { $ref: '#/components/headers/ResourceVersion' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProductRecord' }
+        '304':
+          description: Consumer already holds this version
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /pricing-promotions/v1/price-book-entries/{productId}:
+    get:
+      operationId: getPriceBookEntry
+      summary: Current price book entry for a product
+      tags: [PricingPromotions]
+      parameters:
+        - $ref: '#/components/parameters/productId'
+      responses:
+        '200':
+          description: Price book entry
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PriceBookEntry' }
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /inventory-availability/v1/availability/{productId}:
+    get:
+      operationId: getProductAvailability
+      summary: Current availability for a product, summed over inventory positions
+      tags: [InventoryAvailability]
+      parameters:
+        - $ref: '#/components/parameters/productId'
+      responses:
+        '200':
+          description: Availability
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProductAvailability' }
+        '404':
+          $ref: '#/components/responses/NotFound'
+components:
+  securitySchemes:
+    serviceToken:
+      type: http
+      scheme: bearer
+      description: Service-to-service token for storefront projectors.
+  parameters:
+    productId:
+      name: productId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+  headers:
+    ETag:
+      description: Opaque entity tag; equals W/"<version>".
+      schema: { type: string }
+    ResourceVersion:
+      description: Integer version, same value as `version` in the thin event.
+      schema: { type: integer }
+  responses:
+    NotFound:
+      description: Unknown product
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/ProblemDetails' }
+  schemas:
+    ProductRecord:
+      type: object
+      required: [productId, version, sku, name, brand, lifecycleState, specifications, categories]
+      properties:
+        productId: { type: string, format: uuid }
+        version: { type: integer }
+        sku: { type: string }
+        name: { type: string }
+        brand: { type: string }
+        lifecycleState: { type: string, enum: [draft, active, discontinued] }
+        replacementProductId: { type: [string, 'null'], format: uuid }
+        specifications: { type: object, additionalProperties: true }
+        categories: { type: array, items: { type: string } }
+        updatedDate: { type: string, format: date-time }
+    PriceBookEntry:
+      type: object
+      required: [productId, version, basePrice, currency]
+      properties:
+        productId: { type: string, format: uuid }
+        version: { type: integer }
+        basePrice: { type: number }
+        currency: { type: string }
+        tiers:
+          type: array
+          items:
+            type: object
+            required: [minQuantity, price]
+            properties: { minQuantity: { type: integer, minimum: 1 }, price: { type: number } }
+    ProductAvailability:
+      type: object
+      required: [productId, version, status, quantityAvailable]
+      properties:
+        productId: { type: string, format: uuid }
+        version: { type: integer }
+        status: { type: string, enum: [in-stock, backorder, suspended] }
+        quantityAvailable: { type: integer }
+        expectedRestockDate: { type: [string, 'null'], format: date-time }
+    ProblemDetails:
+      type: object
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }

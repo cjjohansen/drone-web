@@ -1,0 +1,79 @@
+# Research draft (option A), kept as a record. Not a contract.
+# Option D was chosen (D-037 in .ralph/agent/decisions.md); its published contracts are in
+# design/contracts/, where the channels were renamed. See design/contracts/README.md.
+asyncapi: 3.0.0
+info:
+  title: Product Data Catalog Facts (Option A - event-carried state transfer)
+  version: 0.1.0
+  description: |
+    Product Lifecycle Management publishes the full catalog product as a fact event every time
+    any part of it changes. Consumers (Catalog API, Compatibility API, Partner Catalog API) keep a
+    local copy by replacing it with the latest snapshot (LRN-006, P3). To include price and stock,
+    Product Lifecycle consumes Pricing and Inventory events and re-publishes the snapshot.
+servers:
+  production: { host: 'kafka.example.com:9092', protocol: kafka }
+channels:
+  catalogProductPublished:
+    address: catalog.product.published
+    description: First snapshot, sent when the product reaches lifecycleState=active. Key = productId.
+    messages: { ProductPublished: { $ref: '#/components/messages/ProductSnapshot' } }
+  catalogProductUpdated:
+    address: catalog.product.updated
+    description: |
+      New snapshot after updateProductSpecifications, updateProductAttributes, setProductLifecycleState
+      (incl. discontinued), or after a price/stock change from Pricing or Inventory. Compacted topic.
+    messages: { ProductUpdated: { $ref: '#/components/messages/ProductSnapshot' } }
+operations:
+  publishProductPublished:
+    action: send
+    channel: { $ref: '#/channels/catalogProductPublished' }
+  publishProductUpdated:
+    action: send
+    channel: { $ref: '#/channels/catalogProductUpdated' }
+components:
+  messages:
+    ProductSnapshot:
+      contentType: application/json
+      payload: { $ref: '#/components/schemas/ProductSnapshotEvent' }
+  schemas:
+    ProductSnapshotEvent:
+      type: object
+      required: [eventId, eventType, occurredAt, source, productVersion, data]
+      properties:
+        eventId: { type: string, format: uuid }
+        eventType: { type: string, enum: [catalog.product.published, catalog.product.updated] }
+        occurredAt: { type: string, format: date-time }
+        source: { type: string, const: product-lifecycle }
+        productVersion:
+          type: integer
+          description: Increases on every change; consumers drop snapshots older than the one they hold.
+        changedSections:
+          type: array
+          items: { type: string, enum: [attributes, specifications, lifecycle, categories, pricing, availability] }
+        data:
+          type: object
+          required: [productId, sku, name, brand, lifecycleState, specifications, categories, pricing, availability]
+          properties:
+            productId: { type: string, format: uuid }
+            sku: { type: string }
+            name: { type: string }
+            brand: { type: string }
+            lifecycleState: { type: string, enum: [draft, active, discontinued] }
+            replacementProductId: { type: [string, 'null'], format: uuid }
+            specifications: { type: object, additionalProperties: true }
+            categories: { type: array, items: { type: string } }
+            pricing:
+              type: object
+              description: Copied from Pricing (PriceBookEntry); Pricing remains the owner.
+              properties:
+                basePrice: { type: number }
+                currency: { type: string }
+                tiers:
+                  type: array
+                  items: { type: object, properties: { minQuantity: { type: integer }, price: { type: number } } }
+            availability:
+              type: object
+              description: Copied from Inventory (InventoryPosition); Inventory remains the owner.
+              properties:
+                status: { type: string, enum: [in-stock, backorder, suspended] }
+                quantityAvailable: { type: integer }

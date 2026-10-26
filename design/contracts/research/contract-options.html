@@ -1,0 +1,289 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>drone-web Product Contract Options</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one reading column; the clash as two facing panels; options as tabs, each with flow, trade-offs and the contract files. Palette: grey page, white or black cards, sand accent. */
+:root{
+  --page:#e4e2dd; --card:#ffffff; --ink:#16171a; --muted:#5b5d63; --line:#cfccc4;
+  --sand:#9a7a3f; --sand-soft:#efe6d3; --code-bg:#f4f2ed; --good:#2f7a4f; --bad:#a3413a;
+  --display:"Manrope",system-ui,sans-serif; --text:"Manrope",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --page:#2a2b2e; --card:#111214; --ink:#f3f1ec; --muted:#b4b2ac; --line:#3a3b3f;
+  --sand:#d4b67a; --sand-soft:#2e2819; --code-bg:#1a1b1e; --good:#7cc79a; --bad:#e58a82; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --page:#2a2b2e; --card:#111214; --ink:#f3f1ec; --muted:#b4b2ac; --line:#3a3b3f;
+  --sand:#d4b67a; --sand-soft:#2e2819; --code-bg:#1a1b1e; --good:#7cc79a; --bad:#e58a82; color-scheme:dark}
+body{background:var(--page);color:var(--ink);font:16px/1.6 var(--text)}
+.wrap{max-width:980px;margin:0 auto;padding-block:40px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:28px}
+.label{font:600 12px/1.2 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--sand)}
+h1{font:800 clamp(28px,5vw,42px)/1.1 var(--display);margin:6px 0 10px;text-wrap:balance}
+h2{font:700 22px/1.25 var(--display);margin:0 0 10px;text-wrap:balance}
+h3{font:700 16px/1.3 var(--display);margin:0 0 6px}
+p{margin:0;max-width:68ch}
+.lede{color:var(--muted);font-size:17px}
+.card{background:var(--card);border-radius:6px;padding:24px;display:grid;gap:14px;min-width:0}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:16px}
+.pair>div{min-width:0;display:grid;gap:8px;align-content:start}
+code,.mono{font-family:var(--mono);font-size:13px}
+ul{margin:0;padding-left:20px;display:grid;gap:4px}
+.gap{border-left:3px solid var(--bad);padding-left:12px;display:grid;gap:6px}
+.tabs{display:flex;flex-wrap:wrap;gap:8px}
+.tabs button{font:600 14px var(--text);padding:10px 16px;border-radius:4px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.tabs button:focus-visible,.files button:focus-visible,.copy:focus-visible{outline:2px solid var(--sand);outline-offset:2px}
+.pill{display:inline-block;font:600 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:5px 8px;border-radius:3px;background:var(--sand-soft);color:var(--sand)}
+.pc{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px}
+.pc h3.pro{color:var(--good)} .pc h3.con{color:var(--bad)}
+.flow{background:var(--code-bg);border-radius:4px;padding:12px;overflow-x:auto}
+.files{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.files button{font:600 12px var(--mono);padding:7px 10px;border-radius:3px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer}
+.files button[aria-pressed="true"]{border-color:var(--sand);color:var(--sand);background:var(--sand-soft)}
+.copy{margin-left:auto;font:600 12px var(--text);padding:7px 12px;border-radius:3px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+pre.yaml{margin:0;background:var(--code-bg);border-radius:4px;padding:16px;overflow:auto;max-height:520px;font:12.5px/1.55 var(--mono);color:var(--ink);tab-size:2}
+.k{color:var(--sand)} .c{color:var(--muted)}
+.rec{border:2px solid var(--sand)}
+ol.q{margin:0;padding-left:22px;display:grid;gap:10px}
+.src{color:var(--muted);font-size:14px}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:640px}
+th,td{text-align:left;vertical-align:top;padding:8px 10px;border-bottom:1px solid var(--line)}
+th{font:600 12px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+td.src{font-family:var(--mono);font-size:12px}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="label">drone-web · contract options (research, closed)</div>
+    <h1>Who tells the storefront about a product?</h1>
+    <p class="lede"><strong>Historical record.</strong> This page compared the options before the published contracts were chosen. Option D was chosen (D-037 in <code>.ralph/agent/decisions.md</code>) and now lives in <code>design/contracts/</code>, where the channels were renamed (for example <code>product-specifications</code>, <code>effective-prices</code>, <code>product-availabilities</code>). The channel names below are the ones the research used.</p>
+    <p class="lede">The storefront was designed to read full product snapshots. The write side (catalog-management-v2) sends only IDs, and nothing sends a price or spec change. Before anything on the read side can be built, we need one contract. Below are three options, each as AsyncAPI 3.0, plus OpenAPI 3.1 where a call is synchronous.</p>
+  </header>
+
+  <section class="card">
+    <h2>The clash</h2>
+    <div class="pair">
+      <div>
+        <div class="label">Storefront expects</div>
+        <p class="mono">design/catalog-storefront/addr/refine/integration-events.yaml</p>
+        <ul>
+          <li><code>catalog.product.created</code>, <code>.updated</code>: the full product state (name, brand, sku, status, specifications, categories, pricing, availability)</li>
+          <li><code>catalog.product.price-changed</code>, <code>.availability-changed</code>, <code>.discontinued</code></li>
+          <li>Consumers: Compatibility API, Partner Catalog</li>
+        </ul>
+      </div>
+      <div>
+        <div class="label">Write side sends</div>
+        <p class="mono">design/catalog-management-v2/addr/refine/integration-events.yaml</p>
+        <ul>
+          <li><code>product.created {productId}</code></li>
+          <li><code>product.lifecycle-state-changed {productId, lifecycleState}</code></li>
+          <li><code>price.group-repricing-requested {repricingJobId}</code></li>
+          <li><code>inventory.quantity-updated {inventoryId, productId}</code></li>
+        </ul>
+      </div>
+    </div>
+    <div class="gap">
+      <h3>What's missing</h3>
+      <ul>
+        <li>No event for a spec change or a single price change, although the APIs have <code>updateProductSpecifications</code> and <code>setBasePrice</code>.</li>
+        <li><code>boundary-map.md</code> lists <code>ProductSpecificationUpdated</code> and <code>ProductActivated</code>, but the AsyncAPI file doesn't have them.</li>
+        <li>The envelopes differ: <code>timestamp</code> vs <code>occurredAt</code>. Event naming (OQ-007) is still open.</li>
+        <li>Two places claim to own product facts: the storefront's Catalog API ("owns product data") and Product Lifecycle (the strategy's P2: "the only writer of product facts").</li>
+      </ul>
+    </div>
+    <p class="src">What the merged strategy says: P2 says one writer per fact. P3 says cross-boundary events carry the full state, so consumers don't call back (LRN-006), and there are no synchronous calls between boundaries while handling a request. #14 adds: "something assembles the snapshot, and that something needs an owner."</p>
+  </section>
+
+<section class="card">
+  <p class="label">Data mesh lens</p>
+  <h2>Who produces product data, who joins it, and who reads what</h2>
+  <p>Dehghani (<em>Data Mesh</em>, 2022, ch. 4 "Domain Data Archetypes") describes three kinds of data product: <span class="pill">source-aligned</span> (facts from the system that produces them), <span class="pill">aggregate</span> (combines several upstream domains) and <span class="pill">consumer-aligned</span> (reshaped for a specific use). Bellemare (2023, ch. 2) applies them to event streams and advises using consumer-aligned products sparingly.</p>
+  <p class="src">The wording is paraphrased; check it against the book. Watch out: Bellemare uses "aggregate" for sums (hourly sales per store), while Dehghani uses it for a join across domains. This page uses Dehghani's sense.</p>
+
+  <h3>Contexts and their data products</h3>
+  <div style="overflow-x:auto"><table>
+    <tr><th>Context</th><th>Owns / produces</th><th>Kind</th><th>Evidence</th></tr>
+    <tr><td>Core ERP, supplier files</td><td>Where product records and stock start</td><td>External source</td><td class="src">subdomains-and-contexts.md:87,120; activity-steps.md:13</td></tr>
+    <tr><td>Ingestion</td><td>ImportBatch; dispatches ApplyImportedProductRecord</td><td>Pipeline, not a product</td><td class="src">boundary-map.md:16,29</td></tr>
+    <tr><td>Product Lifecycle</td><td>Identity, attributes, specs, lifecycle</td><td>Source-aligned (curated)</td><td class="src">boundary-map.md:9,33; strategy.md:68</td></tr>
+    <tr><td>Documentation, Category, Pricing, Inventory</td><td>Documents; categories and product assignment; price book; stock and lead time</td><td>Source-aligned</td><td class="src">boundary-map.md:10-13,34-37</td></tr>
+    <tr><td>Compatibility Rules</td><td>Rules, component groups</td><td>Source-aligned (not product facts)</td><td class="src">boundary-map.md:14,38</td></tr>
+    <tr><td>Governance</td><td>Approval decisions</td><td>Gate, not a product</td><td class="src">boundary-map.md:15,39</td></tr>
+    <tr><td>Catalog (with search)</td><td>Product read model; Reviews</td><td>Consumer-aligned (+ source-aligned Reviews)</td><td class="src">storefront boundaries.md:29-38; strategy.md:70</td></tr>
+    <tr><td>Compatibility check</td><td>Component attributes from specs</td><td>Consumer-aligned</td><td class="src">storefront boundaries.md:118,129</td></tr>
+    <tr><td>Partner Catalog</td><td>Simplified feed, batch price and availability</td><td>Consumer-aligned, outbound</td><td class="src">storefront boundaries.md:62-80</td></tr>
+  </table></div>
+  <div class="gap">
+    <p><strong>Gaps:</strong> the storefront Event Storming leaves "Who is the source of truth for product data? Internal catalog admin? Supplier feeds?" open (event-storming.md:341). <code>strategy.md</code> line 68 (one writer) contradicts line 69 (one producer per fact). <code>Product Imported</code> is named (eventmodel-mapping.md:19) but never published. Every persona rates lineage Critical (cross-persona-summary.md:37), yet no contract carries it.</p>
+  </div>
+
+  <h3>Lineage</h3>
+  <div class="flow"><pre class="mermaid">
+flowchart LR
+  ERP[("Core ERP")] -. "ACL" .-> ING["Ingestion"]
+  SUP[("Supplier files")] -. "upload" .-> ING
+  ERP -. "ACL" .-> INV["Inventory"]
+  ING -- "ApplyImportedProductRecord" --> PL["Product Lifecycle"]
+  ING -. "Product Imported (missing)" .-> PL
+  PL -- "product.* (IDs only)" --> PV["Product View (no owner)"]
+  PL -. "specification-updated (missing)" .-> CC["Compatibility check"]
+  CAT["Category"] -- "category.facets-defined" --> PV
+  DOC["Documentation"] -- "document.version-published" --> PV
+  PR["Pricing"] -. "price.base-set (missing)" .-> PV
+  INV -- "inventory.quantity-updated (IDs only)" --> PV
+  CR["Compatibility Rules"] -- "compatibility-rule.updated" --> CC
+  PV -. "catalog.product.* (no publisher)" .-> CA["Catalog + search"]
+  PV -. "catalog.product.*" .-> PC["Partner Catalog"]
+  CA --> BUY["Buyers"]
+  CC --> BUY
+  PC -- "Catalog Feed Generated" --> PART["Partners"]
+  </pre></div>
+  <p class="src">Dashed: events that are missing today. The repo has no big-picture Event Storm for the whole domain (big-picture-event-storming.drawio is an empty template). The pivotal events on these boundaries come from the storefront storm and v1: Product Created, Product Discontinued, Import Batch Processed, Product Added to Catalog, Catalog Feed Generated.</p>
+
+  <h3>Options through this lens</h3>
+  <div class="pair">
+    <div>
+      <p><span class="pill">A</span> Product Lifecycle republishes price and stock. That breaks ownership: Pricing and Inventory stop being products anyone can consume, and lineage collapses into one <code>productVersion</code>.</p>
+      <p><span class="pill">B</span> Source-aligned streams carry IDs only. State is pulled, every consumer does its own join, and P3's "no synchronous calls" is broken.</p>
+    </div>
+    <div>
+      <p><span class="pill">C</span> Owner fact events plus one shared Product View with <code>sourceVersions</code>. Closest to a mesh, but it assumes every consumer wants the same join.</p>
+      <p><span class="pill">D</span> One source-aligned fact stream per owner. Each consumer owns its aggregate (Catalog the full view, Partner its feed). Compatibility reads specs only. Lineage goes in the envelope (<code>source</code>, <code>sourceVersion</code>, <code>origin</code> from Ingestion, <code>derivedFrom</code>) and in EventCatalog. A shared assembler only appears once two consumers want the same join.</p>
+    </div>
+  </div>
+</section>
+
+  <section class="card">
+    <h2>The contract drafts for A, B and C</h2>
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tab-a" aria-selected="true" data-opt="a">A · Full snapshots</button>
+      <button role="tab" id="tab-b" aria-selected="false" data-opt="b">B · Thin events + query API</button>
+      <button role="tab" id="tab-c" aria-selected="false" data-opt="c">C · Owner events + assembler</button>
+    </div>
+
+    <div class="opt" data-opt="a">
+      <div class="grid" style="display:grid;gap:14px">
+        <p><span class="pill">Event-carried state transfer</span></p>
+        <p>Product Lifecycle publishes the whole product as a snapshot every time any part of it changes. To include price and stock, it listens to Pricing and Inventory and publishes again. Consumers simply replace their copy with the newest <code>productVersion</code>.</p>
+        <pre class="mermaid">flowchart LR
+  PR[Pricing] -- price events --> PL[Product Lifecycle]
+  IN[Inventory] -- stock events --> PL
+  PL -- "catalog.product.published / updated<br/>(full snapshot)" --> K[(compacted topic)]
+  K --> CAT[Catalog API]
+  K --> CMP[Compatibility API]
+  K --> PAR[Partner Catalog]</pre>
+        <div class="pc">
+          <div><h3 class="pro">For</h3><ul><li>Matches P3 and LRN-006 as they're written</li><li>The storefront contract barely changes</li><li>One producer and one version, so ordering is simple</li><li>Least work on the read side</li></ul></div>
+          <div><h3 class="con">Against</h3><ul><li>Product Lifecycle republishes prices and stock it doesn't own, which blurs P2</li><li>Ties the Product Data team to the Commercial team's events</li><li>One wide schema that every change touches</li><li>A repricing job causes a storm of snapshots</li></ul></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="opt" data-opt="b" hidden>
+      <div style="display:grid;gap:14px">
+        <p><span class="pill">Notification + callback</span></p>
+        <p>Each owner announces only "product X changed, now at version N". The storefront's projectors then fetch the current state over HTTP, outside any buyer request. The fetch is a synchronous contract, so it has its own OpenAPI file.</p>
+        <pre class="mermaid">flowchart LR
+  PL[Product Lifecycle] -- product.changed --> P[Storefront projectors]
+  PR[Pricing] -- price.changed --> P
+  IN[Inventory] -- availability.changed --> P
+  P -. "GET /products/{id}<br/>If-None-Match" .-> PL
+  P -. GET /price-book-entries/{id} .-> PR
+  P -. GET /availability/{id} .-> IN</pre>
+        <div class="pc">
+          <div><h3 class="pro">For</h3><ul><li>Each owner talks only about its own facts</li><li>Tiny events; the latest state always comes from its owner</li><li>The version and ETag let consumers skip fetches they don't need</li></ul></div>
+          <div><h3 class="con">Against</h3><ul><li>Goes against P3 and LRN-006 ("without calling back"), so it needs a recorded exception</li><li>The read side depends on the write side being up</li><li>Three new GET endpoints (v2 has none)</li><li>Every projector puts the product together on its own, three times over</li></ul></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="opt" data-opt="c" hidden>
+      <div style="display:grid;gap:14px">
+        <p><span class="pill">Domain events + Product View</span></p>
+        <p>Each owner publishes small events that carry the changed values. A Product View assembler keeps one row per product and publishes a composed snapshot. All read sides subscribe to that one topic. The assembler makes no calls, so this option needs no OpenAPI file.</p>
+        <pre class="mermaid">flowchart LR
+  PL[Product Lifecycle] -- "product.specification-updated<br/>product.lifecycle-state-changed" --> PV[Product View assembler]
+  PR[Pricing] -- price.base-price-set --> PV
+  IN[Inventory] -- inventory.availability-changed --> PV
+  PV -- "storefront.product-view.updated<br/>(snapshot + sourceVersions)" --> K[(compacted topic)]
+  K --> CAT[Catalog API]
+  K --> CMP[Compatibility API]
+  K --> PAR[Partner Catalog]</pre>
+        <div class="pc">
+          <div><h3 class="pro">For</h3><ul><li>Clearest ownership: one producer per fact (P2, #14's teams)</li><li>Read sides keep one snapshot shaped like today's <code>ProductEvent</code></li><li>Adds the missing spec and price events that both PRs ask for</li><li>No callbacks, so P3 holds</li></ul></div>
+          <div><h3 class="con">Against</h3><ul><li>One more component, and it needs an owner</li><li>Needs a version per source to keep things in order</li><li>Must buffer partial views (a price arriving before its product)</li><li>Most work up front; the view is eventually consistent</li></ul></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="files" id="files"></div>
+    <pre class="yaml" id="yaml" tabindex="0" aria-label="Contract file"></pre>
+  </section>
+
+  <section class="card rec">
+    <div class="label">Recommendation at the time (revised after the data mesh view)</div>
+    <h2>D: one fact stream per owner; each consumer owns its join</h2>
+    <p>Seen as a data mesh, the owners (Product Lifecycle, Pricing, Inventory, Category, Documentation) are source-aligned data products. Each publishes facts with values, not only IDs. That is the event set from C. Catalog and Partner Catalog are consumer-aligned and each builds its own view. Compatibility only reads specs. A shared Product View (C's assembler) appears only once two consumers want exactly the same join. Lineage goes in every envelope (<code>source</code>, <code>sourceVersion</code>, <code>origin</code> from Ingestion, <code>derivedFrom</code>) and is shown in EventCatalog. Ingestion must start publishing <code>product.imported</code>, so we can tell where a product version came from. Every persona rates that as critical. D was chosen; its published contracts are in <code>design/contracts/</code>.</p>
+  </section>
+
+  <section class="card">
+    <h2>Questions that were open</h2>
+    <ol class="q">
+      <li><strong>Is Product Lifecycle the source of product facts, or a curated copy of the ERP and supplier data?</strong> If it's a copy, must each field say where it came from? The storefront storm leaves this open (event-storming.md:341).<br><em>Answer:</em> a curated copy of the ERP and supplier files; each published fact carries <code>origin</code> (D-037, rule 5 in <code>design/contracts/README.md</code>).</li>
+      <li><strong>Which line of P2 holds?</strong> <code>strategy.md:68</code> says "only writer of product facts", but line 69 says "one producer per fact".<br><em>Answer:</em> one producer per fact; each owner publishes its own stream (D-037).</li>
+      <li><strong>Should each consumer own its own join (D), or should one shared Product View serve them all (C)?</strong> If shared, which team owns it?<br><em>Answer:</em> each consumer owns its join; a join becomes a shared Product View with a named owner once two consumers need the same rule (rules 3 and 4 in <code>design/contracts/README.md</code>).</li>
+      <li><strong>Lineage in every event, in EventCatalog, or both?</strong><br><em>Answer:</em> both: provenance in the CloudEvents envelope (<code>shared/envelope.yaml</code>), product-to-product lineage in EventCatalog (rules 6 and 7).</li>
+      <li><strong>Are Flight Data Hub and Channel Syndication Platform upstream sources in scope, or only background?</strong><br><em>Answer:</em> background only; the ERP is upstream and sits behind one anticorruption layer (D-037).</li>
+      <li><strong>Close OQ-007 (event naming) at the same time?</strong><br><em>Answer:</em> not closed with D-037; OQ-007 is still listed as open. The published contracts follow the naming conventions in <code>design/contracts/README.md</code>.</li>
+    </ol>
+    <p class="src">Sources: drone-web main (685ca5f). The full write-up is in <a href="data-products-and-lineage.md">data-products-and-lineage.md</a>. The drafts for A, B and C are the option files in this folder (<code>design/contracts/research/</code>).</p>
+  </section>
+</div>
+
+<script>
+const FILES = {
+  a: [["option-a.yaml · AsyncAPI 3.0", "asyncapi: 3.0.0\ninfo:\n  title: Product Data Catalog Facts (Option A - event-carried state transfer)\n  version: 0.1.0\n  description: |\n    Product Lifecycle Management publishes the full catalog product as a fact event every time\n    any part of it changes. Consumers (Catalog API, Compatibility API, Partner Catalog API) keep a\n    local copy by replacing it with the latest snapshot (LRN-006, P3). To include price and stock,\n    Product Lifecycle consumes Pricing and Inventory events and re-publishes the snapshot.\nservers:\n  production: { host: 'kafka.example.com:9092', protocol: kafka }\nchannels:\n  catalogProductPublished:\n    address: catalog.product.published\n    description: First snapshot, sent when the product reaches lifecycleState=active. Key = productId.\n    messages: { ProductPublished: { $ref: '#/components/messages/ProductSnapshot' } }\n  catalogProductUpdated:\n    address: catalog.product.updated\n    description: |\n      New snapshot after updateProductSpecifications, updateProductAttributes, setProductLifecycleState\n      (incl. discontinued), or after a price/stock change from Pricing or Inventory. Compacted topic.\n    messages: { ProductUpdated: { $ref: '#/components/messages/ProductSnapshot' } }\noperations:\n  publishProductPublished:\n    action: send\n    channel: { $ref: '#/channels/catalogProductPublished' }\n  publishProductUpdated:\n    action: send\n    channel: { $ref: '#/channels/catalogProductUpdated' }\ncomponents:\n  messages:\n    ProductSnapshot:\n      contentType: application/json\n      payload: { $ref: '#/components/schemas/ProductSnapshotEvent' }\n  schemas:\n    ProductSnapshotEvent:\n      type: object\n      required: [eventId, eventType, occurredAt, source, productVersion, data]\n      properties:\n        eventId: { type: string, format: uuid }\n        eventType: { type: string, enum: [catalog.product.published, catalog.product.updated] }\n        occurredAt: { type: string, format: date-time }\n        source: { type: string, const: product-lifecycle }\n        productVersion:\n          type: integer\n          description: Increases on every change; consumers drop snapshots older than the one they hold.\n        changedSections:\n          type: array\n          items: { type: string, enum: [attributes, specifications, lifecycle, categories, pricing, availability] }\n        data:\n          type: object\n          required: [productId, sku, name, brand, lifecycleState, specifications, categories, pricing, availability]\n          properties:\n            productId: { type: string, format: uuid }\n            sku: { type: string }\n            name: { type: string }\n            brand: { type: string }\n            lifecycleState: { type: string, enum: [draft, active, discontinued] }\n            replacementProductId: { type: [string, 'null'], format: uuid }\n            specifications: { type: object, additionalProperties: true }\n            categories: { type: array, items: { type: string } }\n            pricing:\n              type: object\n              description: Copied from Pricing (PriceBookEntry); Pricing remains the owner.\n              properties:\n                basePrice: { type: number }\n                currency: { type: string }\n                tiers:\n                  type: array\n                  items: { type: object, properties: { minQuantity: { type: integer }, price: { type: number } } }\n            availability:\n              type: object\n              description: Copied from Inventory (InventoryPosition); Inventory remains the owner.\n              properties:\n                status: { type: string, enum: [in-stock, backorder, suspended] }\n                quantityAvailable: { type: integer }\n"]],
+  b: [["option-b.yaml · AsyncAPI 3.0", "asyncapi: 3.0.0\ninfo:\n  title: Product Change Notifications (Option B - thin events plus query API)\n  version: 0.1.0\n  description: |\n    Each write-side boundary announces \"this product changed, now at version N\". Consumers fetch the\n    current state over HTTP in their projector, outside any buyer request.\n    Fetch endpoints, specified in option-b-query.openapi.yaml (new; v2 has no single-product GET):\n      GET /product-lifecycle/v1/products/{productId}            (ETag = version)\n      GET /pricing-promotions/v1/price-book-entries/{productId}\n      GET /inventory-availability/v1/availability/{productId}\n    Note: P3 forbids synchronous calls while handling a request. This callback is asynchronous,\n    but P3 and LRN-006 (\"consumers build their copy without calling back\") would need rewording.\nservers:\n  production: { host: 'kafka.example.com:9092', protocol: kafka }\nchannels:\n  productChanged:\n    address: product.changed\n    description: Product Lifecycle. Covers create, attributes, specifications and lifecycle state.\n    messages: { ProductChanged: { $ref: '#/components/messages/ResourceChanged' } }\n  priceChanged:\n    address: price.changed\n    description: Pricing. One per affected product, including each product touched by a repricing job.\n    messages: { PriceChanged: { $ref: '#/components/messages/ResourceChanged' } }\n  availabilityChanged:\n    address: availability.changed\n    description: Inventory. On-hand, lead time, backorder or suspension changed.\n    messages: { AvailabilityChanged: { $ref: '#/components/messages/ResourceChanged' } }\noperations:\n  publishProductChanged: { action: send, channel: { $ref: '#/channels/productChanged' } }\n  publishPriceChanged: { action: send, channel: { $ref: '#/channels/priceChanged' } }\n  publishAvailabilityChanged: { action: send, channel: { $ref: '#/channels/availabilityChanged' } }\ncomponents:\n  messages:\n    ResourceChanged:\n      contentType: application/json\n      payload: { $ref: '#/components/schemas/ResourceChangedEvent' }\n      examples:\n        - name: SpecsUpdated\n          payload:\n            eventId: 2b3c4d5e-6f7a-4b02-88d9-e0f1a2b3c4d5\n            occurredAt: '2026-02-15T14:30:00Z'\n            source: product-lifecycle\n            productId: d290f1ee-6c54-4b01-90e6-d701748f0851\n            version: 7\n            changeKind: specifications\n            href: /product-lifecycle/v1/products/d290f1ee-6c54-4b01-90e6-d701748f0851\n  schemas:\n    ResourceChangedEvent:\n      type: object\n      required: [eventId, occurredAt, source, productId, version, changeKind, href]\n      properties:\n        eventId: { type: string, format: uuid }\n        occurredAt: { type: string, format: date-time }\n        source: { type: string, enum: [product-lifecycle, pricing-promotions, inventory-availability] }\n        productId: { type: string, format: uuid }\n        version:\n          type: integer\n          description: Version of the resource after the change; skip the fetch if already held.\n        changeKind:\n          type: string\n          enum: [created, attributes, specifications, lifecycle, base-price, volume-tiers, promotion, quantity, lead-time, backorder, suspension]\n        href: { type: string, description: Relative URL that returns the current state. }\n"], ["option-b-query.openapi.yaml · OpenAPI 3.1", "openapi: 3.1.0\ninfo:\n  title: Product Query API (Option B callback)\n  version: 0.1.0\n  description: |\n    Read endpoints the storefront projectors (Catalog, Compatibility, Partner Catalog) call after\n    receiving a thin event from option-b.yaml. Owned by the write-side boundaries that own the facts.\n    Called asynchronously from projectors, never while serving a buyer request.\n  license:\n    name: Proprietary\n    url: https://api.droneweb.internal/terms\nservers:\n  - url: https://api.droneweb.internal\nsecurity:\n  - serviceToken: []\npaths:\n  /product-lifecycle/v1/products/{productId}:\n    get:\n      operationId: getProduct\n      summary: Current (or a specific) version of a product record\n      tags: [ProductLifecycle]\n      parameters:\n        - $ref: '#/components/parameters/productId'\n        - name: version\n          in: query\n          required: false\n          description: Version from the event. If given and older than current, the current version is returned (409 is not used).\n          schema: { type: integer, minimum: 1 }\n        - name: If-None-Match\n          in: header\n          required: false\n          description: ETag of the copy the consumer already holds.\n          schema: { type: string }\n      responses:\n        '200':\n          description: Product record\n          headers:\n            ETag: { $ref: '#/components/headers/ETag' }\n            Product-Version: { $ref: '#/components/headers/ResourceVersion' }\n          content:\n            application/json:\n              schema: { $ref: '#/components/schemas/ProductRecord' }\n        '304':\n          description: Consumer already holds this version\n        '404':\n          $ref: '#/components/responses/NotFound'\n  /pricing-promotions/v1/price-book-entries/{productId}:\n    get:\n      operationId: getPriceBookEntry\n      summary: Current price book entry for a product\n      tags: [PricingPromotions]\n      parameters:\n        - $ref: '#/components/parameters/productId'\n      responses:\n        '200':\n          description: Price book entry\n          headers:\n            ETag: { $ref: '#/components/headers/ETag' }\n          content:\n            application/json:\n              schema: { $ref: '#/components/schemas/PriceBookEntry' }\n        '404':\n          $ref: '#/components/responses/NotFound'\n  /inventory-availability/v1/availability/{productId}:\n    get:\n      operationId: getProductAvailability\n      summary: Current availability for a product, summed over inventory positions\n      tags: [InventoryAvailability]\n      parameters:\n        - $ref: '#/components/parameters/productId'\n      responses:\n        '200':\n          description: Availability\n          headers:\n            ETag: { $ref: '#/components/headers/ETag' }\n          content:\n            application/json:\n              schema: { $ref: '#/components/schemas/ProductAvailability' }\n        '404':\n          $ref: '#/components/responses/NotFound'\ncomponents:\n  securitySchemes:\n    serviceToken:\n      type: http\n      scheme: bearer\n      description: Service-to-service token for storefront projectors.\n  parameters:\n    productId:\n      name: productId\n      in: path\n      required: true\n      schema: { type: string, format: uuid }\n  headers:\n    ETag:\n      description: Opaque entity tag; equals W/\"<version>\".\n      schema: { type: string }\n    ResourceVersion:\n      description: Integer version, same value as `version` in the thin event.\n      schema: { type: integer }\n  responses:\n    NotFound:\n      description: Unknown product\n      content:\n        application/problem+json:\n          schema: { $ref: '#/components/schemas/ProblemDetails' }\n  schemas:\n    ProductRecord:\n      type: object\n      required: [productId, version, sku, name, brand, lifecycleState, specifications, categories]\n      properties:\n        productId: { type: string, format: uuid }\n        version: { type: integer }\n        sku: { type: string }\n        name: { type: string }\n        brand: { type: string }\n        lifecycleState: { type: string, enum: [draft, active, discontinued] }\n        replacementProductId: { type: [string, 'null'], format: uuid }\n        specifications: { type: object, additionalProperties: true }\n        categories: { type: array, items: { type: string } }\n        updatedDate: { type: string, format: date-time }\n    PriceBookEntry:\n      type: object\n      required: [productId, version, basePrice, currency]\n      properties:\n        productId: { type: string, format: uuid }\n        version: { type: integer }\n        basePrice: { type: number }\n        currency: { type: string }\n        tiers:\n          type: array\n          items:\n            type: object\n            required: [minQuantity, price]\n            properties: { minQuantity: { type: integer, minimum: 1 }, price: { type: number } }\n    ProductAvailability:\n      type: object\n      required: [productId, version, status, quantityAvailable]\n      properties:\n        productId: { type: string, format: uuid }\n        version: { type: integer }\n        status: { type: string, enum: [in-stock, backorder, suspended] }\n        quantityAvailable: { type: integer }\n        expectedRestockDate: { type: [string, 'null'], format: date-time }\n    ProblemDetails:\n      type: object\n      properties:\n        type: { type: string }\n        title: { type: string }\n        status: { type: integer }\n        detail: { type: string }\n"]],
+  c: [["option-c.yaml · AsyncAPI 3.0", "asyncapi: 3.0.0\ninfo:\n  title: Owner Events and Product View (Option C - assembler)\n  version: 0.1.0\n  description: |\n    Each owning context publishes small domain events about its own facts (carrying the changed\n    values, not only IDs). A Product View assembler (owner to decide: Product Data team or Catalog\n    Platform) consumes them, keeps one row per product and publishes a composed snapshot.\n    Read sides subscribe only to storefront.product-view.updated.\nservers:\n  production: { host: 'kafka.example.com:9092', protocol: kafka }\nchannels:\n  productSpecificationUpdated:\n    address: product.specification-updated\n    description: Product Lifecycle. Named in boundary-map.md, missing from the v2 AsyncAPI file.\n    messages: { SpecificationUpdated: { payload: { $ref: '#/components/schemas/ProductSpecificationUpdated' } } }\n  productLifecycleStateChanged:\n    address: product.lifecycle-state-changed\n    description: Product Lifecycle. Exists in v2; adds sku/name/brand and replacementProductId.\n    messages: { LifecycleStateChanged: { payload: { $ref: '#/components/schemas/ProductLifecycleStateChanged' } } }\n  priceBasePriceSet:\n    address: price.base-price-set\n    description: Pricing. One per product, also one per product when a repricing job completes.\n    messages: { BasePriceSet: { payload: { $ref: '#/components/schemas/BasePriceSet' } } }\n  inventoryAvailabilityChanged:\n    address: inventory.availability-changed\n    description: Inventory. Replaces the identifier-only inventory.quantity-updated for consumers.\n    messages: { AvailabilityChanged: { payload: { $ref: '#/components/schemas/AvailabilityChanged' } } }\n  storefrontProductViewUpdated:\n    address: storefront.product-view.updated\n    description: Product View assembler. Full composed snapshot; compacted topic keyed by productId.\n    messages: { ProductViewUpdated: { payload: { $ref: '#/components/schemas/ProductViewUpdated' } } }\noperations:\n  receiveSpecs: { action: receive, channel: { $ref: '#/channels/productSpecificationUpdated' } }\n  receiveLifecycle: { action: receive, channel: { $ref: '#/channels/productLifecycleStateChanged' } }\n  receivePrice: { action: receive, channel: { $ref: '#/channels/priceBasePriceSet' } }\n  receiveAvailability: { action: receive, channel: { $ref: '#/channels/inventoryAvailabilityChanged' } }\n  publishProductView: { action: send, channel: { $ref: '#/channels/storefrontProductViewUpdated' } }\ncomponents:\n  schemas:\n    Base:\n      type: object\n      required: [eventId, occurredAt, productId, sourceVersion]\n      properties:\n        eventId: { type: string, format: uuid }\n        occurredAt: { type: string, format: date-time }\n        productId: { type: string, format: uuid }\n        sourceVersion: { type: integer, description: Per-product version in the owning context. }\n    ProductSpecificationUpdated:\n      allOf:\n        - $ref: '#/components/schemas/Base'\n        - { type: object, required: [specifications], properties: { specifications: { type: object, additionalProperties: true } } }\n    ProductLifecycleStateChanged:\n      allOf:\n        - $ref: '#/components/schemas/Base'\n        - type: object\n          required: [lifecycleState]\n          properties: { lifecycleState: { type: string }, sku: { type: string }, name: { type: string }, brand: { type: string }, replacementProductId: { type: string, format: uuid } }\n    BasePriceSet:\n      allOf:\n        - $ref: '#/components/schemas/Base'\n        - { type: object, required: [basePrice, currency], properties: { basePrice: { type: number }, currency: { type: string }, effectiveFrom: { type: string, format: date-time } } }\n    AvailabilityChanged:\n      allOf:\n        - $ref: '#/components/schemas/Base'\n        - { type: object, required: [status], properties: { status: { type: string, enum: [in-stock, backorder, suspended] }, onHandQuantity: { type: integer }, expectedDate: { type: string, format: date-time } } }\n    ProductViewUpdated:\n      type: object\n      required: [eventId, occurredAt, productId, viewVersion, sourceVersions, data]\n      properties:\n        eventId: { type: string, format: uuid }\n        occurredAt: { type: string, format: date-time }\n        productId: { type: string, format: uuid }\n        viewVersion: { type: integer }\n        sourceVersions:\n          type: object\n          description: 'Last version applied per source, e.g. { product: 7, price: 3, inventory: 12 }.'\n          additionalProperties: { type: integer }\n        data:\n          type: object\n          description: Same shape as storefront ProductEvent.data (name, brand, sku, status, specifications, categories, pricing, availability).\n          additionalProperties: true\n"]]
+};
+const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+function hl(src){
+  return src.split("\n").map(line=>{
+    const e = esc(line);
+    if (/^\s*#/.test(line)) return '<span class="c">'+e+'</span>';
+    return e.replace(/^(\s*-?\s*)([\w$.\-'\/{}]+)(:)(?=\s|$)/, '$1<span class="k">$2</span>$3');
+  }).join("\n");
+}
+let current = "a", fileIdx = 0;
+const filesEl = document.getElementById("files"), yamlEl = document.getElementById("yaml");
+function renderFiles(){
+  filesEl.innerHTML = "";
+  FILES[current].forEach(([name], i) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.id = "file-"+current+"-"+i; b.textContent = name;
+    b.setAttribute("aria-pressed", i === fileIdx ? "true" : "false");
+    b.addEventListener("click", () => { fileIdx = i; renderFiles(); });
+    filesEl.appendChild(b);
+  });
+  const copy = document.createElement("button");
+  copy.type = "button"; copy.className = "copy"; copy.id = "copy-btn"; copy.textContent = "Copy file";
+  copy.addEventListener("click", () => {
+    const text = FILES[current][fileIdx][1];
+    navigator.clipboard.writeText(text).then(()=>{copy.textContent="Copied";setTimeout(()=>copy.textContent="Copy file",1500)})
+      .catch(()=>{const r=document.createRange();r.selectNodeContents(yamlEl);const s=getSelection();s.removeAllRanges();s.addRange(r);});
+  });
+  filesEl.appendChild(copy);
+  yamlEl.innerHTML = hl(FILES[current][fileIdx][1]);
+}
+document.querySelectorAll('.tabs button').forEach(btn => btn.addEventListener("click", () => {
+  current = btn.dataset.opt; fileIdx = 0;
+  document.querySelectorAll('.tabs button').forEach(b => b.setAttribute("aria-selected", b === btn ? "true" : "false"));
+  document.querySelectorAll('.opt').forEach(o => o.hidden = o.dataset.opt !== current);
+  renderFiles();
+}));
+renderFiles();
+</script>

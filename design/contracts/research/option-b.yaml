@@ -1,0 +1,66 @@
+# Research draft (option B), kept as a record. Not a contract.
+# Option D was chosen (D-037 in .ralph/agent/decisions.md); its published contracts are in
+# design/contracts/, where the channels were renamed. See design/contracts/README.md.
+asyncapi: 3.0.0
+info:
+  title: Product Change Notifications (Option B - thin events plus query API)
+  version: 0.1.0
+  description: |
+    Each write-side boundary announces "this product changed, now at version N". Consumers fetch the
+    current state over HTTP in their projector, outside any buyer request.
+    Fetch endpoints, specified in option-b-query.openapi.yaml (new; v2 has no single-product GET):
+      GET /product-lifecycle/v1/products/{productId}            (ETag = version)
+      GET /pricing-promotions/v1/price-book-entries/{productId}
+      GET /inventory-availability/v1/availability/{productId}
+    Note: P3 forbids synchronous calls while handling a request. This callback is asynchronous,
+    but P3 and LRN-006 ("consumers build their copy without calling back") would need rewording.
+servers:
+  production: { host: 'kafka.example.com:9092', protocol: kafka }
+channels:
+  productChanged:
+    address: product.changed
+    description: Product Lifecycle. Covers create, attributes, specifications and lifecycle state.
+    messages: { ProductChanged: { $ref: '#/components/messages/ResourceChanged' } }
+  priceChanged:
+    address: price.changed
+    description: Pricing. One per affected product, including each product touched by a repricing job.
+    messages: { PriceChanged: { $ref: '#/components/messages/ResourceChanged' } }
+  availabilityChanged:
+    address: availability.changed
+    description: Inventory. On-hand, lead time, backorder or suspension changed.
+    messages: { AvailabilityChanged: { $ref: '#/components/messages/ResourceChanged' } }
+operations:
+  publishProductChanged: { action: send, channel: { $ref: '#/channels/productChanged' } }
+  publishPriceChanged: { action: send, channel: { $ref: '#/channels/priceChanged' } }
+  publishAvailabilityChanged: { action: send, channel: { $ref: '#/channels/availabilityChanged' } }
+components:
+  messages:
+    ResourceChanged:
+      contentType: application/json
+      payload: { $ref: '#/components/schemas/ResourceChangedEvent' }
+      examples:
+        - name: SpecsUpdated
+          payload:
+            eventId: 2b3c4d5e-6f7a-4b02-88d9-e0f1a2b3c4d5
+            occurredAt: '2026-02-15T14:30:00Z'
+            source: product-lifecycle
+            productId: d290f1ee-6c54-4b01-90e6-d701748f0851
+            version: 7
+            changeKind: specifications
+            href: /product-lifecycle/v1/products/d290f1ee-6c54-4b01-90e6-d701748f0851
+  schemas:
+    ResourceChangedEvent:
+      type: object
+      required: [eventId, occurredAt, source, productId, version, changeKind, href]
+      properties:
+        eventId: { type: string, format: uuid }
+        occurredAt: { type: string, format: date-time }
+        source: { type: string, enum: [product-lifecycle, pricing-promotions, inventory-availability] }
+        productId: { type: string, format: uuid }
+        version:
+          type: integer
+          description: Version of the resource after the change; skip the fetch if already held.
+        changeKind:
+          type: string
+          enum: [created, attributes, specifications, lifecycle, base-price, volume-tiers, promotion, quantity, lead-time, backorder, suspension]
+        href: { type: string, description: Relative URL that returns the current state. }

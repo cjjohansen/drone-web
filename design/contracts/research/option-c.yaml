@@ -1,0 +1,85 @@
+# Research draft (option C), kept as a record. Not a contract.
+# Option D was chosen (D-037 in .ralph/agent/decisions.md); its published contracts are in
+# design/contracts/, where the channels were renamed. See design/contracts/README.md.
+asyncapi: 3.0.0
+info:
+  title: Owner Events and Product View (Option C - assembler)
+  version: 0.1.0
+  description: |
+    Each owning context publishes small domain events about its own facts (carrying the changed
+    values, not only IDs). A Product View assembler (owner to decide: Product Data team or Catalog
+    Platform) consumes them, keeps one row per product and publishes a composed snapshot.
+    Read sides subscribe only to storefront.product-view.updated.
+servers:
+  production: { host: 'kafka.example.com:9092', protocol: kafka }
+channels:
+  productSpecificationUpdated:
+    address: product.specification-updated
+    description: Product Lifecycle. Named in boundary-map.md, missing from the v2 AsyncAPI file.
+    messages: { SpecificationUpdated: { payload: { $ref: '#/components/schemas/ProductSpecificationUpdated' } } }
+  productLifecycleStateChanged:
+    address: product.lifecycle-state-changed
+    description: Product Lifecycle. Exists in v2; adds sku/name/brand and replacementProductId.
+    messages: { LifecycleStateChanged: { payload: { $ref: '#/components/schemas/ProductLifecycleStateChanged' } } }
+  priceBasePriceSet:
+    address: price.base-price-set
+    description: Pricing. One per product, also one per product when a repricing job completes.
+    messages: { BasePriceSet: { payload: { $ref: '#/components/schemas/BasePriceSet' } } }
+  inventoryAvailabilityChanged:
+    address: inventory.availability-changed
+    description: Inventory. Replaces the identifier-only inventory.quantity-updated for consumers.
+    messages: { AvailabilityChanged: { payload: { $ref: '#/components/schemas/AvailabilityChanged' } } }
+  storefrontProductViewUpdated:
+    address: storefront.product-view.updated
+    description: Product View assembler. Full composed snapshot; compacted topic keyed by productId.
+    messages: { ProductViewUpdated: { payload: { $ref: '#/components/schemas/ProductViewUpdated' } } }
+operations:
+  receiveSpecs: { action: receive, channel: { $ref: '#/channels/productSpecificationUpdated' } }
+  receiveLifecycle: { action: receive, channel: { $ref: '#/channels/productLifecycleStateChanged' } }
+  receivePrice: { action: receive, channel: { $ref: '#/channels/priceBasePriceSet' } }
+  receiveAvailability: { action: receive, channel: { $ref: '#/channels/inventoryAvailabilityChanged' } }
+  publishProductView: { action: send, channel: { $ref: '#/channels/storefrontProductViewUpdated' } }
+components:
+  schemas:
+    Base:
+      type: object
+      required: [eventId, occurredAt, productId, sourceVersion]
+      properties:
+        eventId: { type: string, format: uuid }
+        occurredAt: { type: string, format: date-time }
+        productId: { type: string, format: uuid }
+        sourceVersion: { type: integer, description: Per-product version in the owning context. }
+    ProductSpecificationUpdated:
+      allOf:
+        - $ref: '#/components/schemas/Base'
+        - { type: object, required: [specifications], properties: { specifications: { type: object, additionalProperties: true } } }
+    ProductLifecycleStateChanged:
+      allOf:
+        - $ref: '#/components/schemas/Base'
+        - type: object
+          required: [lifecycleState]
+          properties: { lifecycleState: { type: string }, sku: { type: string }, name: { type: string }, brand: { type: string }, replacementProductId: { type: string, format: uuid } }
+    BasePriceSet:
+      allOf:
+        - $ref: '#/components/schemas/Base'
+        - { type: object, required: [basePrice, currency], properties: { basePrice: { type: number }, currency: { type: string }, effectiveFrom: { type: string, format: date-time } } }
+    AvailabilityChanged:
+      allOf:
+        - $ref: '#/components/schemas/Base'
+        - { type: object, required: [status], properties: { status: { type: string, enum: [in-stock, backorder, suspended] }, onHandQuantity: { type: integer }, expectedDate: { type: string, format: date-time } } }
+    ProductViewUpdated:
+      type: object
+      required: [eventId, occurredAt, productId, viewVersion, sourceVersions, data]
+      properties:
+        eventId: { type: string, format: uuid }
+        occurredAt: { type: string, format: date-time }
+        productId: { type: string, format: uuid }
+        viewVersion: { type: integer }
+        sourceVersions:
+          type: object
+          description: 'Last version applied per source, e.g. { product: 7, price: 3, inventory: 12 }.'
+          additionalProperties: { type: integer }
+        data:
+          type: object
+          description: Same shape as storefront ProductEvent.data (name, brand, sku, status, specifications, categories, pricing, availability).
+          additionalProperties: true
