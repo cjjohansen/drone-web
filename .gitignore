@@ -4,3 +4,6 @@ Specs/Case/JTBD-Original/
 
 # Claude Code personal settings
 .claude/settings.local.json
+
+# Local editor workspaces
+*.code-workspace
