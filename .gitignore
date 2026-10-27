@@ -1,3 +1,6 @@
 node_modules/
 Specs/Case/JTBD/translation-table.local.md
 Specs/Case/JTBD-Original/
+
+# Claude Code personal settings
+.claude/settings.local.json
