@@ -1,0 +1,1399 @@
+# Drone Web catalog management: draft, review, publish, change and retire a product (JS1).
+# Written with the kairos-author skill of event-model-factory (bead galaxitech-website-498).
+#
+# The flow in words (chosen by CJ, 2026-10-28: "JS1 Product Lifecycle"):
+#
+#   A Product Lifecycle Manager drafts a new product with its SKU, name and brand, and records its
+#   technical specifications. When the draft is complete, the manager asks for the product to go
+#   live. Catalog Governance opens an approval case for the request. A Governance Reviewer is
+#   assigned, approves or rejects the change, and releases the publication gate for an approved
+#   change. Product Data learns of the release (or the rejection), and the manager then publishes
+#   the product. Later the manager changes the product's details and specifications. To retire the
+#   product, the manager asks for its discontinuation, which goes through the same review; after the
+#   release the manager discontinues it and links the product that replaces it.
+#
+# Where the pieces come from (design/catalog-management-v2/addr/):
+#
+#   - align/job-stories.md JS1 and align/activity-steps.md (the JS1 rows) give the steps.
+#   - align/personas.md gives the two actors: Product Lifecycle Manager and Governance Reviewer.
+#   - define/api-profiles.md (Product Lifecycle API, Catalog Governance API) gives the operations;
+#     each slice description names the operation it comes from.
+#   - define/boundaries.md gives the invariants. Rules that cite an invariant are `active`; rules
+#     that are our assumption are `status: proposed` and wait for CJ.
+#   - define/resources.md gives the fields and the states: lifecycle draft, active, discontinued;
+#     approval case pending, approved, rejected; gate locked, released.
+#   - define/sequence-diagrams.md (JS1) gives the order: create, specify, submit approval case,
+#     decide, release gate, set lifecycle state active, discontinue, link replacement.
+#   - Decision D-037 (.ralph/agent/decisions.md) and design/contracts/product-lifecycle.yaml give
+#     the published stream product-records, which the ordering model reads.
+#
+# Two places where this model departs from ADDR on purpose, both marked proposed:
+#
+#   - The manager asks Product Data for a lifecycle change, and Product Data publishes the request
+#     to Catalog Governance. In the ADDR sequence diagram the manager calls Governance directly.
+#     Here the product rules (is the draft complete? is the move allowed?) stay in Product Data,
+#     as define/boundaries.md section D asks ("keep strong consistency rules inside aggregate
+#     boundaries").
+#   - "pending-approval" is not a lifecycle state here. A product under review keeps its state
+#     (draft or active) and shows its review separately, because a product under review for
+#     discontinuation is still active and still sold.
+#
+# Left out of this flow: bulk ingestion (JS1 "Submit bulk import", Bulk Ingestion API), which is
+# a flow of its own.
+
+kairos: "0"
+model: ProductLifecycle
+description: A product goes from draft through Governance review to the shop, changes while it is sold, and is discontinued and replaced, again after review.
+
+automations:
+  Integration:
+    description: Takes in what the other context publishes.
+
+actors:
+  ProductLifecycleManager:
+    description: Owns product master data and lifecycle transitions (align/personas.md).
+  GovernanceReviewer:
+    description: Owns approval and publication gates for high-risk writes, such as discontinuations (align/personas.md).
+
+contexts:
+  ProductData:
+    description: >-
+      The Product Lifecycle Service in the Product Data bounded context (D-037). The only writer of
+      product identity, attributes, specifications and lifecycle state.
+    publishes:
+      LifecycleChangeForReview:
+        version: 1
+        description: A manager asks for a product to move to another lifecycle state. Catalog Governance opens an approval case for it.
+        from: ProductLifecycleChangeRequested
+        fields:
+          productId: uuid
+          sku: string
+          targetState: string
+          reason: string
+          riskLevel: string
+      ProductRecordChanged:
+        version: 1
+        description: >-
+          The current record of a product on the product-records stream
+          (design/contracts/product-lifecycle.yaml). The ordering model reads it as
+          ProductData.ProductRecordChanged.
+        from: ProductsUnderManagement
+        fields:
+          productId: uuid
+          sku: string
+          name: string
+          brand: string
+          lifecycleState: string
+          replacementProductId: uuid
+
+  CatalogGovernance:
+    description: Approval cases and publication gates for high-risk catalog changes (Catalog Governance API, D-029).
+    publishes:
+      ChangeReleased:
+        version: 1
+        description: Governance released the publication gate for an approved change. The owning context may now apply it.
+        from: PublicationGateReleased
+        fields:
+          approvalCaseId: uuid
+          changeType: string
+          sourceReferenceId: uuid
+          requestedChange: string
+      ChangeRejected:
+        version: 1
+        description: A reviewer rejected a change. The owning context does not apply it.
+        from: ApprovalCaseRejected
+        fields:
+          approvalCaseId: uuid
+          changeType: string
+          sourceReferenceId: uuid
+          requestedChange: string
+          rationale: string
+
+events:
+
+  # ------------------------------------------------------------------ Product Data
+
+  ProductDrafted:
+    context: ProductData
+    description: A manager created a product master record. It starts as a draft and is not sold.
+    tags: [productId, sku]
+    fields:
+      productId: { type: uuid, source: generated, example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
+      sku: { type: string, source: system, example: TMOTOR-VELOX-V2306-1750KV }
+      name: { type: string, source: system, example: T-Motor Velox V2306 1750KV }
+      brand: { type: string, source: system, example: T-Motor }
+      draftedAt: { type: datetime, source: generated, example: 2026-11-02T09:10:00Z }
+
+  ProductSpecificationsRecorded:
+    context: ProductData
+    description: A manager recorded the technical specifications that the compatibility rules read.
+    tags: [productId]
+    fields:
+      productId: { type: uuid, source: system }
+      minVoltage: { type: decimal, source: system, description: Lowest supply voltage in volts., example: 11.1 }
+      maxVoltage: { type: decimal, source: system, description: Highest supply voltage in volts., example: 25.2 }
+      maxCurrent: { type: decimal, source: system, description: Highest continuous current in amperes., example: 41.5 }
+      mounting: { type: string, source: system, description: Mounting pattern., example: 16x16-m3 }
+      weight: { type: decimal, source: system, description: Weight in grams., example: 33.6 }
+      recordedAt: { type: datetime, source: generated, example: 2026-11-02T09:25:00Z }
+
+  ProductLifecycleChangeRequested:
+    context: ProductData
+    description: A manager asked for a product to move to another lifecycle state. The change waits for Governance.
+    tags: [productId]
+    fields:
+      productId: { type: uuid, source: system }
+      sku: { type: string, source: system, from: ProductDrafted.sku }
+      targetState: { type: string, source: system, description: "active or discontinued.", example: active }
+      reason: { type: string, source: system, example: Launch with the 5-inch freestyle range }
+      riskLevel: { type: string, source: system, description: "low, medium or high (Catalog Governance API).", example: medium }
+      requestedAt: { type: datetime, source: generated, example: 2026-11-02T09:40:00Z }
+
+  ProductLifecycleChangeCleared:
+    context: ProductData
+    description: Governance released the requested lifecycle change. The manager may now apply it.
+    tags: [productId]
+    fields:
+      productId: { type: uuid, source: system }
+      targetState: { type: string, source: system }
+      approvalCaseId: { type: uuid, source: system, example: 03724352-c0cd-4fa7-ac65-bddf8df0474d }
+
+  ProductLifecycleChangeRefused:
+    context: ProductData
+    description: Governance rejected the requested lifecycle change. The product stays as it was.
+    tags: [productId]
+    fields:
+      productId: { type: uuid, source: system }
+      targetState: { type: string, source: system }
+      approvalCaseId: { type: uuid, source: system }
+      rationale: { type: string, source: system, example: Datasheet does not state the maximum current }
+
+  ProductPublished:
+    context: ProductData
+    description: The product became active. The shop and partner feeds may show and sell it.
+    tags: [productId]
+    fields:
+      productId: { type: uuid, source: system }
+      approvalCaseId: { type: uuid, source: system, from: ProductLifecycleChangeCleared.approvalCaseId }
+      publishedAt: { type: datetime, source: generated, example: 2026-11-03T08:00:00Z }
+
+  ProductDetailsRevised:
+    context: ProductData
+    description: A manager changed the name or the short description of a product.
+    tags: [productId]
+    fields:
+      productId: { type: uuid, source: system }
+      name: { type: string, source: system }
+      shortDescription: { type: string, source: system, example: 2306 motor for 6S 5-inch freestyle builds }
+      revisedAt: { type: datetime, source: generated, example: 2026-12-01T10:00:00Z }
+
+  ProductDiscontinued:
+    context: ProductData
+    description: The product is no longer sold. It stays in the catalog as discontinued, not deleted.
+    tags: [productId]
+    fields:
+      productId: { type: uuid, source: system }
+      reason: { type: string, source: system, from: ProductLifecycleChangeRequested.reason }
+      approvalCaseId: { type: uuid, source: system, from: ProductLifecycleChangeCleared.approvalCaseId }
+      discontinuedAt: { type: datetime, source: generated, example: 2027-06-30T16:00:00Z }
+
+  ReplacementProductLinked:
+    context: ProductData
+    description: A manager named the product that replaces a discontinued one.
+    tags: [productId, replacementProductId]
+    fields:
+      productId: { type: uuid, source: system }
+      replacementProductId: { type: uuid, source: system, example: 9b2e4d6f-1a3c-4e5b-8d7f-2a4c6e8b0d13 }
+      reasonCode: { type: string, source: system, example: successor-model }
+      linkedAt: { type: datetime, source: generated, example: 2027-06-30T16:05:00Z }
+
+  # ------------------------------------------------------------------ Catalog Governance
+
+  ApprovalCaseSubmitted:
+    context: CatalogGovernance
+    description: Governance opened an approval case for a change another context asked for. The case is pending.
+    tags: [approvalCaseId, sourceReferenceId]
+    fields:
+      approvalCaseId: { type: uuid, source: generated, example: 03724352-c0cd-4fa7-ac65-bddf8df0474d }
+      changeType: { type: string, source: generated, description: "lifecycle-change for every case opened from a product lifecycle request.", example: lifecycle-change }
+      sourceReferenceId: { type: uuid, source: system, description: The product the change is about., example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
+      sourceLabel: { type: string, source: system, description: What a reviewer reads to know the product (its SKU)., example: TMOTOR-VELOX-V2306-1750KV }
+      requestedChange: { type: string, source: system, description: The lifecycle state asked for., example: active }
+      rationale: { type: string, source: system, example: Launch with the 5-inch freestyle range }
+      riskLevel: { type: string, source: system, example: medium }
+      submittedAt: { type: datetime, source: generated, example: 2026-11-02T09:40:05Z }
+
+  ReviewerAssigned:
+    context: CatalogGovernance
+    description: A reviewer took responsibility for an approval case.
+    tags: [approvalCaseId]
+    fields:
+      approvalCaseId: { type: uuid, source: system }
+      reviewer: { type: string, source: system, example: Lena Holm }
+      assignedAt: { type: datetime, source: generated, example: 2026-11-02T11:00:00Z }
+
+  ApprovalCaseApproved:
+    context: CatalogGovernance
+    description: A reviewer approved the change. The decision is an audit record and does not change.
+    tags: [approvalCaseId]
+    fields:
+      approvalCaseId: { type: uuid, source: system }
+      rationale: { type: string, source: system, example: Specifications match the supplier datasheet }
+      decidedBy: { type: string, source: system, example: Lena Holm }
+      decidedAt: { type: datetime, source: generated, example: 2026-11-02T14:30:00Z }
+
+  ApprovalCaseRejected:
+    context: CatalogGovernance
+    description: A reviewer rejected the change. The decision is an audit record and does not change.
+    tags: [approvalCaseId, sourceReferenceId]
+    fields:
+      approvalCaseId: { type: uuid, source: system }
+      rationale: { type: string, source: system }
+      decidedBy: { type: string, source: system }
+      decidedAt: { type: datetime, source: generated, example: 2026-11-02T14:30:00Z }
+      changeType: { type: string, source: system, from: ApprovalCaseSubmitted.changeType }
+      sourceReferenceId: { type: uuid, source: system, from: ApprovalCaseSubmitted.sourceReferenceId }
+      requestedChange: { type: string, source: system, from: ApprovalCaseSubmitted.requestedChange }
+
+  PublicationGateReleased:
+    context: CatalogGovernance
+    description: A reviewer released the publication gate for an approved change.
+    tags: [approvalCaseId, sourceReferenceId]
+    fields:
+      approvalCaseId: { type: uuid, source: system }
+      releasedBy: { type: string, source: system, example: Lena Holm }
+      releasedAt: { type: datetime, source: generated, example: 2026-11-02T15:00:00Z }
+      changeType: { type: string, source: system, from: ApprovalCaseSubmitted.changeType }
+      sourceReferenceId: { type: uuid, source: system, from: ApprovalCaseSubmitted.sourceReferenceId }
+      requestedChange: { type: string, source: system, from: ApprovalCaseSubmitted.requestedChange }
+
+slices:
+
+  # ================================================================== Draft
+
+  DraftProduct:
+    pattern: command
+    chapter: Draft
+    description: >-
+      The manager creates a product master record. ADDR: JS1 "Submit new product";
+      createProduct() (POST /product-lifecycle/v1/products, 409 for a duplicate SKU).
+    screen:
+      name: NewProductForm
+      actor: ProductLifecycleManager
+      fields:
+        sku: { type: string, source: user, example: TMOTOR-VELOX-V2306-1750KV }
+        name: { type: string, source: user, example: T-Motor Velox V2306 1750KV }
+        brand: { type: string, source: user, example: T-Motor }
+    command:
+      name: DraftProduct
+      fields:
+        sku: { type: string, source: system, from: screen.sku }
+        name: { type: string, source: system, from: screen.name }
+        brand: { type: string, source: system, from: screen.brand }
+    emits:
+      - event: ProductDrafted
+    rules:
+      PLC-001:
+        title: A SKU belongs to one product only
+        description: From the Product Lifecycle API design, createProduct() answers 409 for a duplicate SKU.
+    errors:
+      SkuAlreadyUsed: { description: Another product already has this SKU., rule: PLC-001 }
+    tests:
+      DraftsTheVeloxMotor:
+        rules: [PLC-001]
+        when:
+          values: { sku: TMOTOR-VELOX-V2306-1750KV, name: T-Motor Velox V2306 1750KV, brand: T-Motor }
+        then:
+          - event: ProductDrafted
+            values: { sku: TMOTOR-VELOX-V2306-1750KV, name: T-Motor Velox V2306 1750KV, brand: T-Motor }
+      RejectsASkuThatIsTaken:
+        rules: [PLC-001]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, name: T-Motor Velox V2306 1750KV, brand: T-Motor }
+        when:
+          values: { sku: TMOTOR-VELOX-V2306-1750KV, name: T-Motor Velox V2306 1750KV (copy), brand: T-Motor }
+        then:
+          - error: SkuAlreadyUsed
+
+  RecordSpecifications:
+    pattern: command
+    chapter: Draft
+    description: >-
+      The manager records the specifications the compatibility rules read: voltage range, current,
+      mounting and weight (the Core spec model of D-037). Also used to correct an active product.
+      ADDR: JS1 "Add technical specifications"; updateProductSpecifications().
+    screen:
+      name: SpecificationsForm
+      actor: ProductLifecycleManager
+      fields:
+        productId: { type: uuid, source: user, description: Picked from the products under management., example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
+        minVoltage: { type: decimal, source: user, example: 11.1 }
+        maxVoltage: { type: decimal, source: user, example: 25.2 }
+        maxCurrent: { type: decimal, source: user, example: 41.5 }
+        mounting: { type: string, source: user, example: 16x16-m3 }
+        weight: { type: decimal, source: user, example: 33.6 }
+    command:
+      name: RecordSpecifications
+      fields:
+        productId:
+          type: uuid
+          source: system
+          from: screen.productId
+          lookup: { view: ProductsUnderManagement, value: productId, label: name }
+        minVoltage: { type: decimal, source: system, from: screen.minVoltage }
+        maxVoltage: { type: decimal, source: system, from: screen.maxVoltage }
+        maxCurrent: { type: decimal, source: system, from: screen.maxCurrent }
+        mounting: { type: string, source: system, from: screen.mounting }
+        weight: { type: decimal, source: system, from: screen.weight }
+    emits:
+      - event: ProductSpecificationsRecorded
+    rules:
+      PLC-002:
+        title: The lowest supply voltage is not above the highest
+        description: Assumed from the Range type (min, max) of the product-specifications contract.
+        status: proposed
+    errors:
+      ProductUnknown: { description: No product was drafted under this id. }
+      VoltageRangeReversed: { description: The lowest voltage is above the highest., rule: PLC-002 }
+    tests:
+      RecordsTheVeloxSpecifications:
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV }
+        when:
+          values: { productId: $velox, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 41.5, mounting: 16x16-m3, weight: 33.6 }
+        then:
+          - event: ProductSpecificationsRecorded
+            values: { productId: $velox, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 41.5, mounting: 16x16-m3, weight: 33.6 }
+      CorrectsTheCurrentOfAnActiveProduct:
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV }
+          - event: ProductSpecificationsRecorded
+            values: { productId: $velox, maxCurrent: 41.5 }
+          - event: ProductPublished
+            values: { productId: $velox }
+        when:
+          values: { productId: $velox, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 38.0, mounting: 16x16-m3, weight: 33.6 }
+        then:
+          - event: ProductSpecificationsRecorded
+            values: { productId: $velox, maxCurrent: 38.0 }
+      RejectsAReversedVoltageRange:
+        rules: [PLC-002]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox }
+        when:
+          values: { productId: $velox, minVoltage: <min>, maxVoltage: <max> }
+        then:
+          - error: VoltageRangeReversed
+        examples:
+          - { min: 25.2, max: 11.1 }
+          - { min: 12.0, max: 11.9 }
+      RejectsSpecificationsForAnUnknownProduct:
+        when:
+          values: { productId: $nobody, minVoltage: 11.1, maxVoltage: 25.2 }
+        then:
+          - error: ProductUnknown
+
+  FindProductsToManage:
+    pattern: query
+    chapter: Draft
+    description: >-
+      The manager's product list: SKU, name, brand, lifecycle state, whether the specifications are
+      recorded, where the latest lifecycle request stands, and the replacement of a discontinued
+      product. ADDR: JS1 "Search products for management"; searchProductsForManagement().
+      The same view feeds the product-records stream (ProductRecordChanged).
+    screen:
+      name: ProductAdminList
+      actor: ProductLifecycleManager
+    views:
+      - list-view:
+          name: ProductsUnderManagement
+          identity: productId
+          reads:
+            ProductDrafted: create
+            ProductSpecificationsRecorded: update
+            ProductLifecycleChangeRequested: update
+            ProductLifecycleChangeCleared: update
+            ProductLifecycleChangeRefused: update
+            ProductPublished: update
+            ProductDetailsRevised: update
+            ProductDiscontinued: update
+            ReplacementProductLinked: update
+          fields:
+            productId: { type: uuid, source: system, from: ProductDrafted.productId, example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
+            sku: { type: string, source: system, from: ProductDrafted.sku }
+            brand: { type: string, source: system, from: ProductDrafted.brand }
+            name:
+              type: string
+              source: generated
+              description: The name from the draft, or from the latest revision of the details.
+              example: T-Motor Velox V2306 1750KV
+            lifecycleState:
+              type: string
+              source: generated
+              description: "draft; active after ProductPublished; discontinued after ProductDiscontinued."
+              example: draft
+            specified:
+              type: bool
+              source: generated
+              description: The specifications are recorded.
+              example: true
+            review:
+              type: string
+              source: generated
+              description: "Where the latest lifecycle request stands: none, in review, cleared or refused, with the state asked for."
+              example: "in review: active"
+            replacementProductId: { type: uuid, source: system, from: ReplacementProductLinked.replacementProductId, optional: true }
+    tests:
+      ShowsEachProductWithItsStateAndReview:
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, name: T-Motor Velox V2306 1750KV, brand: T-Motor }
+          - event: ProductSpecificationsRecorded
+            values: { productId: $velox }
+          - event: ProductLifecycleChangeRequested
+            values: { productId: $velox, targetState: active }
+          - event: ProductDrafted
+            values: { productId: $f405, sku: SPEEDYBEE-F405-V4, name: SpeedyBee F405 V4 Flight Controller, brand: SpeedyBee }
+        then:
+          - view: ProductsUnderManagement
+            rows:
+              - { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, brand: T-Motor, name: T-Motor Velox V2306 1750KV, lifecycleState: draft, specified: true, review: "in review: active", replacementProductId: null }
+              - { productId: $f405, sku: SPEEDYBEE-F405-V4, brand: SpeedyBee, name: SpeedyBee F405 V4 Flight Controller, lifecycleState: draft, specified: false, review: none, replacementProductId: null }
+      ShowsARefusedRequest:
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, name: T-Motor Velox V2306 1750KV, brand: T-Motor }
+          - event: ProductSpecificationsRecorded
+            values: { productId: $velox }
+          - event: ProductLifecycleChangeRequested
+            values: { productId: $velox, targetState: active }
+          - event: ProductLifecycleChangeRefused
+            values: { productId: $velox, targetState: active, rationale: Datasheet does not state the maximum current }
+        then:
+          - view: ProductsUnderManagement
+            rows:
+              - { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, brand: T-Motor, name: T-Motor Velox V2306 1750KV, lifecycleState: draft, specified: true, review: "refused: active", replacementProductId: null }
+      FollowsTheVeloxFromDraftToReplaced:
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, name: T-Motor Velox V2306 1750KV, brand: T-Motor }
+          - event: ProductSpecificationsRecorded
+            values: { productId: $velox }
+          - event: ProductLifecycleChangeRequested
+            values: { productId: $velox, targetState: active }
+          - event: ProductLifecycleChangeCleared
+            values: { productId: $velox, targetState: active }
+          - event: ProductPublished
+            values: { productId: $velox }
+          - event: ProductDetailsRevised
+            values: { productId: $velox, name: T-Motor Velox V2306 V2 1750KV }
+          - event: ProductDrafted
+            values: { productId: $velox3, sku: TMOTOR-VELOX-V2306V3-1950KV, name: T-Motor Velox V2306 V3 1950KV, brand: T-Motor }
+          - event: ProductLifecycleChangeRequested
+            values: { productId: $velox, targetState: discontinued }
+          - event: ProductLifecycleChangeCleared
+            values: { productId: $velox, targetState: discontinued }
+          - event: ProductDiscontinued
+            values: { productId: $velox }
+          - event: ReplacementProductLinked
+            values: { productId: $velox, replacementProductId: $velox3 }
+        then:
+          - view: ProductsUnderManagement
+            rows:
+              - { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, brand: T-Motor, name: T-Motor Velox V2306 V2 1750KV, lifecycleState: discontinued, specified: true, review: none, replacementProductId: $velox3 }
+              - { productId: $velox3, sku: TMOTOR-VELOX-V2306V3-1950KV, brand: T-Motor, name: T-Motor Velox V2306 V3 1950KV, lifecycleState: draft, specified: false, review: none, replacementProductId: null }
+
+  # ================================================================== Review
+
+  RequestLifecycleChange:
+    pattern: command
+    chapter: Review
+    description: >-
+      The manager asks for a product to go live (active) or to be retired (discontinued), with a
+      reason and a risk level. Product Data checks the product rules and publishes the request to
+      Catalog Governance. ADDR: JS1 "Set initial lifecycle state" and "Mark product as
+      discontinued"; setProductLifecycleState(targetState, reason) and the lifecycle-change
+      approval case of submitApprovalCase(). Asking Product Data rather than Governance is
+      proposed (see the header).
+    screen:
+      name: LifecycleChangeForm
+      actor: ProductLifecycleManager
+      fields:
+        productId: { type: uuid, source: user, description: Picked from the products under management., example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
+        targetState: { type: string, source: user, description: "active or discontinued.", example: active }
+        reason: { type: string, source: user, example: Launch with the 5-inch freestyle range }
+        riskLevel: { type: string, source: user, description: "low, medium or high.", example: medium }
+    command:
+      name: RequestLifecycleChange
+      fields:
+        productId:
+          type: uuid
+          source: system
+          from: screen.productId
+          lookup: { view: ProductsUnderManagement, value: productId, label: name }
+        targetState: { type: string, source: system, from: screen.targetState }
+        reason: { type: string, source: system, from: screen.reason }
+        riskLevel: { type: string, source: system, from: screen.riskLevel }
+    emits:
+      - event: ProductLifecycleChangeRequested
+    rules:
+      PLC-003:
+        title: A product goes live only with its identity and specifications recorded
+        description: >-
+          define/boundaries.md, Product Lifecycle invariant 1 ("required identity and baseline
+          attributes before activation"). Checking it when the change is asked for, so a reviewer
+          never sees an incomplete draft, is our choice.
+      PLC-004:
+        title: A product moves only from draft to active and from active to discontinued
+        description: >-
+          define/boundaries.md says transitions "follow an allowed state machine" but does not list
+          them. These two moves are the ones the JS1 steps and the sequence diagram use.
+        status: proposed
+      PLC-005:
+        title: A discontinued product does not return to active
+        description: define/boundaries.md, Product Lifecycle invariant 3. ADDR names an "explicit reactivation policy" but does not define it.
+      PLC-006:
+        title: A product has at most one lifecycle request in review
+        description: A request is open until it is refused or applied (published or discontinued).
+        status: proposed
+    errors:
+      ProductUnknown: { description: No product was drafted under this id. }
+      SpecificationsMissing: { description: The product has no specifications yet., rule: PLC-003 }
+      TransitionNotAllowed: { description: The product cannot move from its state to the state asked for., rule: PLC-004 }
+      ReactivationNotAllowed: { description: The product is discontinued., rule: PLC-005 }
+      RequestAlreadyInReview: { description: Another lifecycle request for this product is still open., rule: PLC-006 }
+    tests:
+      AsksToPublishTheVeloxMotor:
+        rules: [PLC-003, PLC-004]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV }
+          - event: ProductSpecificationsRecorded
+            values: { productId: $velox }
+        when:
+          values: { productId: $velox, targetState: active, reason: Launch with the 5-inch freestyle range, riskLevel: medium }
+        then:
+          - event: ProductLifecycleChangeRequested
+            values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, targetState: active, reason: Launch with the 5-inch freestyle range, riskLevel: medium }
+      AsksToDiscontinueTheActiveVelox:
+        rules: [PLC-004, PLC-006]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV }
+          - event: ProductSpecificationsRecorded
+            values: { productId: $velox }
+          - event: ProductLifecycleChangeRequested
+            values: { productId: $velox, targetState: active }
+          - event: ProductPublished
+            values: { productId: $velox }
+        when:
+          values: { productId: $velox, targetState: discontinued, reason: Replaced by the V3 1950KV, riskLevel: high }
+        then:
+          - event: ProductLifecycleChangeRequested
+            values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, targetState: discontinued, reason: Replaced by the V3 1950KV, riskLevel: high }
+      AsksAgainAfterARefusal:
+        rules: [PLC-006]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox }
+          - event: ProductSpecificationsRecorded
+            values: { productId: $velox, maxCurrent: 38.0 }
+          - event: ProductLifecycleChangeRequested
+            values: { productId: $velox, targetState: active }
+          - event: ProductLifecycleChangeRefused
+            values: { productId: $velox, targetState: active }
+        when:
+          values: { productId: $velox, targetState: active, reason: Maximum current now on the datasheet, riskLevel: medium }
+        then:
+          - event: ProductLifecycleChangeRequested
+            values: { productId: $velox, targetState: active }
+      RejectsADraftWithoutSpecifications:
+        rules: [PLC-003]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox }
+        when:
+          values: { productId: $velox, targetState: active }
+        then:
+          - error: SpecificationsMissing
+      RejectsDiscontinuingADraft:
+        rules: [PLC-004]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox }
+          - event: ProductSpecificationsRecorded
+            values: { productId: $velox }
+        when:
+          values: { productId: $velox, targetState: discontinued }
+        then:
+          - error: TransitionNotAllowed
+      RejectsPublishingAnActiveProductAgain:
+        rules: [PLC-004]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox }
+          - event: ProductSpecificationsRecorded
+            values: { productId: $velox }
+          - event: ProductPublished
+            values: { productId: $velox }
+        when:
+          values: { productId: $velox, targetState: active }
+        then:
+          - error: TransitionNotAllowed
+      RejectsReactivatingADiscontinuedProduct:
+        rules: [PLC-005]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox }
+          - event: ProductSpecificationsRecorded
+            values: { productId: $velox }
+          - event: ProductPublished
+            values: { productId: $velox }
+          - event: ProductDiscontinued
+            values: { productId: $velox }
+        when:
+          values: { productId: $velox, targetState: active }
+        then:
+          - error: ReactivationNotAllowed
+      RejectsASecondRequestWhileOneIsInReview:
+        rules: [PLC-006]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox }
+          - event: ProductSpecificationsRecorded
+            values: { productId: $velox }
+          - event: ProductLifecycleChangeRequested
+            values: { productId: $velox, targetState: active }
+        when:
+          values: { productId: $velox, targetState: active, reason: Please hurry }
+        then:
+          - error: RequestAlreadyInReview
+      RejectsARequestForAnUnknownProduct:
+        when:
+          values: { productId: $nobody, targetState: active }
+        then:
+          - error: ProductUnknown
+
+  OpenApprovalCase:
+    pattern: translation
+    chapter: Review
+    description: >-
+      Catalog Governance opens a pending approval case for each lifecycle request.
+      ADDR: submitApprovalCase(changeType=lifecycle-change, sourceReferenceId=productId).
+    message: ProductData.LifecycleChangeForReview
+    processor:
+      name: LifecycleRequestListener
+      lane: Integration
+    command:
+      name: SubmitApprovalCase
+      fields:
+        sourceReferenceId: { type: uuid, source: system, from: message.productId }
+        sourceLabel: { type: string, source: system, from: message.sku }
+        requestedChange: { type: string, source: system, from: message.targetState }
+        rationale: { type: string, source: system, from: message.reason }
+        riskLevel: { type: string, source: system, from: message.riskLevel }
+    emits:
+      - event: ApprovalCaseSubmitted
+    tests:
+      OpensACaseToPublishTheVelox:
+        when:
+          values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, targetState: active, reason: Launch with the 5-inch freestyle range, riskLevel: medium }
+        then:
+          - event: ApprovalCaseSubmitted
+            values: { changeType: lifecycle-change, sourceReferenceId: $velox, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: active, rationale: Launch with the 5-inch freestyle range, riskLevel: medium }
+      OpensANewCaseAfterARejection:
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $firstCase, sourceReferenceId: $velox, requestedChange: active }
+          - event: ApprovalCaseRejected
+            values: { approvalCaseId: $firstCase, sourceReferenceId: $velox, requestedChange: active }
+        when:
+          values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, targetState: active, reason: Maximum current now on the datasheet, riskLevel: medium }
+        then:
+          - event: ApprovalCaseSubmitted
+            values: { sourceReferenceId: $velox, requestedChange: active, rationale: Maximum current now on the datasheet }
+      IgnoresARequestItAlreadyOpened:
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $firstCase, sourceReferenceId: $velox, requestedChange: active }
+        when:
+          values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, targetState: active, reason: Launch with the 5-inch freestyle range, riskLevel: medium }
+        then: []
+
+  ReviewApprovalCases:
+    pattern: query
+    chapter: Review
+    description: >-
+      The reviewer's list of approval cases: the product (by SKU), the change asked for, the risk,
+      the rationale, the reviewer and the status. ADDR: Catalog Governance API ("expose case
+      status"); ApprovalCase resource.
+    screen:
+      name: ApprovalCaseList
+      actor: GovernanceReviewer
+    views:
+      - list-view:
+          name: ApprovalCases
+          identity: approvalCaseId
+          reads:
+            ApprovalCaseSubmitted: create
+            ReviewerAssigned: update
+            ApprovalCaseApproved: update
+            ApprovalCaseRejected: update
+            PublicationGateReleased: update
+          fields:
+            approvalCaseId: { type: uuid, source: system, from: ApprovalCaseSubmitted.approvalCaseId, example: 03724352-c0cd-4fa7-ac65-bddf8df0474d }
+            changeType: { type: string, source: system, from: ApprovalCaseSubmitted.changeType }
+            sourceLabel: { type: string, source: system, from: ApprovalCaseSubmitted.sourceLabel }
+            requestedChange: { type: string, source: system, from: ApprovalCaseSubmitted.requestedChange }
+            riskLevel: { type: string, source: system, from: ApprovalCaseSubmitted.riskLevel }
+            rationale: { type: string, source: system, from: ApprovalCaseSubmitted.rationale }
+            reviewer: { type: string, source: system, from: ReviewerAssigned.reviewer, optional: true }
+            status:
+              type: string
+              source: generated
+              description: "pending, approved, rejected or released."
+              example: pending
+    tests:
+      ShowsEachCaseWithItsStatus:
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: active, riskLevel: medium, rationale: Launch with the 5-inch freestyle range }
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $f405Case, changeType: lifecycle-change, sourceLabel: SPEEDYBEE-F405-V4, requestedChange: active, riskLevel: low, rationale: New flight controller for the 5-inch kits }
+          - event: ReviewerAssigned
+            values: { approvalCaseId: $launchCase, reviewer: Lena Holm }
+          - event: ApprovalCaseApproved
+            values: { approvalCaseId: $launchCase, decidedBy: Lena Holm }
+        then:
+          - view: ApprovalCases
+            rows:
+              - { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: active, riskLevel: medium, rationale: Launch with the 5-inch freestyle range, reviewer: Lena Holm, status: approved }
+              - { approvalCaseId: $f405Case, changeType: lifecycle-change, sourceLabel: SPEEDYBEE-F405-V4, requestedChange: active, riskLevel: low, rationale: New flight controller for the 5-inch kits, reviewer: null, status: pending }
+      ShowsReleasedAndRejectedCases:
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: active, riskLevel: medium, rationale: Launch with the 5-inch freestyle range }
+          - event: ApprovalCaseApproved
+            values: { approvalCaseId: $launchCase }
+          - event: PublicationGateReleased
+            values: { approvalCaseId: $launchCase }
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $retireCase, changeType: lifecycle-change, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: discontinued, riskLevel: high, rationale: Replaced by the V3 1950KV }
+          - event: ApprovalCaseRejected
+            values: { approvalCaseId: $retireCase, rationale: Successor not yet in stock }
+        then:
+          - view: ApprovalCases
+            rows:
+              - { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: active, riskLevel: medium, rationale: Launch with the 5-inch freestyle range, reviewer: null, status: released }
+              - { approvalCaseId: $retireCase, changeType: lifecycle-change, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: discontinued, riskLevel: high, rationale: Replaced by the V3 1950KV, reviewer: null, status: rejected }
+
+  AssignReviewer:
+    pattern: command
+    chapter: Review
+    description: "A reviewer takes an approval case. ADDR: assignApprovalReviewer()."
+    screen:
+      name: AssignReviewerForm
+      actor: GovernanceReviewer
+      fields:
+        approvalCaseId: { type: uuid, source: user, description: Picked from the approval cases., example: 03724352-c0cd-4fa7-ac65-bddf8df0474d }
+        reviewer: { type: string, source: user, description: Picked from the governance reviewers; the reviewer directory is outside this model., example: Lena Holm }
+    command:
+      name: AssignReviewer
+      fields:
+        approvalCaseId:
+          type: uuid
+          source: system
+          from: screen.approvalCaseId
+          lookup: { view: ApprovalCases, value: approvalCaseId, label: sourceLabel }
+        reviewer: { type: string, source: system, from: screen.reviewer }
+    emits:
+      - event: ReviewerAssigned
+    errors:
+      ApprovalCaseUnknown: { description: No approval case was opened under this id. }
+    tests:
+      AssignsLenaToTheVeloxLaunch:
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $launchCase, sourceLabel: TMOTOR-VELOX-V2306-1750KV }
+        when:
+          values: { approvalCaseId: $launchCase, reviewer: Lena Holm }
+        then:
+          - event: ReviewerAssigned
+            values: { approvalCaseId: $launchCase, reviewer: Lena Holm }
+      RejectsAnUnknownCase:
+        when:
+          values: { approvalCaseId: $nocase, reviewer: Lena Holm }
+        then:
+          - error: ApprovalCaseUnknown
+
+  ApproveChange:
+    pattern: command
+    chapter: Review
+    description: "The reviewer approves the change with a rationale. ADDR: recordApprovalDecision(decision=approve)."
+    screen:
+      name: ApproveForm
+      actor: GovernanceReviewer
+      fields:
+        approvalCaseId: { type: uuid, source: user, description: Picked from the approval cases., example: 03724352-c0cd-4fa7-ac65-bddf8df0474d }
+        rationale: { type: string, source: user, example: Specifications match the supplier datasheet }
+        decidedBy: { type: string, source: user, description: "The signed-in reviewer; the reviewer does not type it.", example: Lena Holm }
+    command:
+      name: ApproveChange
+      fields:
+        approvalCaseId:
+          type: uuid
+          source: system
+          from: screen.approvalCaseId
+          lookup: { view: ApprovalCases, value: approvalCaseId, label: sourceLabel }
+        rationale: { type: string, source: system, from: screen.rationale }
+        decidedBy: { type: string, source: system, from: screen.decidedBy }
+    emits:
+      - event: ApprovalCaseApproved
+    rules:
+      GOV-001:
+        title: An approval case is decided once
+        description: define/boundaries.md, Catalog Governance invariant 2 ("approval decisions are immutable audit events").
+    errors:
+      ApprovalCaseUnknown: { description: No approval case was opened under this id. }
+      CaseAlreadyDecided: { description: The case is already approved or rejected., rule: GOV-001 }
+    tests:
+      ApprovesTheVeloxLaunch:
+        rules: [GOV-001]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $launchCase, sourceReferenceId: $velox, requestedChange: active }
+          - event: ReviewerAssigned
+            values: { approvalCaseId: $launchCase, reviewer: Lena Holm }
+        when:
+          values: { approvalCaseId: $launchCase, rationale: Specifications match the supplier datasheet, decidedBy: Lena Holm }
+        then:
+          - event: ApprovalCaseApproved
+            values: { approvalCaseId: $launchCase, rationale: Specifications match the supplier datasheet, decidedBy: Lena Holm }
+      RejectsApprovingARejectedCase:
+        rules: [GOV-001]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $launchCase }
+          - event: ApprovalCaseRejected
+            values: { approvalCaseId: $launchCase, decidedBy: Lena Holm }
+        when:
+          values: { approvalCaseId: $launchCase, decidedBy: Omar Vik }
+        then:
+          - error: CaseAlreadyDecided
+      RejectsAnUnknownCase:
+        when:
+          values: { approvalCaseId: $nocase }
+        then:
+          - error: ApprovalCaseUnknown
+
+  RejectChange:
+    pattern: command
+    chapter: Review
+    description: "The reviewer rejects the change with a rationale. ADDR: recordApprovalDecision(decision=reject)."
+    screen:
+      name: RejectForm
+      actor: GovernanceReviewer
+      fields:
+        approvalCaseId: { type: uuid, source: user, description: Picked from the approval cases., example: 03724352-c0cd-4fa7-ac65-bddf8df0474d }
+        rationale: { type: string, source: user, example: Datasheet does not state the maximum current }
+        decidedBy: { type: string, source: user, description: "The signed-in reviewer; the reviewer does not type it.", example: Lena Holm }
+    command:
+      name: RejectChange
+      fields:
+        approvalCaseId:
+          type: uuid
+          source: system
+          from: screen.approvalCaseId
+          lookup: { view: ApprovalCases, value: approvalCaseId, label: sourceLabel }
+        rationale: { type: string, source: system, from: screen.rationale }
+        decidedBy: { type: string, source: system, from: screen.decidedBy }
+    emits:
+      - event: ApprovalCaseRejected
+    errors:
+      ApprovalCaseUnknown: { description: No approval case was opened under this id. }
+      CaseAlreadyDecided: { description: The case is already approved or rejected., rule: GOV-001 }
+    tests:
+      RejectsTheVeloxLaunchForAMissingCurrent:
+        rules: [GOV-001]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceReferenceId: $velox, requestedChange: active }
+        when:
+          values: { approvalCaseId: $launchCase, rationale: Datasheet does not state the maximum current, decidedBy: Lena Holm }
+        then:
+          - event: ApprovalCaseRejected
+            values: { approvalCaseId: $launchCase, rationale: Datasheet does not state the maximum current, decidedBy: Lena Holm, changeType: lifecycle-change, sourceReferenceId: $velox, requestedChange: active }
+      RejectsRejectingAnApprovedCase:
+        rules: [GOV-001]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $launchCase }
+          - event: ApprovalCaseApproved
+            values: { approvalCaseId: $launchCase }
+        when:
+          values: { approvalCaseId: $launchCase, rationale: Changed my mind }
+        then:
+          - error: CaseAlreadyDecided
+      RejectsAnUnknownCase:
+        when:
+          values: { approvalCaseId: $nocase }
+        then:
+          - error: ApprovalCaseUnknown
+
+  ReleaseChange:
+    pattern: command
+    chapter: Review
+    description: >-
+      The reviewer releases the publication gate for an approved change; Catalog Governance
+      publishes ChangeReleased. ADDR: releasePublicationGate(); PublicationGate resource
+      (locked, released).
+    screen:
+      name: ReleaseForm
+      actor: GovernanceReviewer
+      fields:
+        approvalCaseId: { type: uuid, source: user, description: Picked from the approval cases., example: 03724352-c0cd-4fa7-ac65-bddf8df0474d }
+        releasedBy: { type: string, source: user, description: "The signed-in reviewer; the reviewer does not type it.", example: Lena Holm }
+    command:
+      name: ReleaseChange
+      fields:
+        approvalCaseId:
+          type: uuid
+          source: system
+          from: screen.approvalCaseId
+          lookup: { view: ApprovalCases, value: approvalCaseId, label: sourceLabel }
+        releasedBy: { type: string, source: system, from: screen.releasedBy }
+    emits:
+      - event: PublicationGateReleased
+    rules:
+      GOV-002:
+        title: A change is released only after it is approved
+        description: define/boundaries.md, Catalog Governance invariant 1 ("high-risk changes must be approved before publication").
+      GOV-003:
+        title: A publication gate is released once
+        description: Assumed from the gate states locked and released in define/resources.md.
+        status: proposed
+    errors:
+      ApprovalCaseUnknown: { description: No approval case was opened under this id. }
+      CaseNotApproved: { description: The case is pending or rejected., rule: GOV-002 }
+      GateAlreadyReleased: { description: The gate for this case is already released., rule: GOV-003 }
+    tests:
+      ReleasesTheApprovedVeloxLaunch:
+        rules: [GOV-002]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceReferenceId: $velox, requestedChange: active }
+          - event: ApprovalCaseApproved
+            values: { approvalCaseId: $launchCase }
+        when:
+          values: { approvalCaseId: $launchCase, releasedBy: Lena Holm }
+        then:
+          - event: PublicationGateReleased
+            values: { approvalCaseId: $launchCase, releasedBy: Lena Holm, changeType: lifecycle-change, sourceReferenceId: $velox, requestedChange: active }
+      RejectsReleasingAPendingCase:
+        rules: [GOV-002]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $launchCase }
+        when:
+          values: { approvalCaseId: $launchCase }
+        then:
+          - error: CaseNotApproved
+      RejectsReleasingARejectedCase:
+        rules: [GOV-002]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $launchCase }
+          - event: ApprovalCaseRejected
+            values: { approvalCaseId: $launchCase }
+        when:
+          values: { approvalCaseId: $launchCase }
+        then:
+          - error: CaseNotApproved
+      RejectsReleasingTwice:
+        rules: [GOV-003]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $launchCase }
+          - event: ApprovalCaseApproved
+            values: { approvalCaseId: $launchCase }
+          - event: PublicationGateReleased
+            values: { approvalCaseId: $launchCase }
+        when:
+          values: { approvalCaseId: $launchCase }
+        then:
+          - error: GateAlreadyReleased
+      RejectsAnUnknownCase:
+        when:
+          values: { approvalCaseId: $nocase }
+        then:
+          - error: ApprovalCaseUnknown
+
+  # ================================================================== Publish
+
+  ClearLifecycleChange:
+    pattern: translation
+    chapter: Publish
+    description: >-
+      Product Data learns that Governance released a lifecycle change for one of its products.
+      Releases of other change types (pricing, rules, imports) are not for Product Data.
+    message: CatalogGovernance.ChangeReleased
+    processor:
+      name: ReleaseListener
+      lane: Integration
+    command:
+      name: ClearLifecycleChange
+      fields:
+        approvalCaseId: { type: uuid, source: system, from: message.approvalCaseId }
+        changeType: { type: string, source: system, from: message.changeType }
+        productId: { type: uuid, source: system, from: message.sourceReferenceId }
+        targetState: { type: string, source: system, from: message.requestedChange }
+    emits:
+      - event: ProductLifecycleChangeCleared
+    tests:
+      ClearsTheVeloxLaunch:
+        given:
+          - event: ProductLifecycleChangeRequested
+            values: { productId: $velox, targetState: active }
+        when:
+          values: { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceReferenceId: $velox, requestedChange: active }
+        then:
+          - event: ProductLifecycleChangeCleared
+            values: { productId: $velox, targetState: active, approvalCaseId: $launchCase }
+      IgnoresAReleaseOfAnotherChangeType:
+        given:
+          - event: ProductLifecycleChangeRequested
+            values: { productId: $velox, targetState: active }
+        when:
+          values: { approvalCaseId: $priceCase, changeType: pricing-change, sourceReferenceId: $velox, requestedChange: active }
+        then: []
+      IgnoresAReleaseItAlreadyRecorded:
+        given:
+          - event: ProductLifecycleChangeRequested
+            values: { productId: $velox, targetState: active }
+          - event: ProductLifecycleChangeCleared
+            values: { productId: $velox, targetState: active, approvalCaseId: $launchCase }
+        when:
+          values: { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceReferenceId: $velox, requestedChange: active }
+        then: []
+      IgnoresAReleaseForAProductNobodyAskedAbout:
+        when:
+          values: { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceReferenceId: $nobody, requestedChange: active }
+        then: []
+
+  RecordRefusedLifecycleChange:
+    pattern: translation
+    chapter: Publish
+    description: >-
+      Product Data learns that Governance rejected a lifecycle change. The product keeps its state
+      and the manager may ask again (proposed: ADDR does not say what a rejection does to the product).
+    message: CatalogGovernance.ChangeRejected
+    processor:
+      name: RejectionListener
+      lane: Integration
+    command:
+      name: RecordRefusedLifecycleChange
+      fields:
+        approvalCaseId: { type: uuid, source: system, from: message.approvalCaseId }
+        changeType: { type: string, source: system, from: message.changeType }
+        productId: { type: uuid, source: system, from: message.sourceReferenceId }
+        targetState: { type: string, source: system, from: message.requestedChange }
+        rationale: { type: string, source: system, from: message.rationale }
+    emits:
+      - event: ProductLifecycleChangeRefused
+    tests:
+      RecordsThatTheVeloxLaunchWasRefused:
+        given:
+          - event: ProductLifecycleChangeRequested
+            values: { productId: $velox, targetState: active }
+        when:
+          values: { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceReferenceId: $velox, requestedChange: active, rationale: Datasheet does not state the maximum current }
+        then:
+          - event: ProductLifecycleChangeRefused
+            values: { productId: $velox, targetState: active, approvalCaseId: $launchCase, rationale: Datasheet does not state the maximum current }
+      IgnoresARejectionOfAnotherChangeType:
+        given:
+          - event: ProductLifecycleChangeRequested
+            values: { productId: $velox, targetState: active }
+        when:
+          values: { approvalCaseId: $priceCase, changeType: pricing-change, sourceReferenceId: $velox, requestedChange: active, rationale: Margin too low }
+        then: []
+      IgnoresARejectionItAlreadyRecorded:
+        given:
+          - event: ProductLifecycleChangeRequested
+            values: { productId: $velox, targetState: active }
+          - event: ProductLifecycleChangeRefused
+            values: { productId: $velox, targetState: active, approvalCaseId: $launchCase }
+        when:
+          values: { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceReferenceId: $velox, requestedChange: active, rationale: Datasheet does not state the maximum current }
+        then: []
+      IgnoresARejectionForAProductNobodyAskedAbout:
+        when:
+          values: { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceReferenceId: $nobody, requestedChange: active, rationale: Datasheet does not state the maximum current }
+        then: []
+
+  PublishProduct:
+    pattern: command
+    chapter: Publish
+    description: >-
+      After the release, the manager makes the product active; the product-records stream then
+      carries it as active to the shop. ADDR: sequence diagram JS1, setProductLifecycleState(targetState=active)
+      after releasePublicationGate().
+    screen:
+      name: PublishProductForm
+      actor: ProductLifecycleManager
+      fields:
+        productId: { type: uuid, source: user, description: Picked from the products under management., example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
+    command:
+      name: PublishProduct
+      fields:
+        productId:
+          type: uuid
+          source: system
+          from: screen.productId
+          lookup: { view: ProductsUnderManagement, value: productId, label: name }
+    emits:
+      - event: ProductPublished
+    rules:
+      PLC-007:
+        title: A lifecycle change takes effect only after Governance released it
+        description: >-
+          define/boundaries.md, Catalog Governance invariant 1 and pitfall "approval bypass"; D-037
+          ("when a change needs Governance approval, the owner publishes only after the decision").
+          One release allows one change.
+    errors:
+      ProductUnknown: { description: No product was drafted under this id. }
+      NotClearedForRelease: { description: No released approval waits for this product to go active., rule: PLC-007 }
+    tests:
+      PublishesTheVeloxAfterTheRelease:
+        rules: [PLC-007]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox }
+          - event: ProductLifecycleChangeCleared
+            values: { productId: $velox, targetState: active, approvalCaseId: $launchCase }
+        when:
+          values: { productId: $velox }
+        then:
+          - event: ProductPublished
+            values: { productId: $velox, approvalCaseId: $launchCase }
+      RejectsPublishingBeforeTheRelease:
+        rules: [PLC-007]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox }
+          - event: ProductLifecycleChangeRequested
+            values: { productId: $velox, targetState: active }
+        when:
+          values: { productId: $velox }
+        then:
+          - error: NotClearedForRelease
+      RejectsPublishingTwiceOnOneRelease:
+        rules: [PLC-007]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox }
+          - event: ProductLifecycleChangeCleared
+            values: { productId: $velox, targetState: active, approvalCaseId: $launchCase }
+          - event: ProductPublished
+            values: { productId: $velox, approvalCaseId: $launchCase }
+        when:
+          values: { productId: $velox }
+        then:
+          - error: NotClearedForRelease
+      RejectsPublishingAnUnknownProduct:
+        when:
+          values: { productId: $nobody }
+        then:
+          - error: ProductUnknown
+
+  # ================================================================== Change
+
+  ReviseProductDetails:
+    pattern: command
+    chapter: Change
+    description: >-
+      The manager changes the name or the short description of a product, in draft or active.
+      Specifications change through RecordSpecifications. ADDR: JS1 "Update product core
+      attributes"; updateProductAttributes().
+    screen:
+      name: ProductDetailsForm
+      actor: ProductLifecycleManager
+      fields:
+        productId: { type: uuid, source: user, description: Picked from the products under management., example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
+        name: { type: string, source: user, example: T-Motor Velox V2306 V2 1750KV }
+        shortDescription: { type: string, source: user, example: 2306 motor for 6S 5-inch freestyle builds }
+    command:
+      name: ReviseProductDetails
+      fields:
+        productId:
+          type: uuid
+          source: system
+          from: screen.productId
+          lookup: { view: ProductsUnderManagement, value: productId, label: name }
+        name: { type: string, source: system, from: screen.name }
+        shortDescription: { type: string, source: system, from: screen.shortDescription }
+    emits:
+      - event: ProductDetailsRevised
+    errors:
+      ProductUnknown: { description: No product was drafted under this id. }
+    tests:
+      RenamesTheActiveVelox:
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox, name: T-Motor Velox V2306 1750KV }
+          - event: ProductPublished
+            values: { productId: $velox }
+        when:
+          values: { productId: $velox, name: T-Motor Velox V2306 V2 1750KV, shortDescription: 2306 motor for 6S 5-inch freestyle builds }
+        then:
+          - event: ProductDetailsRevised
+            values: { productId: $velox, name: T-Motor Velox V2306 V2 1750KV, shortDescription: 2306 motor for 6S 5-inch freestyle builds }
+      RejectsRevisingAnUnknownProduct:
+        when:
+          values: { productId: $nobody, name: Ghost motor }
+        then:
+          - error: ProductUnknown
+
+  # ================================================================== Retire
+
+  DiscontinueProduct:
+    pattern: command
+    chapter: Retire
+    description: >-
+      After Governance released the discontinuation, the manager discontinues the product. It
+      stays in the catalog as discontinued. ADDR: JS1 "Mark product as discontinued";
+      discontinueProduct().
+    screen:
+      name: DiscontinueProductForm
+      actor: ProductLifecycleManager
+      fields:
+        productId: { type: uuid, source: user, description: Picked from the products under management., example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
+    command:
+      name: DiscontinueProduct
+      fields:
+        productId:
+          type: uuid
+          source: system
+          from: screen.productId
+          lookup: { view: ProductsUnderManagement, value: productId, label: name }
+    emits:
+      - event: ProductDiscontinued
+    errors:
+      ProductUnknown: { description: No product was drafted under this id. }
+      NotClearedForRelease: { description: No released approval waits for this product to be discontinued., rule: PLC-007 }
+    tests:
+      DiscontinuesTheVeloxAfterTheRelease:
+        rules: [PLC-007]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox }
+          - event: ProductPublished
+            values: { productId: $velox }
+          - event: ProductLifecycleChangeRequested
+            values: { productId: $velox, targetState: discontinued, reason: Replaced by the V3 1950KV }
+          - event: ProductLifecycleChangeCleared
+            values: { productId: $velox, targetState: discontinued, approvalCaseId: $retireCase }
+        when:
+          values: { productId: $velox }
+        then:
+          - event: ProductDiscontinued
+            values: { productId: $velox, reason: Replaced by the V3 1950KV, approvalCaseId: $retireCase }
+      RejectsDiscontinuingBeforeTheRelease:
+        rules: [PLC-007]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox }
+          - event: ProductPublished
+            values: { productId: $velox }
+          - event: ProductLifecycleChangeRequested
+            values: { productId: $velox, targetState: discontinued }
+        when:
+          values: { productId: $velox }
+        then:
+          - error: NotClearedForRelease
+      RejectsDiscontinuingOnAReleaseToGoActive:
+        rules: [PLC-007]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox }
+          - event: ProductLifecycleChangeCleared
+            values: { productId: $velox, targetState: active, approvalCaseId: $launchCase }
+        when:
+          values: { productId: $velox }
+        then:
+          - error: NotClearedForRelease
+      RejectsDiscontinuingAnUnknownProduct:
+        when:
+          values: { productId: $nobody }
+        then:
+          - error: ProductUnknown
+
+  LinkReplacementProduct:
+    pattern: command
+    chapter: Retire
+    description: >-
+      The manager names the product that replaces a discontinued one, so the shop can point
+      buyers to it. ADDR: JS1 "Link replacement product"; linkReplacementProduct().
+    screen:
+      name: ReplacementForm
+      actor: ProductLifecycleManager
+      fields:
+        productId: { type: uuid, source: user, description: "The discontinued product, picked from the products under management.", example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
+        replacementProductId: { type: uuid, source: user, description: "The successor, picked from the products under management.", example: 9b2e4d6f-1a3c-4e5b-8d7f-2a4c6e8b0d13 }
+        reasonCode: { type: string, source: user, example: successor-model }
+    command:
+      name: LinkReplacementProduct
+      fields:
+        productId:
+          type: uuid
+          source: system
+          from: screen.productId
+          lookup: { view: ProductsUnderManagement, value: productId, label: name }
+        replacementProductId:
+          type: uuid
+          source: system
+          from: screen.replacementProductId
+          lookup: { view: ProductsUnderManagement, value: productId, label: name }
+        reasonCode: { type: string, source: system, from: screen.reasonCode }
+    emits:
+      - event: ReplacementProductLinked
+    rules:
+      PLC-008:
+        title: Only a discontinued product gets a replacement
+        description: define/api-profiles.md, linkReplacementProduct() "for discontinued item".
+    errors:
+      ProductUnknown: { description: No product was drafted under this id. }
+      ProductNotDiscontinued: { description: The product is still draft or active., rule: PLC-008 }
+    tests:
+      LinksTheV3AsTheVeloxSuccessor:
+        rules: [PLC-008]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox }
+          - event: ProductDiscontinued
+            values: { productId: $velox }
+        when:
+          values: { productId: $velox, replacementProductId: $velox3, reasonCode: successor-model }
+        then:
+          - event: ReplacementProductLinked
+            values: { productId: $velox, replacementProductId: $velox3, reasonCode: successor-model }
+      RejectsAReplacementForAnActiveProduct:
+        rules: [PLC-008]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox }
+          - event: ProductPublished
+            values: { productId: $velox }
+        when:
+          values: { productId: $velox, replacementProductId: $velox3 }
+        then:
+          - error: ProductNotDiscontinued
+      RejectsAReplacementForAnUnknownProduct:
+        when:
+          values: { productId: $nobody, replacementProductId: $velox3 }
+        then:
+          - error: ProductUnknown
