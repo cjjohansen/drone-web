@@ -170,3 +170,9 @@
 - **Context:** Governance files may accidentally carry source-case identifiers or overly specific references during active work.
 - **Learning:** `STATE.md`, `decisions.md`, and `learnings.md` should avoid source-case specifics and use placeholder tokens for any sensitive concept.
 - **Action:** Prefer these tokens in governance notes: `source-persona-name`, `source-organization-name`, `source-system-name`, `source-business-unit-name`, `source-portfolio-name`.
+
+## LRN-027 (2026-10-28)
+- **Category:** Event Modeling / ADDR Integration
+- **Context:** The ordering event model (`design/ordering/eventmodel/order-and-track.kairos.yml`) was built before any ADDR work for ordering existed. The storefront ADDR covers only the read flows and stops at "[to cart/checkout]", so the model had no ADDR artifacts to ground it and is now kept as a draft.
+- **Learning:** An event model drawn ahead of its ADDR work rests on assumptions (rules, amounts, refusals) that the ADDR phases would have surfaced. Check which ADDR work exists before you pick a flow to model.
+- **Action:** Before you model a flow, list `design/*/addr/` and confirm that the flow's domain has at least Align and Define artifacts. If it has none, pick a flow that has them, or mark the model "draft: no ADDR yet" in its header and README.
