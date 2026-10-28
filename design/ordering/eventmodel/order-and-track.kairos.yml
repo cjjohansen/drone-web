@@ -1,0 +1,1009 @@
+# Drone Web: a customer orders a drone on a phone and follows the delivery.
+# Written with the kairos-author skill of event-model-factory (bead galaxitech-website-5yv).
+#
+# The flow in words (chosen by CJ, 2026-10-28):
+#
+#   A customer opens the Drone Web app on a phone, picks a drone from the list of drones for sale,
+#   and places an order for it with a quantity and a delivery address. The customer then pays for
+#   the order. The payment provider tells Drone Web whether the payment went through or was
+#   declined. The customer follows the order in a list of their orders and on a status screen.
+#   The warehouse ships a paid order and tells Drone Web which carrier has it and under which
+#   tracking number; the carrier later tells Drone Web that the parcel was delivered. When the
+#   order ships and when it is delivered, the customer gets a push notification on the phone.
+#
+# Where the pieces come from in drone-web:
+#
+#   - Ordering is a new bounded context. No ADDR run covers it yet (strategy P4 asks for one).
+#   - Product names and lifecycle states arrive on the published stream `product-records`
+#     (ProductRecordChanged), prices on `effective-prices` (EffectivePriceChanged); see
+#     design/contracts/ and decision D-037. Ordering keeps its own copy (strategy P3: no
+#     synchronous calls between boundaries).
+#   - Payment is bought, and card data never reaches Drone Web (strategy P1, "Payment and
+#     checkout"). The provider is reached through a port and answers through webhooks.
+#   - Drone Web builds no warehouse system (strategy P1, Inventory). The warehouse and the
+#     carrier are outside systems; Ordering only hears what they publish.
+#
+# Mobile-friendly by design: one command per screen with at most three fields, list, status and
+# detail views instead of tables, and two events (OrderShipped, OrderDelivered) that automations
+# turn into push notifications.
+#
+# Not expressible in Kairos v0 yet, filed as gaps in event-model-factory and noted where they
+# apply: commands made offline and sent later, and the signed-in customer as the source of a
+# value and as the filter of "my" rows.
+#
+# Rules marked `status: proposed` are assumptions the flow did not state. CJ must confirm them.
+
+kairos: "0"
+model: OrderAndTrack
+description: A customer orders a drone on a phone, pays for it, and follows it until it is delivered, with a push notification when it ships and when it arrives.
+
+automations:
+  Integration:
+    description: Takes in what other systems publish.
+  Notifications:
+    description: Sends push notifications to the customer's phone.
+
+actors:
+  Customer:
+    description: A person who buys a drone on the Drone Web app, such as a Professional Integrator or a Casual Browser.
+
+contexts:
+  Ordering:
+    description: Orders of drones, from placing the order until the drone is delivered.
+    publishes:
+      PaidOrder:
+        version: 1
+        description: An order is paid and the warehouse can ship it.
+        from: OrderPaid
+        fields:
+          orderId: uuid
+          productId: uuid
+          quantity: int
+          deliveryAddress: string
+
+  ProductData:
+    foreign: true
+    description: Product Lifecycle Management. Publishes product records on the product-records stream (design/contracts/product-lifecycle.yaml).
+    publishes:
+      ProductRecordChanged:
+        version: 1
+        description: The current record of a product. productId is the record key of the stream.
+        fields:
+          productId: uuid
+          sku: string
+          name: string
+          lifecycleState: string
+
+  Pricing:
+    foreign: true
+    description: Pricing and Promotions Management. Publishes effective prices on the effective-prices stream (design/contracts/pricing.yaml).
+    publishes:
+      EffectivePriceChanged:
+        version: 1
+        description: The price a product sells at now, after the active promotion. productId is the record key of the stream.
+        fields:
+          productId: uuid
+          unitPrice: decimal
+          currency: string
+
+  PaymentProvider:
+    foreign: true
+    description: The bought payment service. It takes the card on its own payment sheet and tells Drone Web the outcome by webhook.
+    publishes:
+      PaymentCaptured:
+        version: 1
+        description: The provider took the money for an order.
+        fields:
+          paymentId: string
+          orderId: uuid
+          amount: decimal
+          capturedAt: datetime
+      PaymentDeclined:
+        version: 1
+        description: The provider could not take the money for an order.
+        fields:
+          paymentId: string
+          orderId: uuid
+          declineReason: string
+
+  Warehouse:
+    foreign: true
+    description: The warehouse side, run from the ERP. It receives PaidOrder and ships the parcel.
+    publishes:
+      ParcelDispatched:
+        version: 1
+        description: The warehouse handed the parcel for an order to a carrier.
+        fields:
+          orderId: uuid
+          carrier: string
+          trackingNumber: string
+          dispatchedAt: datetime
+
+  Carrier:
+    foreign: true
+    description: The carrier that delivers the parcel. It knows the parcel by its tracking number only.
+    publishes:
+      ParcelDelivered:
+        version: 1
+        description: The carrier delivered a parcel.
+        fields:
+          trackingNumber: string
+          deliveredAt: datetime
+
+ports:
+  PaymentApi:
+    description: The payment provider's API. Drone Web asks it to start a payment for an order's total and gets the provider's payment id back.
+    operations:
+      StartPayment:
+        request:
+          orderId: uuid
+          total: decimal
+          currency: string
+        reply:
+          paymentId: string
+  PushNotifications:
+    description: The bought push service. It knows which phones belong to a customer and delivers the message to them.
+    operations:
+      SendOrderShippedPush:
+        request:
+          customerId: uuid
+          orderId: uuid
+          productName: string
+          carrier: string
+          trackingNumber: string
+      SendOrderDeliveredPush:
+        request:
+          customerId: uuid
+          orderId: uuid
+          productName: string
+
+events:
+  ProductDescribed:
+    context: Ordering
+    description: Ordering learned a product's name, SKU and lifecycle state from product data.
+    tags: [productId]
+    fields:
+      productId: { type: uuid, source: system, example: 3f6b2c1e-8a4d-4f0e-9b7a-1c2d3e4f5a60 }
+      sku: { type: string, source: system, example: IFL-NAZ5V3-6S-BNF }
+      name: { type: string, source: system, example: iFlight Nazgul5 V3 6S BNF }
+      lifecycleState: { type: string, source: system, description: "draft, active or discontinued, as Product Data publishes it.", example: active }
+
+  ProductPriced:
+    context: Ordering
+    description: Ordering learned the price a product sells at now.
+    tags: [productId]
+    fields:
+      productId: { type: uuid, source: system }
+      unitPrice: { type: decimal, source: system, example: 329.99 }
+      currency: { type: string, source: system, example: USD }
+
+  OrderPlaced:
+    context: Ordering
+    description: A customer ordered a drone at the price it sold at that moment.
+    tags: [orderId, productId]
+    fields:
+      orderId: { type: uuid, source: generated, example: 7c9e6679-7425-40de-944b-e07fc1f90ae7 }
+      customerId: { type: uuid, source: system, example: 0b7e9d22-4c1a-4e8b-9f3d-6a5b4c3d2e10 }
+      productId: { type: uuid, source: system, example: 3f6b2c1e-8a4d-4f0e-9b7a-1c2d3e4f5a60 }
+      productName: { type: string, source: system, from: ProductDescribed.name, example: iFlight Nazgul5 V3 6S BNF }
+      quantity: { type: int, source: system, example: 1 }
+      unitPrice: { type: decimal, source: system, from: ProductPriced.unitPrice, example: 329.99 }
+      currency: { type: string, source: system, from: ProductPriced.currency, example: USD }
+      total: { type: decimal, source: generated, description: unitPrice times quantity., example: 329.99 }
+      deliveryAddress: { type: string, source: system, example: "1200 Pine St, Seattle, WA 98101, USA" }
+      placedAt: { type: datetime, source: generated, example: 2026-11-02T18:42:00Z }
+
+  PaymentStarted:
+    context: Ordering
+    description: The customer started paying for an order, and the payment provider opened a payment for it.
+    tags: [orderId, paymentId]
+    fields:
+      orderId: { type: uuid, source: system }
+      paymentId: { type: string, source: external, example: pi_3QDrn8F2eZvKYlo2 }
+      amount: { type: decimal, source: system, from: OrderPlaced.total, example: 329.99 }
+      currency: { type: string, source: system, from: OrderPlaced.currency, example: USD }
+      startedAt: { type: datetime, source: generated, example: 2026-11-02T18:43:10Z }
+
+  OrderPaid:
+    context: Ordering
+    description: The payment provider took the money for an order.
+    tags: [orderId, paymentId]
+    fields:
+      orderId: { type: uuid, source: system }
+      paymentId: { type: string, source: system }
+      amount: { type: decimal, source: system, example: 329.99 }
+      paidAt: { type: datetime, source: system, example: 2026-11-02T18:43:55Z }
+      productId: { type: uuid, source: system, from: OrderPlaced.productId }
+      quantity: { type: int, source: system, from: OrderPlaced.quantity }
+      deliveryAddress: { type: string, source: system, from: OrderPlaced.deliveryAddress }
+
+  OrderPaymentDeclined:
+    context: Ordering
+    description: The payment provider could not take the money for an order; the order waits for a new payment.
+    tags: [orderId, paymentId]
+    fields:
+      orderId: { type: uuid, source: system }
+      paymentId: { type: string, source: system }
+      declineReason: { type: string, source: system, example: Insufficient funds }
+
+  OrderShipped:
+    context: Ordering
+    description: The warehouse handed the parcel for an order to a carrier.
+    tags: [orderId, trackingNumber]
+    fields:
+      orderId: { type: uuid, source: system }
+      carrier: { type: string, source: system, example: UPS }
+      trackingNumber: { type: string, source: system, example: 1Z999AA10123456784 }
+      shippedAt: { type: datetime, source: system, example: 2026-11-04T09:15:00Z }
+      customerId: { type: uuid, source: system, from: OrderPlaced.customerId }
+      productName: { type: string, source: system, from: OrderPlaced.productName }
+
+  CustomerToldOrderShipped:
+    context: Ordering
+    description: The customer got a push notification that the order is on its way.
+    tags: [orderId]
+    fields:
+      orderId: { type: uuid, source: system }
+      toldAt: { type: datetime, source: generated, example: 2026-11-04T09:15:30Z }
+
+  OrderDelivered:
+    context: Ordering
+    description: The carrier delivered the parcel for an order.
+    tags: [orderId, trackingNumber]
+    fields:
+      trackingNumber: { type: string, source: system }
+      deliveredAt: { type: datetime, source: system, example: 2026-11-06T14:05:00Z }
+      orderId: { type: uuid, source: system, from: OrderShipped.orderId }
+      customerId: { type: uuid, source: system, from: OrderShipped.customerId }
+      productName: { type: string, source: system, from: OrderShipped.productName }
+
+  CustomerToldOrderDelivered:
+    context: Ordering
+    description: The customer got a push notification that the drone has arrived.
+    tags: [orderId]
+    fields:
+      orderId: { type: uuid, source: system }
+      toldAt: { type: datetime, source: generated, example: 2026-11-06T14:05:30Z }
+
+slices:
+
+  # ---------------------------------------------------------------- Know what we sell
+
+  DescribeProduct:
+    pattern: translation
+    chapter: Know what we sell
+    description: Ordering keeps its own copy of each product's name and lifecycle state from the product-records stream.
+    message: ProductData.ProductRecordChanged
+    processor:
+      name: ProductRecordListener
+      lane: Integration
+    command:
+      name: DescribeProduct
+      fields:
+        productId: { type: uuid, source: system, from: message.productId }
+        sku: { type: string, source: system, from: message.sku }
+        name: { type: string, source: system, from: message.name }
+        lifecycleState: { type: string, source: system, from: message.lifecycleState }
+    emits:
+      - event: ProductDescribed
+    tests:
+      LearnsAboutTheNazgul:
+        when:
+          values: { productId: $nazgul, sku: IFL-NAZ5V3-6S-BNF, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: active }
+        then:
+          - event: ProductDescribed
+            values: { productId: $nazgul, sku: IFL-NAZ5V3-6S-BNF, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: active }
+      LearnsThatTheNazgulIsDiscontinued:
+        given:
+          - event: ProductDescribed
+            values: { productId: $nazgul, sku: IFL-NAZ5V3-6S-BNF, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: active }
+        when:
+          values: { productId: $nazgul, sku: IFL-NAZ5V3-6S-BNF, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: discontinued }
+        then:
+          - event: ProductDescribed
+            values: { productId: $nazgul, lifecycleState: discontinued }
+      IgnoresARecordItAlreadyHas:
+        given:
+          - event: ProductDescribed
+            values: { productId: $nazgul, sku: IFL-NAZ5V3-6S-BNF, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: active }
+        when:
+          values: { productId: $nazgul, sku: IFL-NAZ5V3-6S-BNF, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: active }
+        then: []
+
+  PriceProduct:
+    pattern: translation
+    chapter: Know what we sell
+    description: Ordering keeps its own copy of each product's current price from the effective-prices stream.
+    message: Pricing.EffectivePriceChanged
+    processor:
+      name: PriceListener
+      lane: Integration
+    command:
+      name: PriceProduct
+      fields:
+        productId: { type: uuid, source: system, from: message.productId }
+        unitPrice: { type: decimal, source: system, from: message.unitPrice }
+        currency: { type: string, source: system, from: message.currency }
+    emits:
+      - event: ProductPriced
+    tests:
+      LearnsTheNazgulPrice:
+        when:
+          values: { productId: $nazgul, unitPrice: 329.99, currency: USD }
+        then:
+          - event: ProductPriced
+            values: { productId: $nazgul, unitPrice: 329.99, currency: USD }
+      KeepsAPriceThatArrivesBeforeTheProductRecord:
+        when:
+          values: { productId: $x500, unitPrice: 359.00, currency: USD }
+        then:
+          - event: ProductPriced
+            values: { productId: $x500, unitPrice: 359.00, currency: USD }
+      LearnsAPromotionPrice:
+        given:
+          - event: ProductPriced
+            values: { productId: $nazgul, unitPrice: 329.99, currency: USD }
+        when:
+          values: { productId: $nazgul, unitPrice: 299.99, currency: USD }
+        then:
+          - event: ProductPriced
+            values: { productId: $nazgul, unitPrice: 299.99, currency: USD }
+      IgnoresAPriceItAlreadyHas:
+        given:
+          - event: ProductPriced
+            values: { productId: $nazgul, unitPrice: 329.99, currency: USD }
+        when:
+          values: { productId: $nazgul, unitPrice: 329.99, currency: USD }
+        then: []
+
+  BrowseDrones:
+    pattern: query
+    chapter: Know what we sell
+    description: "Phone screen: a scrolling list of drones with name and price; a drone that cannot be ordered is greyed out."
+    screen:
+      name: DroneList
+      actor: Customer
+    views:
+      - list-view:
+          name: DronesForSale
+          identity: productId
+          reads:
+            ProductDescribed: create
+            ProductPriced: update
+          fields:
+            productId: { type: uuid, source: system, from: ProductDescribed.productId, example: 3f6b2c1e-8a4d-4f0e-9b7a-1c2d3e4f5a60 }
+            name: { type: string, source: system, from: ProductDescribed.name }
+            unitPrice: { type: decimal, source: system, from: ProductPriced.unitPrice, optional: true }
+            currency: { type: string, source: system, from: ProductPriced.currency, optional: true }
+            orderable:
+              type: bool
+              source: generated
+              description: The product is active and has a price.
+              example: true
+    tests:
+      ListsEachDroneWithItsPrice:
+        given:
+          - event: ProductDescribed
+            values: { productId: $nazgul, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: active }
+          - event: ProductPriced
+            values: { productId: $nazgul, unitPrice: 329.99, currency: USD }
+          - event: ProductDescribed
+            values: { productId: $x500, name: Holybro X500 V2 ARF Kit, lifecycleState: active }
+          - event: ProductPriced
+            values: { productId: $x500, unitPrice: 359.00, currency: USD }
+        then:
+          - view: DronesForSale
+            rows:
+              - { productId: $nazgul, name: iFlight Nazgul5 V3 6S BNF, unitPrice: 329.99, currency: USD, orderable: true }
+              - { productId: $x500, name: Holybro X500 V2 ARF Kit, unitPrice: 359.00, currency: USD, orderable: true }
+      GreysOutADroneWithoutAPrice:
+        given:
+          - event: ProductDescribed
+            values: { productId: $x500, name: Holybro X500 V2 ARF Kit, lifecycleState: active }
+        then:
+          - view: DronesForSale
+            rows:
+              - { productId: $x500, name: Holybro X500 V2 ARF Kit, unitPrice: null, currency: null, orderable: false }
+      GreysOutADiscontinuedDrone:
+        given:
+          - event: ProductDescribed
+            values: { productId: $nazgul, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: active }
+          - event: ProductPriced
+            values: { productId: $nazgul, unitPrice: 329.99, currency: USD }
+          - event: ProductDescribed
+            values: { productId: $nazgul, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: discontinued }
+        then:
+          - view: DronesForSale
+            rows:
+              - { productId: $nazgul, name: iFlight Nazgul5 V3 6S BNF, unitPrice: 329.99, currency: USD, orderable: false }
+
+  # ---------------------------------------------------------------- Order and pay
+
+  PlaceOrder:
+    pattern: command
+    chapter: Order and pay
+    description: >-
+      Phone screen with three fields: the drone (picked from the list), how many, and where to
+      deliver. Offline: if the phone has no signal, the app should keep the order and send it when
+      it is back online, and sending it twice must not make two orders. Kairos v0 cannot say this
+      yet (gap filed in event-model-factory).
+    screen:
+      name: OrderForm
+      actor: Customer
+      fields:
+        customerId: { type: uuid, source: user, description: "Comes from the customer's sign-in in the app; the customer never types it.", example: 0b7e9d22-4c1a-4e8b-9f3d-6a5b4c3d2e10 }
+        productId: { type: uuid, source: user, description: Picked from the list of drones for sale., example: 3f6b2c1e-8a4d-4f0e-9b7a-1c2d3e4f5a60 }
+        quantity: { type: int, source: user, example: 1 }
+        deliveryAddress: { type: string, source: user, description: "One of the customer's saved addresses, or a new one.", example: "1200 Pine St, Seattle, WA 98101, USA" }
+    command:
+      name: PlaceOrder
+      fields:
+        customerId: { type: uuid, source: system, from: screen.customerId }
+        productId:
+          type: uuid
+          source: system
+          from: screen.productId
+          lookup: { view: DronesForSale, value: productId, label: name }
+        quantity: { type: int, source: system, from: screen.quantity }
+        deliveryAddress: { type: string, source: system, from: screen.deliveryAddress }
+    emits:
+      - event: OrderPlaced
+    rules:
+      ORD-001:
+        title: A customer can order only a drone that is active
+        description: Draft and discontinued products cannot be ordered.
+      ORD-002:
+        title: A customer can order only a drone that has a price
+      ORD-003:
+        title: An order on the app holds one to five drones
+        description: Larger quantities are fleet purchases and go through the procurement process.
+        status: proposed
+    errors:
+      DroneUnknown: { description: Ordering has never heard of this product. }
+      DroneNotForSale: { description: The drone is a draft or discontinued., rule: ORD-001 }
+      NoPriceYet: { description: The drone has no price yet., rule: ORD-002 }
+      QuantityOutOfRange: { description: An order on the app holds one to five drones., rule: ORD-003 }
+    tests:
+      PlacesAnOrderForOneNazgul:
+        rules: [ORD-001, ORD-002]
+        given:
+          - event: ProductDescribed
+            values: { productId: $nazgul, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: active }
+          - event: ProductPriced
+            values: { productId: $nazgul, unitPrice: 329.99, currency: USD }
+        when:
+          values: { customerId: $mia, productId: $nazgul, quantity: 1, deliveryAddress: "1200 Pine St, Seattle, WA 98101, USA" }
+        then:
+          - event: OrderPlaced
+            values: { customerId: $mia, productId: $nazgul, productName: iFlight Nazgul5 V3 6S BNF, quantity: 1, unitPrice: 329.99, currency: USD, total: 329.99, deliveryAddress: "1200 Pine St, Seattle, WA 98101, USA" }
+      TotalsThePriceForEachDrone:
+        rules: [ORD-003]
+        given:
+          - event: ProductDescribed
+            values: { productId: $nazgul, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: active }
+          - event: ProductPriced
+            values: { productId: $nazgul, unitPrice: 329.99, currency: USD }
+        when:
+          values: { customerId: $mia, productId: $nazgul, quantity: <quantity> }
+        then:
+          - event: OrderPlaced
+            values: { productId: $nazgul, quantity: <quantity>, unitPrice: 329.99, total: <total> }
+        examples:
+          - { quantity: 2, total: 659.98 }
+          - { quantity: 5, total: 1649.95 }
+      ChargesThePromotionPrice:
+        given:
+          - event: ProductDescribed
+            values: { productId: $nazgul, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: active }
+          - event: ProductPriced
+            values: { productId: $nazgul, unitPrice: 329.99, currency: USD }
+          - event: ProductPriced
+            values: { productId: $nazgul, unitPrice: 299.99, currency: USD }
+        when:
+          values: { customerId: $mia, productId: $nazgul, quantity: 1 }
+        then:
+          - event: OrderPlaced
+            values: { productId: $nazgul, unitPrice: 299.99, total: 299.99 }
+      RejectsADiscontinuedDrone:
+        rules: [ORD-001]
+        given:
+          - event: ProductDescribed
+            values: { productId: $nazgul, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: discontinued }
+          - event: ProductPriced
+            values: { productId: $nazgul, unitPrice: 329.99, currency: USD }
+        when:
+          values: { customerId: $mia, productId: $nazgul, quantity: 1 }
+        then:
+          - error: DroneNotForSale
+      RejectsADroneWithoutAPrice:
+        rules: [ORD-002]
+        given:
+          - event: ProductDescribed
+            values: { productId: $x500, name: Holybro X500 V2 ARF Kit, lifecycleState: active }
+        when:
+          values: { customerId: $mia, productId: $x500, quantity: 1 }
+        then:
+          - error: NoPriceYet
+      RejectsADroneOrderingNeverHeardOf:
+        when:
+          values: { customerId: $mia, productId: $unknownDrone, quantity: 1 }
+        then:
+          - error: DroneUnknown
+      RejectsAQuantityOutsideOneToFive:
+        rules: [ORD-003]
+        given:
+          - event: ProductDescribed
+            values: { productId: $nazgul, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: active }
+          - event: ProductPriced
+            values: { productId: $nazgul, unitPrice: 329.99, currency: USD }
+        when:
+          values: { customerId: $mia, productId: $nazgul, quantity: <quantity> }
+        then:
+          - error: QuantityOutOfRange
+        examples:
+          - { quantity: 0 }
+          - { quantity: 6 }
+
+  PayForOrder:
+    pattern: command
+    chapter: Order and pay
+    description: >-
+      Phone screen with one button: "Pay 329.99 USD". The provider's own payment sheet takes the
+      card, so card data never reaches Drone Web. The outcome arrives later by webhook.
+    screen:
+      name: PaymentScreen
+      actor: Customer
+      fields:
+        orderId: { type: uuid, source: user, description: "The order the customer just placed, or one picked from My orders.", example: 7c9e6679-7425-40de-944b-e07fc1f90ae7 }
+    command:
+      name: PayForOrder
+      fields:
+        orderId:
+          type: uuid
+          source: system
+          from: screen.orderId
+          lookup: { view: MyOrders, value: orderId, label: productName }
+        total: { type: decimal, source: system, from: MyOrders.total }
+        currency: { type: string, source: system, from: MyOrders.currency }
+        paymentId: { type: string, source: external, from: PaymentApi.StartPayment.paymentId }
+    emits:
+      - event: PaymentStarted
+    rules:
+      ORD-004:
+        title: An order is paid once
+        description: After a declined payment the customer may try again; after a captured payment, not.
+    errors:
+      OrderUnknown: { description: No order was placed under this id. }
+      OrderAlreadyPaid: { description: The payment provider already took the money for this order., rule: ORD-004 }
+    tests:
+      StartsPayingForMiasNazgul:
+        given:
+          - event: OrderPlaced
+            values: { orderId: $miasOrder, customerId: $mia, total: 329.99, currency: USD }
+        when:
+          values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2 }
+        then:
+          - event: PaymentStarted
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, currency: USD }
+      TriesAgainAfterADeclinedCard:
+        rules: [ORD-004]
+        given:
+          - event: OrderPlaced
+            values: { orderId: $miasOrder, total: 329.99, currency: USD }
+          - event: OrderPaymentDeclined
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, declineReason: Insufficient funds }
+        when:
+          values: { orderId: $miasOrder, paymentId: pi_3QDrp1K7aQwBx9M4 }
+        then:
+          - event: PaymentStarted
+            values: { orderId: $miasOrder, paymentId: pi_3QDrp1K7aQwBx9M4, amount: 329.99 }
+      RejectsPayingAPaidOrder:
+        rules: [ORD-004]
+        given:
+          - event: OrderPlaced
+            values: { orderId: $miasOrder, total: 329.99 }
+          - event: OrderPaid
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99 }
+        when:
+          values: { orderId: $miasOrder, paymentId: pi_3QDrp1K7aQwBx9M4 }
+        then:
+          - error: OrderAlreadyPaid
+      RejectsPayingAnOrderNobodyPlaced:
+        when:
+          values: { orderId: $noOrder, paymentId: pi_3QDrn8F2eZvKYlo2 }
+        then:
+          - error: OrderUnknown
+
+  RecordCapturedPayment:
+    pattern: translation
+    chapter: Order and pay
+    description: The payment provider's webhook says the money is taken. The paid order goes to the warehouse as PaidOrder.
+    message: PaymentProvider.PaymentCaptured
+    processor:
+      name: PaymentWebhookListener
+      lane: Integration
+    command:
+      name: RecordCapturedPayment
+      fields:
+        orderId: { type: uuid, source: system, from: message.orderId }
+        paymentId: { type: string, source: system, from: message.paymentId }
+        amount: { type: decimal, source: system, from: message.amount }
+        paidAt: { type: datetime, source: system, from: message.capturedAt }
+    emits:
+      - event: OrderPaid
+    tests:
+      RecordsThatMiaPaid:
+        given:
+          - event: OrderPlaced
+            values: { orderId: $miasOrder, productId: $nazgul, quantity: 1, total: 329.99, deliveryAddress: "1200 Pine St, Seattle, WA 98101, USA" }
+        when:
+          values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, capturedAt: 2026-11-02T18:43:55Z }
+        then:
+          - event: OrderPaid
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, paidAt: 2026-11-02T18:43:55Z, productId: $nazgul, quantity: 1, deliveryAddress: "1200 Pine St, Seattle, WA 98101, USA" }
+      IgnoresAPaymentItAlreadyRecorded:
+        given:
+          - event: OrderPlaced
+            values: { orderId: $miasOrder, productId: $nazgul, quantity: 1, total: 329.99 }
+          - event: OrderPaid
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99 }
+        when:
+          values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, capturedAt: 2026-11-02T18:43:55Z }
+        then: []
+      IgnoresAPaymentForAnOrderNobodyPlaced:
+        when:
+          values: { orderId: $noOrder, paymentId: pi_3QDtZZ0q1WxYv2Rb, amount: 329.99, capturedAt: 2026-11-02T18:43:55Z }
+        then: []
+
+  RecordDeclinedPayment:
+    pattern: translation
+    chapter: Order and pay
+    description: The payment provider's webhook says the card was declined. The order stays open so the customer can pay again.
+    message: PaymentProvider.PaymentDeclined
+    processor:
+      name: DeclineWebhookListener
+      lane: Integration
+    command:
+      name: RecordDeclinedPayment
+      fields:
+        orderId: { type: uuid, source: system, from: message.orderId }
+        paymentId: { type: string, source: system, from: message.paymentId }
+        declineReason: { type: string, source: system, from: message.declineReason }
+    emits:
+      - event: OrderPaymentDeclined
+    tests:
+      RecordsThatMiasCardWasDeclined:
+        given:
+          - event: OrderPlaced
+            values: { orderId: $miasOrder, total: 329.99 }
+        when:
+          values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, declineReason: Insufficient funds }
+        then:
+          - event: OrderPaymentDeclined
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, declineReason: Insufficient funds }
+      IgnoresADeclineItAlreadyRecorded:
+        given:
+          - event: OrderPlaced
+            values: { orderId: $miasOrder, total: 329.99 }
+          - event: OrderPaymentDeclined
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, declineReason: Insufficient funds }
+        when:
+          values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, declineReason: Insufficient funds }
+        then: []
+      IgnoresADeclineForAnOrderNobodyPlaced:
+        when:
+          values: { orderId: $noOrder, paymentId: pi_3QDtZZ0q1WxYv2Rb, declineReason: Insufficient funds }
+        then: []
+
+  ListMyOrders:
+    pattern: query
+    chapter: Order and pay
+    description: "Phone screen: the customer's orders, newest first, each with the drone, the total and a status badge. Tapping one opens the order status."
+    screen:
+      name: MyOrdersScreen
+      actor: Customer
+    views:
+      - list-view:
+          name: MyOrders
+          identity: orderId
+          reads:
+            OrderPlaced: create
+            OrderPaid: update
+            OrderPaymentDeclined: update
+            OrderShipped: update
+            OrderDelivered: update
+          fields:
+            orderId: { type: uuid, source: system, from: OrderPlaced.orderId, example: 7c9e6679-7425-40de-944b-e07fc1f90ae7 }
+            customerId: { type: uuid, source: system, from: OrderPlaced.customerId, example: 0b7e9d22-4c1a-4e8b-9f3d-6a5b4c3d2e10 }
+            productName: { type: string, source: system, from: OrderPlaced.productName }
+            quantity: { type: int, source: system, from: OrderPlaced.quantity }
+            total: { type: decimal, source: system, from: OrderPlaced.total }
+            currency: { type: string, source: system, from: OrderPlaced.currency }
+            placedAt: { type: datetime, source: system, from: OrderPlaced.placedAt }
+            status:
+              type: string
+              source: generated
+              description: "The badge: awaiting payment, payment declined, paid, shipped or delivered."
+              example: awaiting payment
+    tests:
+      ShowsEachOrderWithItsStatus:
+        given:
+          - event: OrderPlaced
+            values: { orderId: $miasNazgul, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF, quantity: 1, total: 329.99, currency: USD, placedAt: 2026-11-02T18:42:00Z }
+          - event: OrderPlaced
+            values: { orderId: $miasX500, customerId: $mia, productName: Holybro X500 V2 ARF Kit, quantity: 2, total: 718.00, currency: USD, placedAt: 2026-11-02T19:05:00Z }
+          - event: OrderPlaced
+            values: { orderId: $miasSpare, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF, quantity: 1, total: 329.99, currency: USD, placedAt: 2026-11-02T19:30:00Z }
+          - event: OrderPaid
+            values: { orderId: $miasNazgul, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99 }
+          - event: OrderPaymentDeclined
+            values: { orderId: $miasX500, paymentId: pi_3QDs02Lm4TnVc8Hk, declineReason: Insufficient funds }
+        then:
+          - view: MyOrders
+            rows:
+              - { orderId: $miasNazgul, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF, quantity: 1, total: 329.99, currency: USD, placedAt: 2026-11-02T18:42:00Z, status: paid }
+              - { orderId: $miasX500, customerId: $mia, productName: Holybro X500 V2 ARF Kit, quantity: 2, total: 718.00, currency: USD, placedAt: 2026-11-02T19:05:00Z, status: payment declined }
+              - { orderId: $miasSpare, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF, quantity: 1, total: 329.99, currency: USD, placedAt: 2026-11-02T19:30:00Z, status: awaiting payment }
+      FollowsAnOrderToTheDoor:
+        given:
+          - event: OrderPlaced
+            values: { orderId: $miasNazgul, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF, quantity: 1, total: 329.99, currency: USD, placedAt: 2026-11-02T18:42:00Z }
+          - event: OrderPlaced
+            values: { orderId: $leosNazgul, customerId: $leo, productName: iFlight Nazgul5 V3 6S BNF, quantity: 1, total: 329.99, currency: USD, placedAt: 2026-11-03T08:10:00Z }
+          - event: OrderPaid
+            values: { orderId: $miasNazgul, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99 }
+          - event: OrderPaid
+            values: { orderId: $leosNazgul, paymentId: pi_3QE1aa9Xc2RtYu7P, amount: 329.99 }
+          - event: OrderShipped
+            values: { orderId: $miasNazgul, carrier: UPS, trackingNumber: 1Z999AA10123456784 }
+          - event: OrderShipped
+            values: { orderId: $leosNazgul, carrier: UPS, trackingNumber: 1Z999AA10123456795 }
+          - event: OrderDelivered
+            values: { orderId: $miasNazgul, trackingNumber: 1Z999AA10123456784 }
+        then:
+          - view: MyOrders
+            rows:
+              - { orderId: $miasNazgul, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF, quantity: 1, total: 329.99, currency: USD, placedAt: 2026-11-02T18:42:00Z, status: delivered }
+              - { orderId: $leosNazgul, customerId: $leo, productName: iFlight Nazgul5 V3 6S BNF, quantity: 1, total: 329.99, currency: USD, placedAt: 2026-11-03T08:10:00Z, status: shipped }
+
+  # ---------------------------------------------------------------- Ship and deliver
+
+  RecordShipment:
+    pattern: translation
+    chapter: Ship and deliver
+    description: The warehouse tells Ordering which carrier has the parcel and under which tracking number.
+    message: Warehouse.ParcelDispatched
+    processor:
+      name: WarehouseListener
+      lane: Integration
+    command:
+      name: RecordShipment
+      fields:
+        orderId: { type: uuid, source: system, from: message.orderId }
+        carrier: { type: string, source: system, from: message.carrier }
+        trackingNumber: { type: string, source: system, from: message.trackingNumber }
+        shippedAt: { type: datetime, source: system, from: message.dispatchedAt }
+    emits:
+      - event: OrderShipped
+    tests:
+      RecordsThatMiasNazgulIsOnItsWay:
+        given:
+          - event: OrderPlaced
+            values: { orderId: $miasOrder, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF }
+          - event: OrderPaid
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99 }
+        when:
+          values: { orderId: $miasOrder, carrier: UPS, trackingNumber: 1Z999AA10123456784, dispatchedAt: 2026-11-04T09:15:00Z }
+        then:
+          - event: OrderShipped
+            values: { orderId: $miasOrder, carrier: UPS, trackingNumber: 1Z999AA10123456784, shippedAt: 2026-11-04T09:15:00Z, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF }
+      IgnoresAShipmentItAlreadyRecorded:
+        given:
+          - event: OrderPlaced
+            values: { orderId: $miasOrder, customerId: $mia }
+          - event: OrderShipped
+            values: { orderId: $miasOrder, carrier: UPS, trackingNumber: 1Z999AA10123456784 }
+        when:
+          values: { orderId: $miasOrder, carrier: UPS, trackingNumber: 1Z999AA10123456784, dispatchedAt: 2026-11-04T09:15:00Z }
+        then: []
+      IgnoresAParcelForAnOrderNobodyPlaced:
+        when:
+          values: { orderId: $noOrder, carrier: UPS, trackingNumber: 1Z999AA10123456806, dispatchedAt: 2026-11-04T09:20:00Z }
+        then: []
+
+  NotifyOrderShipped:
+    pattern: automation
+    chapter: Ship and deliver
+    description: 'Push notification: "Your iFlight Nazgul5 V3 6S BNF is on its way with UPS, tracking 1Z999AA10123456784." Tapping it opens the order status.'
+    views:
+      - list-view:
+          name: ShipmentsToAnnounce
+          identity: orderId
+          reads:
+            OrderShipped: create
+            CustomerToldOrderShipped: remove
+          fields:
+            orderId: { type: uuid, source: system, from: OrderShipped.orderId }
+            customerId: { type: uuid, source: system, from: OrderShipped.customerId }
+            productName: { type: string, source: system, from: OrderShipped.productName }
+            carrier: { type: string, source: system, from: OrderShipped.carrier }
+            trackingNumber: { type: string, source: system, from: OrderShipped.trackingNumber }
+    processor:
+      name: ShippedPushSender
+      lane: Notifications
+      calls: [PushNotifications.SendOrderShippedPush]
+    command:
+      name: RecordShippedPush
+      fields:
+        orderId: { type: uuid, source: system, from: ShipmentsToAnnounce.orderId }
+    emits:
+      - event: CustomerToldOrderShipped
+    tests:
+      TellsMiaHerNazgulIsOnItsWay:
+        given:
+          - event: OrderShipped
+            values: { orderId: $miasOrder, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF, carrier: UPS, trackingNumber: 1Z999AA10123456784 }
+        then:
+          - event: CustomerToldOrderShipped
+            values: { orderId: $miasOrder }
+      TellsMiaOnlyOnce:
+        given:
+          - event: OrderShipped
+            values: { orderId: $miasOrder, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF, carrier: UPS, trackingNumber: 1Z999AA10123456784 }
+          - event: CustomerToldOrderShipped
+            values: { orderId: $miasOrder }
+        then: []
+
+  RecordDelivery:
+    pattern: translation
+    chapter: Ship and deliver
+    description: The carrier knows the parcel only by its tracking number; Ordering finds the order through the tracking number it recorded at shipment.
+    message: Carrier.ParcelDelivered
+    processor:
+      name: CarrierListener
+      lane: Integration
+    command:
+      name: RecordDelivery
+      fields:
+        trackingNumber: { type: string, source: system, from: message.trackingNumber }
+        deliveredAt: { type: datetime, source: system, from: message.deliveredAt }
+    emits:
+      - event: OrderDelivered
+    tests:
+      RecordsThatMiasNazgulArrived:
+        given:
+          - event: OrderShipped
+            values: { orderId: $miasOrder, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF, carrier: UPS, trackingNumber: 1Z999AA10123456784 }
+        when:
+          values: { trackingNumber: 1Z999AA10123456784, deliveredAt: 2026-11-06T14:05:00Z }
+        then:
+          - event: OrderDelivered
+            values: { trackingNumber: 1Z999AA10123456784, deliveredAt: 2026-11-06T14:05:00Z, orderId: $miasOrder, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF }
+      IgnoresADeliveryItAlreadyRecorded:
+        given:
+          - event: OrderShipped
+            values: { orderId: $miasOrder, trackingNumber: 1Z999AA10123456784 }
+          - event: OrderDelivered
+            values: { orderId: $miasOrder, trackingNumber: 1Z999AA10123456784 }
+        when:
+          values: { trackingNumber: 1Z999AA10123456784, deliveredAt: 2026-11-06T14:05:00Z }
+        then: []
+      IgnoresAParcelDroneWebDidNotShip:
+        when:
+          values: { trackingNumber: 1Z999AA19999999999, deliveredAt: 2026-11-06T14:05:00Z }
+        then: []
+
+  NotifyOrderDelivered:
+    pattern: automation
+    chapter: Ship and deliver
+    description: 'Push notification: "Your iFlight Nazgul5 V3 6S BNF has been delivered." Tapping it opens the order status.'
+    views:
+      - list-view:
+          name: DeliveriesToAnnounce
+          identity: orderId
+          reads:
+            OrderDelivered: create
+            CustomerToldOrderDelivered: remove
+          fields:
+            orderId: { type: uuid, source: system, from: OrderDelivered.orderId }
+            customerId: { type: uuid, source: system, from: OrderDelivered.customerId }
+            productName: { type: string, source: system, from: OrderDelivered.productName }
+    processor:
+      name: DeliveredPushSender
+      lane: Notifications
+      calls: [PushNotifications.SendOrderDeliveredPush]
+    command:
+      name: RecordDeliveredPush
+      fields:
+        orderId: { type: uuid, source: system, from: DeliveriesToAnnounce.orderId }
+    emits:
+      - event: CustomerToldOrderDelivered
+    tests:
+      TellsMiaHerNazgulHasArrived:
+        given:
+          - event: OrderDelivered
+            values: { orderId: $miasOrder, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF, trackingNumber: 1Z999AA10123456784 }
+        then:
+          - event: CustomerToldOrderDelivered
+            values: { orderId: $miasOrder }
+      TellsMiaOnlyOnce:
+        given:
+          - event: OrderDelivered
+            values: { orderId: $miasOrder, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF, trackingNumber: 1Z999AA10123456784 }
+          - event: CustomerToldOrderDelivered
+            values: { orderId: $miasOrder }
+        then: []
+
+  TrackOrder:
+    pattern: query
+    chapter: Ship and deliver
+    description: "Phone screen: one order with a status timeline (placed, paid, shipped, delivered), the carrier and the tracking number."
+    screen:
+      name: OrderStatusScreen
+      actor: Customer
+    views:
+      - single-view:
+          name: OrderStatus
+          keyed-by: MyOrders.orderId
+          identity: orderId
+          reads:
+            OrderPlaced: create
+            OrderPaid: update
+            OrderPaymentDeclined: update
+            OrderShipped: update
+            OrderDelivered: update
+          fields:
+            orderId: { type: uuid, source: system, from: OrderPlaced.orderId, example: 7c9e6679-7425-40de-944b-e07fc1f90ae7 }
+            productName: { type: string, source: system, from: OrderPlaced.productName }
+            total: { type: decimal, source: system, from: OrderPlaced.total }
+            currency: { type: string, source: system, from: OrderPlaced.currency }
+            status:
+              type: string
+              source: generated
+              description: "awaiting payment, payment declined, paid, shipped or delivered."
+              example: shipped
+            paidAt: { type: datetime, source: system, from: OrderPaid.paidAt, optional: true }
+            carrier: { type: string, source: system, from: OrderShipped.carrier, optional: true }
+            trackingNumber: { type: string, source: system, from: OrderShipped.trackingNumber, optional: true }
+            shippedAt: { type: datetime, source: system, from: OrderShipped.shippedAt, optional: true }
+            deliveredAt: { type: datetime, source: system, from: OrderDelivered.deliveredAt, optional: true }
+    tests:
+      ShowsAPaidOrderWaitingForTheWarehouse:
+        given:
+          - event: OrderPlaced
+            values: { orderId: $miasOrder, productName: iFlight Nazgul5 V3 6S BNF, total: 329.99, currency: USD }
+          - event: OrderPaid
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, paidAt: 2026-11-02T18:43:55Z }
+        then:
+          - view: OrderStatus
+            keyed: { orderId: $miasOrder }
+            rows:
+              - { orderId: $miasOrder, productName: iFlight Nazgul5 V3 6S BNF, total: 329.99, currency: USD, status: paid, paidAt: 2026-11-02T18:43:55Z, carrier: null, trackingNumber: null, shippedAt: null, deliveredAt: null }
+      ShowsTheParcelOnItsWay:
+        given:
+          - event: OrderPlaced
+            values: { orderId: $miasOrder, productName: iFlight Nazgul5 V3 6S BNF, total: 329.99, currency: USD }
+          - event: OrderPaid
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, paidAt: 2026-11-02T18:43:55Z }
+          - event: OrderShipped
+            values: { orderId: $miasOrder, carrier: UPS, trackingNumber: 1Z999AA10123456784, shippedAt: 2026-11-04T09:15:00Z }
+        then:
+          - view: OrderStatus
+            keyed: { orderId: $miasOrder }
+            rows:
+              - { orderId: $miasOrder, productName: iFlight Nazgul5 V3 6S BNF, total: 329.99, currency: USD, status: shipped, paidAt: 2026-11-02T18:43:55Z, carrier: UPS, trackingNumber: 1Z999AA10123456784, shippedAt: 2026-11-04T09:15:00Z, deliveredAt: null }
+      ShowsWhenTheDroneArrived:
+        given:
+          - event: OrderPlaced
+            values: { orderId: $miasOrder, productName: iFlight Nazgul5 V3 6S BNF, total: 329.99, currency: USD }
+          - event: OrderPaid
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, paidAt: 2026-11-02T18:43:55Z }
+          - event: OrderShipped
+            values: { orderId: $miasOrder, carrier: UPS, trackingNumber: 1Z999AA10123456784, shippedAt: 2026-11-04T09:15:00Z }
+          - event: OrderDelivered
+            values: { orderId: $miasOrder, trackingNumber: 1Z999AA10123456784, deliveredAt: 2026-11-06T14:05:00Z }
+        then:
+          - view: OrderStatus
+            keyed: { orderId: $miasOrder }
+            rows:
+              - { orderId: $miasOrder, productName: iFlight Nazgul5 V3 6S BNF, total: 329.99, currency: USD, status: delivered, paidAt: 2026-11-02T18:43:55Z, carrier: UPS, trackingNumber: 1Z999AA10123456784, shippedAt: 2026-11-04T09:15:00Z, deliveredAt: 2026-11-06T14:05:00Z }
