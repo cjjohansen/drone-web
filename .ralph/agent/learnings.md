@@ -171,7 +171,7 @@
 - **Learning:** `STATE.md`, `decisions.md`, and `learnings.md` should avoid source-case specifics and use placeholder tokens for any sensitive concept.
 - **Action:** Prefer these tokens in governance notes: `source-persona-name`, `source-organization-name`, `source-system-name`, `source-business-unit-name`, `source-portfolio-name`.
 
-## LRN-027 (2026-10-29)
+## LRN-028 (2026-10-29)
 - **Category:** Governance / Traceability
 - **Context:** drone-web keeps its decisions in `.ralph/agent/decisions.md`. The galaxitech-website repo keeps its own series in `DECISIONS.md`, and many of those decisions are about drone-web. The two series overlap: both have a D-037 and a D-038, with different content. The ProductLifecycle event model cited "D-037" and "D-038" without saying which log it meant.
 - **Learning:** A bare decision number is ambiguous when two repos number decisions independently. Renumbering would break every existing reference, so the series stay as they are.
