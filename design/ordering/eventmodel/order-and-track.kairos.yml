@@ -73,7 +73,8 @@
 #   - Shipment (trackingNumber): no own views. One order has one parcel here, and the order views
 #     show the carrier, the tracking number and the dates. See the README.
 #
-# ORD-001, ORD-002 and ORD-004 to ORD-006 are confirmed by CJ (2026-10-28). ORD-007 is
+# ORD-001, ORD-002, ORD-004 and ORD-005 are confirmed by CJ (2026-10-28). ORD-006 is confirmed
+# in its wider form, which also refuses a held order (2026-10-29). ORD-007 is
 # `status: proposed`: CJ gave it on 2026-10-29, and ordering has no ADDR yet.
 
 kairos: "0"
@@ -1347,7 +1348,7 @@ slices:
           A parcel the warehouse reports for an order without OrderReleasedToWarehouse is refused.
           That covers an order that is not paid and an order held because the captured amount is
           less than the order total (ORD-007), so neither shows as shipped. CJ confirmed the
-          unpaid case on 2026-10-28; the held case follows from C2c (2026-10-29).
+          unpaid case on 2026-10-28 and the wider form, which also refuses a held order, on 2026-10-29.
     errors:
       OrderNotPaid: { description: The payment provider has not taken the money for this order., rule: ORD-006 }
       OrderHeld: { description: "The captured amount is less than the order total, so the order was not sent to the warehouse.", rule: ORD-006 }

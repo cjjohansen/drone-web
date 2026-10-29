@@ -101,6 +101,7 @@ is at least the order total. `ReleasePaidOrder` holds an underpaid order and rel
 one (rule ORD-007, `status: proposed`, because ordering has no ADDR yet). `PaidOrder` is now
 published from `OrderReleasedToWarehouse`, not from `OrderPaid`. `RecordShipment` (ORD-006)
 refuses a shipment for an order without `OrderReleasedToWarehouse`, so a held order cannot ship.
+CJ confirmed this wider ORD-006 on 2026-10-29.
 
 Example data is EU only (CJ, E1a, 2026-10-29): addresses in Germany and the Netherlands, prices
 in EUR.
