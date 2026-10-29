@@ -1,0 +1,8 @@
+# Intention sidecar for product-lifecycle.kairos.yml (Kairos spec v0, section 2).
+intention: to-be
+validationTarget: prototype
+purpose: >-
+  JS1 Product Lifecycle of catalog-management-v2: a Product Lifecycle Manager drafts a product,
+  Catalog Governance reviews and releases the change, the product is published, changed while it
+  is sold, and discontinued and replaced after a second review. Grounded in
+  design/catalog-management-v2/addr/; assumptions are rules with status proposed.

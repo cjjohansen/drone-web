@@ -1,0 +1,25 @@
+{
+  "validator": "kairos-validate",
+  "version": "0.1.0",
+  "checkedAt": "2026-10-28T19:36:35.542Z",
+  "model": "product-lifecycle.kairos.yml",
+  "modelSha256": "86ddf733fcc5a3474e59f7da9e53fe0d756f7d6f41cfc1b141d80d38d7fd4554",
+  "intention": "to-be",
+  "target": "prototype",
+  "result": "pass",
+  "errors": 0,
+  "warnings": 0,
+  "missing": 0,
+  "checked": {
+    "contexts": 2,
+    "events": 14,
+    "slices": 16,
+    "views": 2,
+    "tests": 57,
+    "examples": 2
+  },
+  "rules": {
+    "run": 89,
+    "skipped": 0
+  }
+}
