@@ -30,6 +30,15 @@
 #   - Rule ORD-003 (one to five drones per app order) is dropped; its id is not reused. Realistic
 #     order rules are researched in galaxitech-website-9x0.
 #
+# CJ's answers (2026-10-29):
+#
+#   - A mismatched payment goes to the warehouse only when the captured amount is at least the
+#     order total. An underpaid order is held; an overpaid order ships. How the surplus is
+#     refunded is an open question. Rule ORD-007 on RecordCapturedPayment, proposed.
+#   - Whether a row ever leaves the staff list PaymentMismatches stays open until ordering has ADDR.
+#   - PayForOrder stays as it is. Its 2 F6 warnings stay until galaxitech-website-nzd is done
+#     (reminder bead galaxitech-website-8za).
+#
 # Where the pieces come from in drone-web:
 #
 #   - Ordering is a new bounded context. No ADDR run covers it yet (strategy P4 asks for one),
@@ -63,7 +72,8 @@
 #   - Shipment (trackingNumber): no own views. One order has one parcel here, and the order views
 #     show the carrier, the tracking number and the dates. See the README.
 #
-# No rule is `status: proposed` now: every rule below is confirmed by CJ (2026-10-28).
+# ORD-001, ORD-002 and ORD-004 to ORD-006 are confirmed by CJ (2026-10-28). ORD-007 is
+# `status: proposed`: CJ gave it on 2026-10-29, and ordering has no ADDR yet.
 
 kairos: "0"
 model: OrderAndTrack
@@ -87,8 +97,8 @@ contexts:
     publishes:
       PaidOrder:
         version: 1
-        description: An order is paid and the warehouse can ship it.
-        from: OrderPaid
+        description: An order is paid in full, or more, and the warehouse can ship it.
+        from: OrderReleasedToWarehouse
         fields:
           orderId: uuid
           productId: uuid
@@ -256,6 +266,17 @@ events:
       productId: { type: uuid, source: system, from: OrderPlaced.productId }
       quantity: { type: int, source: system, from: OrderPlaced.quantity }
       deliveryAddress: { type: string, source: system, from: OrderPlaced.deliveryAddress }
+
+  OrderReleasedToWarehouse:
+    context: Ordering
+    description: The captured amount covers the order total, so the order goes to the warehouse as PaidOrder. An order whose captured amount is less than its total is held and gets no such event (ORD-007).
+    tags: [orderId]
+    fields:
+      orderId: { type: uuid, source: system }
+      productId: { type: uuid, source: system, from: OrderPlaced.productId }
+      quantity: { type: int, source: system, from: OrderPlaced.quantity }
+      deliveryAddress: { type: string, source: system, from: OrderPlaced.deliveryAddress }
+      releasedAt: { type: datetime, source: generated, example: 2026-11-02T18:43:56Z }
 
   PaymentAmountMismatched:
     context: Ordering
@@ -773,9 +794,10 @@ slices:
     pattern: translation
     chapter: Order and pay
     description: >-
-      The payment provider's webhook says the money is taken. The paid order goes to the warehouse
-      as PaidOrder. Ordering records the amount the provider captured and never refuses it, even
-      when it differs from the order total; FlagPaymentAmountMismatch flags that case.
+      The payment provider's webhook says the money is taken. Ordering records the amount the
+      provider captured and never refuses it, even when it differs from the order total;
+      FlagPaymentAmountMismatch flags that case. ReleasePaidOrder decides whether the order goes
+      to the warehouse (ORD-007).
     message: PaymentProvider.PaymentCaptured
     processor:
       name: PaymentWebhookListener
@@ -1217,6 +1239,85 @@ slices:
               - { orderId: $leosNazgul, customerId: $leo, productName: iFlight Nazgul5 V3 6S BNF, quantity: 1, total: 329.99, currency: USD, placedAt: 2026-11-03T08:10:00Z, status: shipped }
 
   # ---------------------------------------------------------------- Ship and deliver
+
+  ReleasePaidOrder:
+    pattern: automation
+    chapter: Ship and deliver
+    description: >-
+      Sends a paid order to the warehouse. OrderReleasedToWarehouse is published as PaidOrder,
+      which the warehouse ships. The decision compares the captured amount with the order total
+      from the order's own events (ORD-007). An underpaid order is held: it stays on the to-do
+      list and is not sent. An overpaid order ships; how the surplus is refunded is an open
+      question (see the README).
+    views:
+      - list-view:
+          name: PaidOrdersToRelease
+          identity: orderId
+          reads:
+            OrderPaid: create
+            OrderReleasedToWarehouse: remove
+          fields:
+            orderId: { type: uuid, source: system, from: OrderPaid.orderId }
+            amount: { type: decimal, source: system, from: OrderPaid.amount }
+            paidAt: { type: datetime, source: system, from: OrderPaid.paidAt }
+    processor:
+      name: PaidOrderReleaser
+      lane: Integration
+    command:
+      name: ReleaseOrderToWarehouse
+      fields:
+        orderId: { type: uuid, source: system, from: PaidOrdersToRelease.orderId }
+        capturedAmount: { type: decimal, source: system, from: PaidOrdersToRelease.amount }
+    emits:
+      - event: OrderReleasedToWarehouse
+    rules:
+      ORD-007:
+        title: An order goes to the warehouse only when the captured amount covers the order total
+        description: >-
+          When the captured amount is less than the order total, the order is held: Ordering
+          keeps the payment but does not send the order to the warehouse. When the captured amount
+          is equal to or more than the total, the order goes to the warehouse. The refund of an
+          overpayment is an open question. Given by CJ on 2026-10-29; proposed until ordering has
+          ADDR.
+        status: proposed
+    tests:
+      ReleasesAnOrderPaidInFull:
+        rules: [ORD-007]
+        given:
+          - event: OrderPlaced
+            values: { orderId: $miasOrder, productId: $nazgul, quantity: 1, total: 329.99, currency: USD, deliveryAddress: "1200 Pine St, Seattle, WA 98101, USA" }
+          - event: OrderPaid
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, paidAt: 2026-11-02T18:43:55Z }
+        then:
+          - event: OrderReleasedToWarehouse
+            values: { orderId: $miasOrder, productId: $nazgul, quantity: 1, deliveryAddress: "1200 Pine St, Seattle, WA 98101, USA" }
+      HoldsAnUnderpaidOrder:
+        rules: [ORD-007]
+        given:
+          - event: OrderPlaced
+            values: { orderId: $miasOrder, productId: $nazgul, quantity: 2, total: 659.98, currency: USD, deliveryAddress: "1200 Pine St, Seattle, WA 98101, USA" }
+          - event: OrderPaid
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, paidAt: 2026-11-02T18:43:55Z }
+        then: []
+      ShipsAnOverpaidOrder:
+        rules: [ORD-007]
+        given:
+          - event: OrderPlaced
+            values: { orderId: $leosOrder, productId: $nazgul, quantity: 1, total: 329.99, currency: USD, deliveryAddress: "455 Market St, San Francisco, CA 94105, USA" }
+          - event: OrderPaid
+            values: { orderId: $leosOrder, paymentId: pi_3QE1aa9Xc2RtYu7P, amount: 330.00, paidAt: 2026-11-03T08:11:30Z }
+        then:
+          - event: OrderReleasedToWarehouse
+            values: { orderId: $leosOrder, productId: $nazgul, quantity: 1, deliveryAddress: "455 Market St, San Francisco, CA 94105, USA" }
+      ReleasesAnOrderOnlyOnce:
+        given:
+          - event: OrderPlaced
+            values: { orderId: $miasOrder, productId: $nazgul, quantity: 1, total: 329.99, currency: USD }
+          - event: OrderPaid
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99 }
+          - event: OrderReleasedToWarehouse
+            values: { orderId: $miasOrder, productId: $nazgul, quantity: 1 }
+        then: []
 
   RecordShipment:
     pattern: translation
