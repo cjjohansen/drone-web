@@ -18,13 +18,13 @@ is delivered.
 
 ## The flow
 
-20 slices in three chapters, with 66 given/when/then scenarios and 11 views:
+20 slices in three chapters, with 67 given/when/then scenarios and 11 views:
 
 | Chapter | Slices |
 | --- | --- |
 | Know what we sell | `DescribeProduct` and `PriceProduct` keep Ordering's own copy of product records and effective prices from the published streams in [`design/contracts/`](../../contracts/); `BrowseDrones` lists them, and keeps a price that arrives before its product record; `ViewDrone` shows one drone |
 | Order and pay | `PlaceOrder` (three fields), `PayForOrder` (one button; the bought payment provider takes the card; the amount comes from the order's own events), the provider's webhooks (`RecordCapturedPayment`, `FlagPaymentAmountMismatch`, `RecordDeclinedPayment`), `CheckPaymentMismatches` for staff, `NotifyPaymentDeclined` (push), `ListPayments` and `ViewPayment` for staff, and `ListMyOrders` |
-| Ship and deliver | `ReleasePaidOrder` sends a paid order to the warehouse, and holds it when the captured amount is less than the order total (ORD-007, proposed); the warehouse and the carrier report the parcel (`RecordShipment`, which refuses an unpaid order, and `RecordDelivery`); `NotifyOrderShipped` and `NotifyOrderDelivered` send the push notifications; `TrackOrder` shows one order's status |
+| Ship and deliver | `ReleasePaidOrder` sends a paid order to the warehouse, and holds it when the captured amount is less than the order total (ORD-007, proposed); the warehouse and the carrier report the parcel (`RecordShipment`, which refuses an order that was not released to the warehouse: unpaid or held, and `RecordDelivery`); `NotifyOrderShipped` and `NotifyOrderDelivered` send the push notifications; `TrackOrder` shows one order's status |
 
 Ordering is a new bounded context. It follows the engineering strategy: payment is bought and card data
 never reaches Drone Web (P1), and Ordering reads other contexts only through their published streams (P3).
@@ -87,11 +87,20 @@ All nine are factory limits, not modelling errors:
   `PaymentMismatches` as checked. This stays open until ordering has ADDR (CJ, 2026-10-29).
 - **Refund of an overpayment.** An overpaid order ships (ORD-007). How and when Ordering refunds
   the surplus is open.
+- **Nothing releases a held order.** An underpaid order stays on the to-do list
+  `PaidOrdersToRelease`. No slice lets the customer pay the rest or cancel the order.
+- **ORD-004 blocks a second payment for a held order.** A held order has `OrderPaid`, so
+  `PayForOrder` refuses a payment for the rest (`OrderAlreadyPaid`). If a held order must take a
+  second payment, ORD-004 must change. This is not modelled.
 
 Decided on 2026-10-29: a mismatched payment goes to the warehouse only when the captured amount
 is at least the order total. `ReleasePaidOrder` holds an underpaid order and releases an overpaid
 one (rule ORD-007, `status: proposed`, because ordering has no ADDR yet). `PaidOrder` is now
-published from `OrderReleasedToWarehouse`, not from `OrderPaid`.
+published from `OrderReleasedToWarehouse`, not from `OrderPaid`. `RecordShipment` (ORD-006)
+refuses a shipment for an order without `OrderReleasedToWarehouse`, so a held order cannot ship.
+
+Example data is EU only (CJ, E1a, 2026-10-29): addresses in Germany and the Netherlands, prices
+in EUR.
 
 ## What Kairos cannot say yet
 

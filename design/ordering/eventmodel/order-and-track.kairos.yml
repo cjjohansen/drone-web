@@ -26,7 +26,8 @@
 #   - A price that arrives before the product record is kept and matched to the drone when the
 #     record arrives.
 #   - When the provider declines a payment, the customer gets a push notification.
-#   - Ordering refuses a shipment for an order that is not paid.
+#   - Ordering refuses a shipment for an order that is not paid. Since 2026-10-29 (C2c) this
+#     means not released to the warehouse, so a held, underpaid order is refused as well.
 #   - Rule ORD-003 (one to five drones per app order) is dropped; its id is not reused. Realistic
 #     order rules are researched in galaxitech-website-9x0.
 #
@@ -225,7 +226,7 @@ events:
     fields:
       productId: { type: uuid, source: system }
       unitPrice: { type: decimal, source: system, example: 329.99 }
-      currency: { type: string, source: system, example: USD }
+      currency: { type: string, source: system, example: EUR }
 
   OrderPlaced:
     context: Ordering
@@ -238,9 +239,9 @@ events:
       productName: { type: string, source: system, from: ProductDescribed.name, example: iFlight Nazgul5 V3 6S BNF }
       quantity: { type: int, source: system, example: 1 }
       unitPrice: { type: decimal, source: system, from: ProductPriced.unitPrice, example: 329.99 }
-      currency: { type: string, source: system, from: ProductPriced.currency, example: USD }
+      currency: { type: string, source: system, from: ProductPriced.currency, example: EUR }
       total: { type: decimal, source: generated, description: unitPrice times quantity., example: 329.99 }
-      deliveryAddress: { type: string, source: system, example: "1200 Pine St, Seattle, WA 98101, USA" }
+      deliveryAddress: { type: string, source: system, example: "Kaiserstrasse 12, 60311 Frankfurt am Main, Germany" }
       placedAt: { type: datetime, source: generated, example: 2026-11-02T18:42:00Z }
 
   PaymentStarted:
@@ -251,7 +252,7 @@ events:
       orderId: { type: uuid, source: system }
       paymentId: { type: string, source: external, example: pi_3QDrn8F2eZvKYlo2 }
       amount: { type: decimal, source: system, from: OrderPlaced.total, example: 329.99 }
-      currency: { type: string, source: system, from: OrderPlaced.currency, example: USD }
+      currency: { type: string, source: system, from: OrderPlaced.currency, example: EUR }
       startedAt: { type: datetime, source: generated, example: 2026-11-02T18:43:10Z }
 
   OrderPaid:
@@ -287,7 +288,7 @@ events:
       paymentId: { type: string, source: system }
       orderTotal: { type: decimal, source: system, from: OrderPlaced.total, example: 659.98 }
       capturedAmount: { type: decimal, source: system, example: 329.99 }
-      currency: { type: string, source: system, from: OrderPlaced.currency, example: USD }
+      currency: { type: string, source: system, from: OrderPlaced.currency, example: EUR }
       difference: { type: decimal, source: generated, description: capturedAmount minus orderTotal; negative when the provider took too little., example: -329.99 }
       capturedAt: { type: datetime, source: system, example: 2026-11-02T18:43:55Z }
 
@@ -414,31 +415,31 @@ slices:
     tests:
       LearnsTheNazgulPrice:
         when:
-          values: { productId: $nazgul, unitPrice: 329.99, currency: USD }
+          values: { productId: $nazgul, unitPrice: 329.99, currency: EUR }
         then:
           - event: ProductPriced
-            values: { productId: $nazgul, unitPrice: 329.99, currency: USD }
+            values: { productId: $nazgul, unitPrice: 329.99, currency: EUR }
       KeepsAPriceThatArrivesBeforeTheProductRecord:
         when:
-          values: { productId: $x500, unitPrice: 359.00, currency: USD }
+          values: { productId: $x500, unitPrice: 359.00, currency: EUR }
         then:
           - event: ProductPriced
-            values: { productId: $x500, unitPrice: 359.00, currency: USD }
+            values: { productId: $x500, unitPrice: 359.00, currency: EUR }
       LearnsAPromotionPrice:
         given:
           - event: ProductPriced
-            values: { productId: $nazgul, unitPrice: 329.99, currency: USD }
+            values: { productId: $nazgul, unitPrice: 329.99, currency: EUR }
         when:
-          values: { productId: $nazgul, unitPrice: 299.99, currency: USD }
+          values: { productId: $nazgul, unitPrice: 299.99, currency: EUR }
         then:
           - event: ProductPriced
-            values: { productId: $nazgul, unitPrice: 299.99, currency: USD }
+            values: { productId: $nazgul, unitPrice: 299.99, currency: EUR }
       IgnoresAPriceItAlreadyHas:
         given:
           - event: ProductPriced
-            values: { productId: $nazgul, unitPrice: 329.99, currency: USD }
+            values: { productId: $nazgul, unitPrice: 329.99, currency: EUR }
         when:
-          values: { productId: $nazgul, unitPrice: 329.99, currency: USD }
+          values: { productId: $nazgul, unitPrice: 329.99, currency: EUR }
         then: []
 
   BrowseDrones:
@@ -477,16 +478,16 @@ slices:
           - event: ProductDescribed
             values: { productId: $nazgul, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: active }
           - event: ProductPriced
-            values: { productId: $nazgul, unitPrice: 329.99, currency: USD }
+            values: { productId: $nazgul, unitPrice: 329.99, currency: EUR }
           - event: ProductDescribed
             values: { productId: $x500, name: Holybro X500 V2 ARF Kit, lifecycleState: active }
           - event: ProductPriced
-            values: { productId: $x500, unitPrice: 359.00, currency: USD }
+            values: { productId: $x500, unitPrice: 359.00, currency: EUR }
         then:
           - view: DronesForSale
             rows:
-              - { productId: $nazgul, name: iFlight Nazgul5 V3 6S BNF, unitPrice: 329.99, currency: USD, orderable: true }
-              - { productId: $x500, name: Holybro X500 V2 ARF Kit, unitPrice: 359.00, currency: USD, orderable: true }
+              - { productId: $nazgul, name: iFlight Nazgul5 V3 6S BNF, unitPrice: 329.99, currency: EUR, orderable: true }
+              - { productId: $x500, name: Holybro X500 V2 ARF Kit, unitPrice: 359.00, currency: EUR, orderable: true }
       GreysOutADroneWithoutAPrice:
         given:
           - event: ProductDescribed
@@ -498,25 +499,25 @@ slices:
       KeepsAPriceThatArrivedBeforeTheDrone:
         given:
           - event: ProductPriced
-            values: { productId: $x500, unitPrice: 359.00, currency: USD }
+            values: { productId: $x500, unitPrice: 359.00, currency: EUR }
           - event: ProductDescribed
             values: { productId: $x500, name: Holybro X500 V2 ARF Kit, lifecycleState: active }
         then:
           - view: DronesForSale
             rows:
-              - { productId: $x500, name: Holybro X500 V2 ARF Kit, unitPrice: 359.00, currency: USD, orderable: true }
+              - { productId: $x500, name: Holybro X500 V2 ARF Kit, unitPrice: 359.00, currency: EUR, orderable: true }
       GreysOutADiscontinuedDrone:
         given:
           - event: ProductDescribed
             values: { productId: $nazgul, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: active }
           - event: ProductPriced
-            values: { productId: $nazgul, unitPrice: 329.99, currency: USD }
+            values: { productId: $nazgul, unitPrice: 329.99, currency: EUR }
           - event: ProductDescribed
             values: { productId: $nazgul, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: discontinued }
         then:
           - view: DronesForSale
             rows:
-              - { productId: $nazgul, name: iFlight Nazgul5 V3 6S BNF, unitPrice: 329.99, currency: USD, orderable: false }
+              - { productId: $nazgul, name: iFlight Nazgul5 V3 6S BNF, unitPrice: 329.99, currency: EUR, orderable: false }
 
   ViewDrone:
     pattern: query
@@ -556,40 +557,40 @@ slices:
           - event: ProductDescribed
             values: { productId: $nazgul, sku: IFL-NAZ5V3-6S-BNF, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: active }
           - event: ProductPriced
-            values: { productId: $nazgul, unitPrice: 329.99, currency: USD }
+            values: { productId: $nazgul, unitPrice: 329.99, currency: EUR }
           - event: ProductDescribed
             values: { productId: $x500, sku: HB-X500V2-ARF, name: Holybro X500 V2 ARF Kit, lifecycleState: active }
         then:
           - view: DroneDetails
             keyed: { productId: $nazgul }
             rows:
-              - { productId: $nazgul, sku: IFL-NAZ5V3-6S-BNF, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: active, unitPrice: 329.99, currency: USD, orderable: true }
+              - { productId: $nazgul, sku: IFL-NAZ5V3-6S-BNF, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: active, unitPrice: 329.99, currency: EUR, orderable: true }
       ShowsTheLatestPromotionPrice:
         given:
           - event: ProductDescribed
             values: { productId: $nazgul, sku: IFL-NAZ5V3-6S-BNF, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: active }
           - event: ProductPriced
-            values: { productId: $nazgul, unitPrice: 329.99, currency: USD }
+            values: { productId: $nazgul, unitPrice: 329.99, currency: EUR }
           - event: ProductPriced
-            values: { productId: $nazgul, unitPrice: 299.99, currency: USD }
+            values: { productId: $nazgul, unitPrice: 299.99, currency: EUR }
         then:
           - view: DroneDetails
             keyed: { productId: $nazgul }
             rows:
-              - { productId: $nazgul, sku: IFL-NAZ5V3-6S-BNF, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: active, unitPrice: 299.99, currency: USD, orderable: true }
+              - { productId: $nazgul, sku: IFL-NAZ5V3-6S-BNF, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: active, unitPrice: 299.99, currency: EUR, orderable: true }
       ShowsADiscontinuedDroneThatCannotBeOrdered:
         given:
           - event: ProductDescribed
             values: { productId: $nazgul, sku: IFL-NAZ5V3-6S-BNF, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: active }
           - event: ProductPriced
-            values: { productId: $nazgul, unitPrice: 329.99, currency: USD }
+            values: { productId: $nazgul, unitPrice: 329.99, currency: EUR }
           - event: ProductDescribed
             values: { productId: $nazgul, sku: IFL-NAZ5V3-6S-BNF, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: discontinued }
         then:
           - view: DroneDetails
             keyed: { productId: $nazgul }
             rows:
-              - { productId: $nazgul, sku: IFL-NAZ5V3-6S-BNF, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: discontinued, unitPrice: 329.99, currency: USD, orderable: false }
+              - { productId: $nazgul, sku: IFL-NAZ5V3-6S-BNF, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: discontinued, unitPrice: 329.99, currency: EUR, orderable: false }
       ShowsADroneWithoutAPriceYet:
         given:
           - event: ProductDescribed
@@ -617,7 +618,7 @@ slices:
         customerId: { type: uuid, source: user, description: "Comes from the customer's sign-in in the app; the customer never types it.", example: 0b7e9d22-4c1a-4e8b-9f3d-6a5b4c3d2e10 }
         productId: { type: uuid, source: user, description: Picked from the list of drones for sale., example: 3f6b2c1e-8a4d-4f0e-9b7a-1c2d3e4f5a60 }
         quantity: { type: int, source: user, example: 1 }
-        deliveryAddress: { type: string, source: user, description: "One of the customer's saved addresses, or a new one.", example: "1200 Pine St, Seattle, WA 98101, USA" }
+        deliveryAddress: { type: string, source: user, description: "One of the customer's saved addresses, or a new one.", example: "Kaiserstrasse 12, 60311 Frankfurt am Main, Germany" }
     command:
       name: PlaceOrder
       fields:
@@ -650,18 +651,18 @@ slices:
           - event: ProductDescribed
             values: { productId: $nazgul, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: active }
           - event: ProductPriced
-            values: { productId: $nazgul, unitPrice: 329.99, currency: USD }
+            values: { productId: $nazgul, unitPrice: 329.99, currency: EUR }
         when:
-          values: { customerId: $mia, productId: $nazgul, quantity: 1, deliveryAddress: "1200 Pine St, Seattle, WA 98101, USA" }
+          values: { customerId: $mia, productId: $nazgul, quantity: 1, deliveryAddress: "Kaiserstrasse 12, 60311 Frankfurt am Main, Germany" }
         then:
           - event: OrderPlaced
-            values: { customerId: $mia, productId: $nazgul, productName: iFlight Nazgul5 V3 6S BNF, quantity: 1, unitPrice: 329.99, currency: USD, total: 329.99, deliveryAddress: "1200 Pine St, Seattle, WA 98101, USA" }
+            values: { customerId: $mia, productId: $nazgul, productName: iFlight Nazgul5 V3 6S BNF, quantity: 1, unitPrice: 329.99, currency: EUR, total: 329.99, deliveryAddress: "Kaiserstrasse 12, 60311 Frankfurt am Main, Germany" }
       TotalsThePriceForEachDrone:
         given:
           - event: ProductDescribed
             values: { productId: $nazgul, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: active }
           - event: ProductPriced
-            values: { productId: $nazgul, unitPrice: 329.99, currency: USD }
+            values: { productId: $nazgul, unitPrice: 329.99, currency: EUR }
         when:
           values: { customerId: $mia, productId: $nazgul, quantity: <quantity> }
         then:
@@ -675,9 +676,9 @@ slices:
           - event: ProductDescribed
             values: { productId: $nazgul, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: active }
           - event: ProductPriced
-            values: { productId: $nazgul, unitPrice: 329.99, currency: USD }
+            values: { productId: $nazgul, unitPrice: 329.99, currency: EUR }
           - event: ProductPriced
-            values: { productId: $nazgul, unitPrice: 299.99, currency: USD }
+            values: { productId: $nazgul, unitPrice: 299.99, currency: EUR }
         when:
           values: { customerId: $mia, productId: $nazgul, quantity: 1 }
         then:
@@ -689,7 +690,7 @@ slices:
           - event: ProductDescribed
             values: { productId: $nazgul, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: discontinued }
           - event: ProductPriced
-            values: { productId: $nazgul, unitPrice: 329.99, currency: USD }
+            values: { productId: $nazgul, unitPrice: 329.99, currency: EUR }
         when:
           values: { customerId: $mia, productId: $nazgul, quantity: 1 }
         then:
@@ -713,7 +714,7 @@ slices:
     pattern: command
     chapter: Order and pay
     description: >-
-      Phone screen with one button: "Pay 329.99 USD". The provider's own payment sheet takes the
+      Phone screen with one button: "Pay 329.99 EUR". The provider's own payment sheet takes the
       card, so card data never reaches Drone Web. The outcome arrives later by webhook. The
       amount and currency come from the order's own OrderPlaced event, which the decision loads
       by orderId; the MyOrders view only helps the customer pick the order. The prototype factory
@@ -746,26 +747,26 @@ slices:
       StartsPayingForMiasNazgul:
         given:
           - event: OrderPlaced
-            values: { orderId: $miasOrder, customerId: $mia, total: 329.99, currency: USD }
+            values: { orderId: $miasOrder, customerId: $mia, total: 329.99, currency: EUR }
         when:
           values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2 }
         then:
           - event: PaymentStarted
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, currency: USD }
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, currency: EUR }
       ChargesTheTotalTheOrderWasPlacedAt:
         given:
           - event: OrderPlaced
-            values: { orderId: $miasOrder, customerId: $mia, productId: $nazgul, quantity: 2, unitPrice: 329.99, total: 659.98, currency: USD }
+            values: { orderId: $miasOrder, customerId: $mia, productId: $nazgul, quantity: 2, unitPrice: 329.99, total: 659.98, currency: EUR }
         when:
           values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2 }
         then:
           - event: PaymentStarted
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 659.98, currency: USD }
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 659.98, currency: EUR }
       TriesAgainAfterADeclinedCard:
         rules: [ORD-004]
         given:
           - event: OrderPlaced
-            values: { orderId: $miasOrder, total: 329.99, currency: USD }
+            values: { orderId: $miasOrder, total: 329.99, currency: EUR }
           - event: OrderPaymentDeclined
             values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, declineReason: Insufficient funds }
         when:
@@ -815,16 +816,16 @@ slices:
       RecordsThatMiaPaid:
         given:
           - event: OrderPlaced
-            values: { orderId: $miasOrder, productId: $nazgul, quantity: 1, total: 329.99, deliveryAddress: "1200 Pine St, Seattle, WA 98101, USA" }
+            values: { orderId: $miasOrder, productId: $nazgul, quantity: 1, total: 329.99, deliveryAddress: "Kaiserstrasse 12, 60311 Frankfurt am Main, Germany" }
         when:
           values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, capturedAt: 2026-11-02T18:43:55Z }
         then:
           - event: OrderPaid
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, paidAt: 2026-11-02T18:43:55Z, productId: $nazgul, quantity: 1, deliveryAddress: "1200 Pine St, Seattle, WA 98101, USA" }
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, paidAt: 2026-11-02T18:43:55Z, productId: $nazgul, quantity: 1, deliveryAddress: "Kaiserstrasse 12, 60311 Frankfurt am Main, Germany" }
       RecordsTheAmountTheProviderTookEvenWhenItDiffers:
         given:
           - event: OrderPlaced
-            values: { orderId: $miasOrder, productId: $nazgul, quantity: 2, total: 659.98, deliveryAddress: "1200 Pine St, Seattle, WA 98101, USA" }
+            values: { orderId: $miasOrder, productId: $nazgul, quantity: 2, total: 659.98, deliveryAddress: "Kaiserstrasse 12, 60311 Frankfurt am Main, Germany" }
         when:
           values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, capturedAt: 2026-11-02T18:43:55Z }
         then:
@@ -873,12 +874,12 @@ slices:
         rules: [ORD-005]
         given:
           - event: OrderPlaced
-            values: { orderId: $miasOrder, productId: $nazgul, quantity: <quantity>, total: <total>, currency: USD }
+            values: { orderId: $miasOrder, productId: $nazgul, quantity: <quantity>, total: <total>, currency: EUR }
         when:
           values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: <captured>, capturedAt: 2026-11-02T18:43:55Z }
         then:
           - event: PaymentAmountMismatched
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, orderTotal: <total>, capturedAmount: <captured>, currency: USD, difference: <difference>, capturedAt: 2026-11-02T18:43:55Z }
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, orderTotal: <total>, capturedAmount: <captured>, currency: EUR, difference: <difference>, capturedAt: 2026-11-02T18:43:55Z }
         examples:
           - { quantity: 2, total: 659.98, captured: 329.99, difference: -329.99 }
           - { quantity: 1, total: 329.99, captured: 330.00, difference: 0.01 }
@@ -886,14 +887,14 @@ slices:
         rules: [ORD-005]
         given:
           - event: OrderPlaced
-            values: { orderId: $miasOrder, productId: $nazgul, quantity: 1, total: 329.99, currency: USD }
+            values: { orderId: $miasOrder, productId: $nazgul, quantity: 1, total: 329.99, currency: EUR }
         when:
           values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, capturedAt: 2026-11-02T18:43:55Z }
         then: []
       IgnoresAMismatchItAlreadyFlagged:
         given:
           - event: OrderPlaced
-            values: { orderId: $miasOrder, quantity: 2, total: 659.98, currency: USD }
+            values: { orderId: $miasOrder, quantity: 2, total: 659.98, currency: EUR }
           - event: PaymentAmountMismatched
             values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, orderTotal: 659.98, capturedAmount: 329.99 }
         when:
@@ -929,14 +930,14 @@ slices:
       ListsEachPaymentToCheck:
         given:
           - event: PaymentAmountMismatched
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, orderTotal: 659.98, capturedAmount: 329.99, currency: USD, difference: -329.99, capturedAt: 2026-11-02T18:43:55Z }
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, orderTotal: 659.98, capturedAmount: 329.99, currency: EUR, difference: -329.99, capturedAt: 2026-11-02T18:43:55Z }
           - event: PaymentAmountMismatched
-            values: { orderId: $leosOrder, paymentId: pi_3QE1aa9Xc2RtYu7P, orderTotal: 329.99, capturedAmount: 330.00, currency: USD, difference: 0.01, capturedAt: 2026-11-03T08:11:30Z }
+            values: { orderId: $leosOrder, paymentId: pi_3QE1aa9Xc2RtYu7P, orderTotal: 329.99, capturedAmount: 330.00, currency: EUR, difference: 0.01, capturedAt: 2026-11-03T08:11:30Z }
         then:
           - view: PaymentMismatches
             rows:
-              - { paymentId: pi_3QDrn8F2eZvKYlo2, orderId: $miasOrder, orderTotal: 659.98, capturedAmount: 329.99, currency: USD, difference: -329.99, capturedAt: 2026-11-02T18:43:55Z }
-              - { paymentId: pi_3QE1aa9Xc2RtYu7P, orderId: $leosOrder, orderTotal: 329.99, capturedAmount: 330.00, currency: USD, difference: 0.01, capturedAt: 2026-11-03T08:11:30Z }
+              - { paymentId: pi_3QDrn8F2eZvKYlo2, orderId: $miasOrder, orderTotal: 659.98, capturedAmount: 329.99, currency: EUR, difference: -329.99, capturedAt: 2026-11-02T18:43:55Z }
+              - { paymentId: pi_3QE1aa9Xc2RtYu7P, orderId: $leosOrder, orderTotal: 329.99, capturedAmount: 330.00, currency: EUR, difference: 0.01, capturedAt: 2026-11-03T08:11:30Z }
 
   RecordDeclinedPayment:
     pattern: translation
@@ -1064,33 +1065,33 @@ slices:
       ShowsEachAttemptWithItsOutcome:
         given:
           - event: PaymentStarted
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, currency: USD, startedAt: 2026-11-02T18:43:10Z }
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, currency: EUR, startedAt: 2026-11-02T18:43:10Z }
           - event: OrderPaymentDeclined
             values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, declineReason: Insufficient funds }
           - event: PaymentStarted
-            values: { orderId: $miasOrder, paymentId: pi_3QDrp1K7aQwBx9M4, amount: 329.99, currency: USD, startedAt: 2026-11-02T18:50:02Z }
+            values: { orderId: $miasOrder, paymentId: pi_3QDrp1K7aQwBx9M4, amount: 329.99, currency: EUR, startedAt: 2026-11-02T18:50:02Z }
           - event: OrderPaid
             values: { orderId: $miasOrder, paymentId: pi_3QDrp1K7aQwBx9M4, amount: 329.99, paidAt: 2026-11-02T18:50:40Z }
           - event: PaymentStarted
-            values: { orderId: $leosOrder, paymentId: pi_3QE1aa9Xc2RtYu7P, amount: 329.99, currency: USD, startedAt: 2026-11-03T08:11:05Z }
+            values: { orderId: $leosOrder, paymentId: pi_3QE1aa9Xc2RtYu7P, amount: 329.99, currency: EUR, startedAt: 2026-11-03T08:11:05Z }
         then:
           - view: Payments
             rows:
-              - { paymentId: pi_3QDrn8F2eZvKYlo2, orderId: $miasOrder, amount: 329.99, currency: USD, startedAt: 2026-11-02T18:43:10Z, status: declined, amountMismatch: false }
-              - { paymentId: pi_3QDrp1K7aQwBx9M4, orderId: $miasOrder, amount: 329.99, currency: USD, startedAt: 2026-11-02T18:50:02Z, status: captured, amountMismatch: false }
-              - { paymentId: pi_3QE1aa9Xc2RtYu7P, orderId: $leosOrder, amount: 329.99, currency: USD, startedAt: 2026-11-03T08:11:05Z, status: started, amountMismatch: false }
+              - { paymentId: pi_3QDrn8F2eZvKYlo2, orderId: $miasOrder, amount: 329.99, currency: EUR, startedAt: 2026-11-02T18:43:10Z, status: declined, amountMismatch: false }
+              - { paymentId: pi_3QDrp1K7aQwBx9M4, orderId: $miasOrder, amount: 329.99, currency: EUR, startedAt: 2026-11-02T18:50:02Z, status: captured, amountMismatch: false }
+              - { paymentId: pi_3QE1aa9Xc2RtYu7P, orderId: $leosOrder, amount: 329.99, currency: EUR, startedAt: 2026-11-03T08:11:05Z, status: started, amountMismatch: false }
       MarksAPaymentWhoseAmountDiffers:
         given:
           - event: PaymentStarted
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 659.98, currency: USD, startedAt: 2026-11-02T18:43:10Z }
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 659.98, currency: EUR, startedAt: 2026-11-02T18:43:10Z }
           - event: OrderPaid
             values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, paidAt: 2026-11-02T18:43:55Z }
           - event: PaymentAmountMismatched
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, orderTotal: 659.98, capturedAmount: 329.99, currency: USD, difference: -329.99, capturedAt: 2026-11-02T18:43:55Z }
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, orderTotal: 659.98, capturedAmount: 329.99, currency: EUR, difference: -329.99, capturedAt: 2026-11-02T18:43:55Z }
         then:
           - view: Payments
             rows:
-              - { paymentId: pi_3QDrn8F2eZvKYlo2, orderId: $miasOrder, amount: 659.98, currency: USD, startedAt: 2026-11-02T18:43:10Z, status: captured, amountMismatch: true }
+              - { paymentId: pi_3QDrn8F2eZvKYlo2, orderId: $miasOrder, amount: 659.98, currency: EUR, startedAt: 2026-11-02T18:43:10Z, status: captured, amountMismatch: true }
 
   ViewPayment:
     pattern: query
@@ -1134,38 +1135,38 @@ slices:
       ShowsAPaymentThatWentThrough:
         given:
           - event: PaymentStarted
-            values: { orderId: $miasOrder, paymentId: pi_3QDrp1K7aQwBx9M4, amount: 329.99, currency: USD, startedAt: 2026-11-02T18:50:02Z }
+            values: { orderId: $miasOrder, paymentId: pi_3QDrp1K7aQwBx9M4, amount: 329.99, currency: EUR, startedAt: 2026-11-02T18:50:02Z }
           - event: OrderPaid
             values: { orderId: $miasOrder, paymentId: pi_3QDrp1K7aQwBx9M4, amount: 329.99, paidAt: 2026-11-02T18:50:40Z }
         then:
           - view: PaymentDetails
             keyed: { paymentId: pi_3QDrp1K7aQwBx9M4 }
             rows:
-              - { paymentId: pi_3QDrp1K7aQwBx9M4, orderId: $miasOrder, amount: 329.99, currency: USD, startedAt: 2026-11-02T18:50:02Z, status: captured, capturedAmount: 329.99, paidAt: 2026-11-02T18:50:40Z, declineReason: null, difference: null }
+              - { paymentId: pi_3QDrp1K7aQwBx9M4, orderId: $miasOrder, amount: 329.99, currency: EUR, startedAt: 2026-11-02T18:50:02Z, status: captured, capturedAmount: 329.99, paidAt: 2026-11-02T18:50:40Z, declineReason: null, difference: null }
       ShowsWhyACardWasDeclined:
         given:
           - event: PaymentStarted
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, currency: USD, startedAt: 2026-11-02T18:43:10Z }
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, currency: EUR, startedAt: 2026-11-02T18:43:10Z }
           - event: OrderPaymentDeclined
             values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, declineReason: Insufficient funds }
         then:
           - view: PaymentDetails
             keyed: { paymentId: pi_3QDrn8F2eZvKYlo2 }
             rows:
-              - { paymentId: pi_3QDrn8F2eZvKYlo2, orderId: $miasOrder, amount: 329.99, currency: USD, startedAt: 2026-11-02T18:43:10Z, status: declined, capturedAmount: null, paidAt: null, declineReason: Insufficient funds, difference: null }
+              - { paymentId: pi_3QDrn8F2eZvKYlo2, orderId: $miasOrder, amount: 329.99, currency: EUR, startedAt: 2026-11-02T18:43:10Z, status: declined, capturedAmount: null, paidAt: null, declineReason: Insufficient funds, difference: null }
       ShowsTheDifferenceToCheck:
         given:
           - event: PaymentStarted
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 659.98, currency: USD, startedAt: 2026-11-02T18:43:10Z }
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 659.98, currency: EUR, startedAt: 2026-11-02T18:43:10Z }
           - event: OrderPaid
             values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, paidAt: 2026-11-02T18:43:55Z }
           - event: PaymentAmountMismatched
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, orderTotal: 659.98, capturedAmount: 329.99, currency: USD, difference: -329.99, capturedAt: 2026-11-02T18:43:55Z }
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, orderTotal: 659.98, capturedAmount: 329.99, currency: EUR, difference: -329.99, capturedAt: 2026-11-02T18:43:55Z }
         then:
           - view: PaymentDetails
             keyed: { paymentId: pi_3QDrn8F2eZvKYlo2 }
             rows:
-              - { paymentId: pi_3QDrn8F2eZvKYlo2, orderId: $miasOrder, amount: 659.98, currency: USD, startedAt: 2026-11-02T18:43:10Z, status: captured, capturedAmount: 329.99, paidAt: 2026-11-02T18:43:55Z, declineReason: null, difference: -329.99 }
+              - { paymentId: pi_3QDrn8F2eZvKYlo2, orderId: $miasOrder, amount: 659.98, currency: EUR, startedAt: 2026-11-02T18:43:10Z, status: captured, capturedAmount: 329.99, paidAt: 2026-11-02T18:43:55Z, declineReason: null, difference: -329.99 }
 
   ListMyOrders:
     pattern: query
@@ -1201,11 +1202,11 @@ slices:
       ShowsEachOrderWithItsStatus:
         given:
           - event: OrderPlaced
-            values: { orderId: $miasNazgul, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF, quantity: 1, total: 329.99, currency: USD, placedAt: 2026-11-02T18:42:00Z }
+            values: { orderId: $miasNazgul, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF, quantity: 1, total: 329.99, currency: EUR, placedAt: 2026-11-02T18:42:00Z }
           - event: OrderPlaced
-            values: { orderId: $miasX500, customerId: $mia, productName: Holybro X500 V2 ARF Kit, quantity: 2, total: 718.00, currency: USD, placedAt: 2026-11-02T19:05:00Z }
+            values: { orderId: $miasX500, customerId: $mia, productName: Holybro X500 V2 ARF Kit, quantity: 2, total: 718.00, currency: EUR, placedAt: 2026-11-02T19:05:00Z }
           - event: OrderPlaced
-            values: { orderId: $miasSpare, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF, quantity: 1, total: 329.99, currency: USD, placedAt: 2026-11-02T19:30:00Z }
+            values: { orderId: $miasSpare, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF, quantity: 1, total: 329.99, currency: EUR, placedAt: 2026-11-02T19:30:00Z }
           - event: OrderPaid
             values: { orderId: $miasNazgul, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99 }
           - event: OrderPaymentDeclined
@@ -1213,15 +1214,15 @@ slices:
         then:
           - view: MyOrders
             rows:
-              - { orderId: $miasNazgul, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF, quantity: 1, total: 329.99, currency: USD, placedAt: 2026-11-02T18:42:00Z, status: paid }
-              - { orderId: $miasX500, customerId: $mia, productName: Holybro X500 V2 ARF Kit, quantity: 2, total: 718.00, currency: USD, placedAt: 2026-11-02T19:05:00Z, status: payment declined }
-              - { orderId: $miasSpare, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF, quantity: 1, total: 329.99, currency: USD, placedAt: 2026-11-02T19:30:00Z, status: awaiting payment }
+              - { orderId: $miasNazgul, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF, quantity: 1, total: 329.99, currency: EUR, placedAt: 2026-11-02T18:42:00Z, status: paid }
+              - { orderId: $miasX500, customerId: $mia, productName: Holybro X500 V2 ARF Kit, quantity: 2, total: 718.00, currency: EUR, placedAt: 2026-11-02T19:05:00Z, status: payment declined }
+              - { orderId: $miasSpare, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF, quantity: 1, total: 329.99, currency: EUR, placedAt: 2026-11-02T19:30:00Z, status: awaiting payment }
       FollowsAnOrderToTheDoor:
         given:
           - event: OrderPlaced
-            values: { orderId: $miasNazgul, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF, quantity: 1, total: 329.99, currency: USD, placedAt: 2026-11-02T18:42:00Z }
+            values: { orderId: $miasNazgul, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF, quantity: 1, total: 329.99, currency: EUR, placedAt: 2026-11-02T18:42:00Z }
           - event: OrderPlaced
-            values: { orderId: $leosNazgul, customerId: $leo, productName: iFlight Nazgul5 V3 6S BNF, quantity: 1, total: 329.99, currency: USD, placedAt: 2026-11-03T08:10:00Z }
+            values: { orderId: $leosNazgul, customerId: $leo, productName: iFlight Nazgul5 V3 6S BNF, quantity: 1, total: 329.99, currency: EUR, placedAt: 2026-11-03T08:10:00Z }
           - event: OrderPaid
             values: { orderId: $miasNazgul, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99 }
           - event: OrderPaid
@@ -1235,8 +1236,8 @@ slices:
         then:
           - view: MyOrders
             rows:
-              - { orderId: $miasNazgul, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF, quantity: 1, total: 329.99, currency: USD, placedAt: 2026-11-02T18:42:00Z, status: delivered }
-              - { orderId: $leosNazgul, customerId: $leo, productName: iFlight Nazgul5 V3 6S BNF, quantity: 1, total: 329.99, currency: USD, placedAt: 2026-11-03T08:10:00Z, status: shipped }
+              - { orderId: $miasNazgul, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF, quantity: 1, total: 329.99, currency: EUR, placedAt: 2026-11-02T18:42:00Z, status: delivered }
+              - { orderId: $leosNazgul, customerId: $leo, productName: iFlight Nazgul5 V3 6S BNF, quantity: 1, total: 329.99, currency: EUR, placedAt: 2026-11-03T08:10:00Z, status: shipped }
 
   # ---------------------------------------------------------------- Ship and deliver
 
@@ -1285,17 +1286,17 @@ slices:
         rules: [ORD-007]
         given:
           - event: OrderPlaced
-            values: { orderId: $miasOrder, productId: $nazgul, quantity: 1, total: 329.99, currency: USD, deliveryAddress: "1200 Pine St, Seattle, WA 98101, USA" }
+            values: { orderId: $miasOrder, productId: $nazgul, quantity: 1, total: 329.99, currency: EUR, deliveryAddress: "Kaiserstrasse 12, 60311 Frankfurt am Main, Germany" }
           - event: OrderPaid
             values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, paidAt: 2026-11-02T18:43:55Z }
         then:
           - event: OrderReleasedToWarehouse
-            values: { orderId: $miasOrder, productId: $nazgul, quantity: 1, deliveryAddress: "1200 Pine St, Seattle, WA 98101, USA" }
+            values: { orderId: $miasOrder, productId: $nazgul, quantity: 1, deliveryAddress: "Kaiserstrasse 12, 60311 Frankfurt am Main, Germany" }
       HoldsAnUnderpaidOrder:
         rules: [ORD-007]
         given:
           - event: OrderPlaced
-            values: { orderId: $miasOrder, productId: $nazgul, quantity: 2, total: 659.98, currency: USD, deliveryAddress: "1200 Pine St, Seattle, WA 98101, USA" }
+            values: { orderId: $miasOrder, productId: $nazgul, quantity: 2, total: 659.98, currency: EUR, deliveryAddress: "Kaiserstrasse 12, 60311 Frankfurt am Main, Germany" }
           - event: OrderPaid
             values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, paidAt: 2026-11-02T18:43:55Z }
         then: []
@@ -1303,16 +1304,16 @@ slices:
         rules: [ORD-007]
         given:
           - event: OrderPlaced
-            values: { orderId: $leosOrder, productId: $nazgul, quantity: 1, total: 329.99, currency: USD, deliveryAddress: "455 Market St, San Francisco, CA 94105, USA" }
+            values: { orderId: $leosOrder, productId: $nazgul, quantity: 1, total: 329.99, currency: EUR, deliveryAddress: "Keizersgracht 123, 1015 CJ Amsterdam, Netherlands" }
           - event: OrderPaid
             values: { orderId: $leosOrder, paymentId: pi_3QE1aa9Xc2RtYu7P, amount: 330.00, paidAt: 2026-11-03T08:11:30Z }
         then:
           - event: OrderReleasedToWarehouse
-            values: { orderId: $leosOrder, productId: $nazgul, quantity: 1, deliveryAddress: "455 Market St, San Francisco, CA 94105, USA" }
+            values: { orderId: $leosOrder, productId: $nazgul, quantity: 1, deliveryAddress: "Keizersgracht 123, 1015 CJ Amsterdam, Netherlands" }
       ReleasesAnOrderOnlyOnce:
         given:
           - event: OrderPlaced
-            values: { orderId: $miasOrder, productId: $nazgul, quantity: 1, total: 329.99, currency: USD }
+            values: { orderId: $miasOrder, productId: $nazgul, quantity: 1, total: 329.99, currency: EUR }
           - event: OrderPaid
             values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99 }
           - event: OrderReleasedToWarehouse
@@ -1322,7 +1323,10 @@ slices:
   RecordShipment:
     pattern: translation
     chapter: Ship and deliver
-    description: The warehouse tells Ordering which carrier has the parcel and under which tracking number.
+    description: >-
+      The warehouse tells Ordering which carrier has the parcel and under which tracking number.
+      Ordering records a shipment only for an order that ReleasePaidOrder sent to the warehouse
+      (ORD-006), so an unpaid order and a held, underpaid order (ORD-007) never show as shipped.
     message: Warehouse.ParcelDispatched
     processor:
       name: WarehouseListener
@@ -1338,10 +1342,15 @@ slices:
       - event: OrderShipped
     rules:
       ORD-006:
-        title: Ordering records a shipment only for a paid order
-        description: A parcel the warehouse reports for an order that is not paid is refused, so the order never shows as shipped while it is unpaid.
+        title: Ordering records a shipment only for an order released to the warehouse
+        description: >-
+          A parcel the warehouse reports for an order without OrderReleasedToWarehouse is refused.
+          That covers an order that is not paid and an order held because the captured amount is
+          less than the order total (ORD-007), so neither shows as shipped. CJ confirmed the
+          unpaid case on 2026-10-28; the held case follows from C2c (2026-10-29).
     errors:
       OrderNotPaid: { description: The payment provider has not taken the money for this order., rule: ORD-006 }
+      OrderHeld: { description: "The captured amount is less than the order total, so the order was not sent to the warehouse.", rule: ORD-006 }
     tests:
       RecordsThatMiasNazgulIsOnItsWay:
         rules: [ORD-006]
@@ -1350,6 +1359,8 @@ slices:
             values: { orderId: $miasOrder, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF }
           - event: OrderPaid
             values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99 }
+          - event: OrderReleasedToWarehouse
+            values: { orderId: $miasOrder, productId: $nazgul, quantity: 1 }
         when:
           values: { orderId: $miasOrder, carrier: UPS, trackingNumber: 1Z999AA10123456784, dispatchedAt: 2026-11-04T09:15:00Z }
         then:
@@ -1375,12 +1386,25 @@ slices:
           values: { orderId: $miasOrder, carrier: UPS, trackingNumber: 1Z999AA10123456784, dispatchedAt: 2026-11-04T09:15:00Z }
         then:
           - error: OrderNotPaid
+      RefusesAShipmentForAHeldOrder:
+        rules: [ORD-006, ORD-007]
+        given:
+          - event: OrderPlaced
+            values: { orderId: $miasOrder, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF, quantity: 2, total: 659.98, currency: EUR }
+          - event: OrderPaid
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99 }
+        when:
+          values: { orderId: $miasOrder, carrier: UPS, trackingNumber: 1Z999AA10123456784, dispatchedAt: 2026-11-04T09:15:00Z }
+        then:
+          - error: OrderHeld
       IgnoresAShipmentItAlreadyRecorded:
         given:
           - event: OrderPlaced
             values: { orderId: $miasOrder, customerId: $mia }
           - event: OrderPaid
             values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99 }
+          - event: OrderReleasedToWarehouse
+            values: { orderId: $miasOrder, productId: $nazgul, quantity: 1 }
           - event: OrderShipped
             values: { orderId: $miasOrder, carrier: UPS, trackingNumber: 1Z999AA10123456784 }
         when:
@@ -1551,18 +1575,18 @@ slices:
       ShowsAPaidOrderWaitingForTheWarehouse:
         given:
           - event: OrderPlaced
-            values: { orderId: $miasOrder, productName: iFlight Nazgul5 V3 6S BNF, total: 329.99, currency: USD }
+            values: { orderId: $miasOrder, productName: iFlight Nazgul5 V3 6S BNF, total: 329.99, currency: EUR }
           - event: OrderPaid
             values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, paidAt: 2026-11-02T18:43:55Z }
         then:
           - view: OrderStatus
             keyed: { orderId: $miasOrder }
             rows:
-              - { orderId: $miasOrder, productName: iFlight Nazgul5 V3 6S BNF, total: 329.99, currency: USD, status: paid, paidAt: 2026-11-02T18:43:55Z, carrier: null, trackingNumber: null, shippedAt: null, deliveredAt: null }
+              - { orderId: $miasOrder, productName: iFlight Nazgul5 V3 6S BNF, total: 329.99, currency: EUR, status: paid, paidAt: 2026-11-02T18:43:55Z, carrier: null, trackingNumber: null, shippedAt: null, deliveredAt: null }
       ShowsTheParcelOnItsWay:
         given:
           - event: OrderPlaced
-            values: { orderId: $miasOrder, productName: iFlight Nazgul5 V3 6S BNF, total: 329.99, currency: USD }
+            values: { orderId: $miasOrder, productName: iFlight Nazgul5 V3 6S BNF, total: 329.99, currency: EUR }
           - event: OrderPaid
             values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, paidAt: 2026-11-02T18:43:55Z }
           - event: OrderShipped
@@ -1571,11 +1595,11 @@ slices:
           - view: OrderStatus
             keyed: { orderId: $miasOrder }
             rows:
-              - { orderId: $miasOrder, productName: iFlight Nazgul5 V3 6S BNF, total: 329.99, currency: USD, status: shipped, paidAt: 2026-11-02T18:43:55Z, carrier: UPS, trackingNumber: 1Z999AA10123456784, shippedAt: 2026-11-04T09:15:00Z, deliveredAt: null }
+              - { orderId: $miasOrder, productName: iFlight Nazgul5 V3 6S BNF, total: 329.99, currency: EUR, status: shipped, paidAt: 2026-11-02T18:43:55Z, carrier: UPS, trackingNumber: 1Z999AA10123456784, shippedAt: 2026-11-04T09:15:00Z, deliveredAt: null }
       ShowsWhenTheDroneArrived:
         given:
           - event: OrderPlaced
-            values: { orderId: $miasOrder, productName: iFlight Nazgul5 V3 6S BNF, total: 329.99, currency: USD }
+            values: { orderId: $miasOrder, productName: iFlight Nazgul5 V3 6S BNF, total: 329.99, currency: EUR }
           - event: OrderPaid
             values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, paidAt: 2026-11-02T18:43:55Z }
           - event: OrderShipped
@@ -1586,4 +1610,4 @@ slices:
           - view: OrderStatus
             keyed: { orderId: $miasOrder }
             rows:
-              - { orderId: $miasOrder, productName: iFlight Nazgul5 V3 6S BNF, total: 329.99, currency: USD, status: delivered, paidAt: 2026-11-02T18:43:55Z, carrier: UPS, trackingNumber: 1Z999AA10123456784, shippedAt: 2026-11-04T09:15:00Z, deliveredAt: 2026-11-06T14:05:00Z }
+              - { orderId: $miasOrder, productName: iFlight Nazgul5 V3 6S BNF, total: 329.99, currency: EUR, status: delivered, paidAt: 2026-11-02T18:43:55Z, carrier: UPS, trackingNumber: 1Z999AA10123456784, shippedAt: 2026-11-04T09:15:00Z, deliveredAt: 2026-11-06T14:05:00Z }
