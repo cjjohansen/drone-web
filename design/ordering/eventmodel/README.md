@@ -92,6 +92,9 @@ All nine are factory limits, not modelling errors:
 - **ORD-004 blocks a second payment for a held order.** A held order has `OrderPaid`, so
   `PayForOrder` refuses a payment for the rest (`OrderAlreadyPaid`). If a held order must take a
   second payment, ORD-004 must change. This is not modelled.
+- **The customer sees "paid" for a held order.** `MyOrders` and `OrderStatus` read `OrderPaid`,
+  so a held, underpaid order shows the status `paid`. Should a held order show its own status?
+  This is not modelled.
 
 Decided on 2026-10-29: a mismatched payment goes to the warehouse only when the captured amount
 is at least the order total. `ReleasePaidOrder` holds an underpaid order and releases an overpaid
