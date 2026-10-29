@@ -26,7 +26,7 @@ answers to the open questions of this model are "CJ D1a" to "CJ D10b" (2026-10-2
 
 ## The flow
 
-25 slices in five chapters, with 120 given/when/then scenarios (125 examples: two outlines run 2 and 5 times),
+25 slices in five chapters, with 121 given/when/then scenarios (126 examples: two outlines run 2 and 5 times),
 in three contexts: Product Data (the Product Lifecycle Service, drone-web D-037), Catalog
 Governance (drone-web D-029) and the review agent (`ReviewAgent`, outside the model). They talk
 only through published messages: `ChangeForReview` from Product Data to Governance; `ChangeReleased`,
@@ -142,12 +142,13 @@ Not in this flow: JS1 bulk ingestion (Bulk Ingestion API). It is a flow of its o
 | GOV-009 | An approval case that nobody decides within the review period expires | active (CJ D10b) |
 | GOV-010 | The review period is 14 days | proposed (the number N) |
 | GOV-011 | A verdict other than approve sends the case to a person | proposed |
+| GOV-012 | Only the reviewer assigned to a case approves it | proposed (our reading of CJ D1a) |
 
 ## CJ's answers (2026-10-29)
 
 | Question | Answer | Where in the model |
 | --- | --- | --- |
-| D1 Reviewer and four eyes | D1a: a reviewer is assigned before a decision; the requester may not approve. | GOV-006, GOV-007 |
+| D1 Reviewer and four eyes | D1a: a reviewer is assigned before a decision; the requester may not approve. | GOV-006, GOV-007, GOV-012 (proposed: only the assigned reviewer approves) |
 | D2 Risk level | D2a: a Governance policy sets the risk level from the change type; the requester cannot lower it. | GOV-004, GOV-005, `OpenApprovalCase` |
 | D3 Review of spec and detail changes | D3b: every change on an active product goes through review. Low: the agent approves. Medium: the agent checks, a person confirms. High or critical: a person decides with four eyes. | PLC-009, GOV-008, the agent slices |
 | D4 Discontinued product | D4a: details may change; specifications are frozen. | PLC-010 |
@@ -195,7 +196,7 @@ node ../event-model-factory/dsl/kairos/tools/render.mjs design/catalog-managemen
 ```
 
 At event-model-factory 7927a4e the validator reports 0 errors, 4 warnings and 9 info (25 slices,
-120 tests, 7 views, target prototype). All four warnings are from the factory stage: they say what
+121 tests, 7 views, target prototype). All four warnings are from the factory stage: they say what
 the prototype factory cannot generate yet, not what is wrong in the model.
 
 - F9 on `RequestProductChange`: its scenarios give 7 event types, and the factory folds up to 6.

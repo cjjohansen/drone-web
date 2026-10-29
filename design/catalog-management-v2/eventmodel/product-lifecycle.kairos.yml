@@ -1798,11 +1798,16 @@ slices:
       GOV-007:
         title: The manager who asked for a change does not review or approve it
         description: CJ D1a (2026-10-29), four eyes.
+      GOV-012:
+        title: Only the reviewer assigned to a case approves it
+        description: Our reading of CJ D1a; an assignment that anyone else could act on would not mean much.
+        status: proposed
     errors:
       ApprovalCaseUnknown: { description: No approval case was opened under this id. }
       CaseAlreadyDecided: { description: The case is already approved or rejected., rule: GOV-001 }
       ReviewerNotAssigned: { description: No reviewer is assigned to the case., rule: GOV-006 }
       RequesterCannotApprove: { description: The person approving is the manager who asked for the change., rule: GOV-007 }
+      NotTheAssignedReviewer: { description: The person approving is not the reviewer assigned to the case., rule: GOV-012 }
       AgentReviewPending: { description: The case is low or medium risk and the agent has not answered yet., rule: GOV-008 }
       CaseExpired: { description: The case expired without a decision., rule: GOV-009 }
     tests:
@@ -1866,6 +1871,17 @@ slices:
           values: { approvalCaseId: $launchCase, decidedBy: Nora Lund }
         then:
           - error: RequesterCannotApprove
+      RejectsADecisionByAnotherReviewer:
+        rules: [GOV-012]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $launchCase, riskLevel: high, reviewRoute: person, requestedBy: Nora Lund }
+          - event: ReviewerAssigned
+            values: { approvalCaseId: $launchCase, reviewer: Lena Holm }
+        when:
+          values: { approvalCaseId: $launchCase, rationale: Looks fine to me, decidedBy: Omar Vik }
+        then:
+          - error: NotTheAssignedReviewer
       RejectsConfirmingBeforeTheAgentAnswered:
         rules: [GOV-008]
         given:
@@ -1887,7 +1903,7 @@ slices:
           - event: ApprovalCaseRejected
             values: { approvalCaseId: $launchCase, decidedBy: Lena Holm }
         when:
-          values: { approvalCaseId: $launchCase, decidedBy: Omar Vik }
+          values: { approvalCaseId: $launchCase, decidedBy: Lena Holm }
         then:
           - error: CaseAlreadyDecided
       RejectsApprovingAnExpiredCase:
