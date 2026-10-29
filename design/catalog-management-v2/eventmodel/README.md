@@ -18,7 +18,7 @@ replace them.
 
 ## The flow
 
-16 slices in five chapters, with 57 given/when/then scenarios (58 examples: one outline runs twice), in two contexts:
+18 slices in five chapters, with 64 given/when/then scenarios (65 examples: one outline runs twice), in two contexts:
 Product Data (the Product Lifecycle Service, D-037) and Catalog Governance (D-029). They talk only
 through published messages: `LifecycleChangeForReview` one way, `ChangeReleased` and
 `ChangeRejected` the other way.
@@ -28,9 +28,11 @@ through published messages: `LifecycleChangeForReview` one way, `ChangeReleased`
 | Draft | `DraftProduct` | command | JS1 "Submit new product"; `createProduct()` | 1 |
 | Draft | `RecordSpecifications` | command | JS1 "Add technical specifications"; `updateProductSpecifications()` | 3 |
 | Draft | `FindProductsToManage` | query | JS1 "Search products for management"; `searchProductsForManagement()` | 2, 4, 6, 8, 10, 12 |
+| Draft | `ShowProductDetails` | query | JS1 activity steps "Search/details projections update" and "Product detail replacement section updates"; no read operation in `api-design.md` (D-038) | (none) |
 | Review | `RequestLifecycleChange` | command | JS1 "Set initial lifecycle state", "Mark product as discontinued"; `setProductLifecycleState()` | 5 |
 | Review | `OpenApprovalCase` | translation | `submitApprovalCase(changeType=lifecycle-change)` | 67 |
 | Review | `ReviewApprovalCases` | query | Catalog Governance API, ApprovalCase resource | 68, 70, 72, 74 |
+| Review | `ShowApprovalCaseDetails` | query | ApprovalCase and PublicationGate resources; no read operation in `api-design.md` (D-038) | (none) |
 | Review | `AssignReviewer` | command | `assignApprovalReviewer()` | 69 |
 | Review | `ApproveChange` | command | `recordApprovalDecision(approve)` | 71 |
 | Review | `RejectChange` | command | `recordApprovalDecision(reject)` | 71 |
@@ -45,6 +47,25 @@ through published messages: `LifecycleChangeForReview` one way, `ChangeReleased`
 The `ProductsUnderManagement` view also feeds the published stream `product-records`
 (`ProductRecordChanged`, `design/contracts/product-lifecycle.yaml`). The ordering model
 (`design/ordering/eventmodel/`) reads that stream.
+
+## Views
+
+Each entity that the events are about has a list view and a detail view (D-038). The detail view
+is a single view keyed by its list. Its page is the entity's task menu: the command screens that
+act on the entity start from it, and no field on the page is edited directly.
+
+| Entity | List view (screen) | Detail view (screen) | Tasks on the detail page |
+| --- | --- | --- | --- |
+| Product (`productId`) | `ProductsUnderManagement` (`ProductAdminList`) | `ProductDetails` (`ProductDetailPage`) | `SpecificationsForm`, `LifecycleChangeForm`, `PublishProductForm`, `ProductDetailsForm`, `DiscontinueProductForm`, `ReplacementForm` |
+| Approval case (`approvalCaseId`) | `ApprovalCases` (`ApprovalCaseList`) | `ApprovalCaseDetails` (`ApprovalCaseDetailPage`) | `AssignReviewerForm`, `ApproveForm`, `RejectForm`, `ReleaseForm` |
+
+The events carry three more tags. None of them is an entity of its own:
+
+- `sku` is a field of the product.
+- `replacementProductId` and `sourceReferenceId` are product ids.
+- The publication gate has no id. Each approval case has one gate, and `PublicationGateReleased`
+  carries only the `approvalCaseId`. The gate therefore shows as the `gate` field (locked or
+  released) of `ApprovalCaseDetails`, and it has no list or detail view of its own.
 
 Not in this flow: JS1 bulk ingestion (Bulk Ingestion API). It is a flow of its own.
 
@@ -102,8 +123,10 @@ node ../event-model-factory/dsl/kairos/tools/validate.mjs --receipt design/catal
 node ../event-model-factory/dsl/kairos/tools/render.mjs design/catalog-management-v2/eventmodel/product-lifecycle.kairos.yml
 ```
 
-At event-model-factory 7927a4e the validator reports 0 errors, 0 warnings and 2 info. Both info
-findings are M5 on the translations `ClearLifecycleChange` and `RecordRefusedLifecycleChange`. A
+At event-model-factory 7927a4e the validator reports 0 errors, 0 warnings and 2 info (18 slices,
+64 tests, 4 views, target prototype). Both info findings are M5 on the translations
+`ClearLifecycleChange` and `RecordRefusedLifecycleChange`; each event updates rows of
+`ProductsUnderManagement` and `ProductDetails`. A
 product id from Governance cannot prove that the product row exists. Each translation has a test
 that ignores a message for an unknown product (emf-m9a.67: views ignore updates for rows they do
 not have).
@@ -113,5 +136,10 @@ not have).
 - A decision cannot load a second thing of the same kind under another field name. The replacement
   in `LinkReplacementProduct` is a product, but the command names it `replacementProductId`. K27
   rejects a `given` event for it, so the model does not check that the replacement exists.
+- A task menu. Kairos has no link from a detail view or its screen to the command screens that
+  start from it. A `lookup` points only at a list view (K7). The model names the tasks in the
+  description of `ShowProductDetails` and `ShowApprovalCaseDetails`, and each command screen says
+  that its id comes from the detail page. The menu itself belongs in a Tessera file (`surfaces`
+  and `tasks.*.launch`), which this folder does not have yet.
 - The signed-in user as the source of a value (emf-bzu.31). `decidedBy` and `releasedBy` are screen
   fields with a description.

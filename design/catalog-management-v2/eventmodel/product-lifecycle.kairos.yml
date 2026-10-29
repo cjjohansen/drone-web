@@ -327,7 +327,7 @@ slices:
       name: SpecificationsForm
       actor: ProductLifecycleManager
       fields:
-        productId: { type: uuid, source: user, description: Picked from the products under management., example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
+        productId: { type: uuid, source: user, description: Set by the ProductDetailPage the task starts from; else picked from the products under management., example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
         minVoltage: { type: decimal, source: user, example: 11.1 }
         maxVoltage: { type: decimal, source: user, example: 25.2 }
         maxCurrent: { type: decimal, source: user, example: 41.5 }
@@ -507,6 +507,142 @@ slices:
               - { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, brand: T-Motor, name: T-Motor Velox V2306 V2 1750KV, lifecycleState: discontinued, specified: true, review: none, replacementProductId: $velox3 }
               - { productId: $velox3, sku: TMOTOR-VELOX-V2306V3-1950KV, brand: T-Motor, name: T-Motor Velox V2306 V3 1950KV, lifecycleState: draft, specified: false, review: none, replacementProductId: null }
 
+  ShowProductDetails:
+    pattern: query
+    chapter: Draft
+    description: >-
+      The manager picks a product from the ProductAdminList and sees all of it on one page: identity,
+      details, specifications, lifecycle state, the latest lifecycle request and the replacement.
+      The page is the product's task menu. Its tasks are the command screens that change a product:
+      SpecificationsForm (RecordSpecifications), LifecycleChangeForm (RequestLifecycleChange),
+      PublishProductForm (PublishProduct), ProductDetailsForm (ReviseProductDetails),
+      DiscontinueProductForm (DiscontinueProduct) and ReplacementForm (LinkReplacementProduct).
+      Each task starts with the page's productId. No field on the page is edited directly
+      (emf-vrf). ADDR: align/activity-steps.md JS1 ("Search/details projections update", "Product detail replacement section updates"); design/api-design.md has no operation that reads one product (proposed).
+    screen:
+      name: ProductDetailPage
+      actor: ProductLifecycleManager
+    views:
+      - single-view:
+          name: ProductDetails
+          keyed-by: ProductsUnderManagement.productId
+          identity: productId
+          reads:
+            ProductDrafted: create
+            ProductSpecificationsRecorded: update
+            ProductLifecycleChangeRequested: update
+            ProductLifecycleChangeCleared: update
+            ProductLifecycleChangeRefused: update
+            ProductPublished: update
+            ProductDetailsRevised: update
+            ProductDiscontinued: update
+            ReplacementProductLinked: update
+          fields:
+            productId: { type: uuid, source: system, from: ProductDrafted.productId, example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
+            sku: { type: string, source: system, from: ProductDrafted.sku }
+            brand: { type: string, source: system, from: ProductDrafted.brand }
+            draftedAt: { type: datetime, source: system, from: ProductDrafted.draftedAt }
+            name:
+              type: string
+              source: generated
+              description: The name from the draft, or from the latest revision of the details.
+              example: T-Motor Velox V2306 1750KV
+            shortDescription: { type: string, source: system, from: ProductDetailsRevised.shortDescription, optional: true }
+            minVoltage: { type: decimal, source: system, from: ProductSpecificationsRecorded.minVoltage, optional: true }
+            maxVoltage: { type: decimal, source: system, from: ProductSpecificationsRecorded.maxVoltage, optional: true }
+            maxCurrent: { type: decimal, source: system, from: ProductSpecificationsRecorded.maxCurrent, optional: true }
+            mounting: { type: string, source: system, from: ProductSpecificationsRecorded.mounting, optional: true }
+            weight: { type: decimal, source: system, from: ProductSpecificationsRecorded.weight, optional: true }
+            lifecycleState:
+              type: string
+              source: generated
+              description: "draft; active after ProductPublished; discontinued after ProductDiscontinued."
+              example: draft
+            review:
+              type: string
+              source: generated
+              description: "Where the latest lifecycle request stands: none, in review, cleared or refused, with the state asked for."
+              example: "in review: active"
+            latestRefusal: { type: string, source: system, from: ProductLifecycleChangeRefused.rationale, optional: true, description: Why Governance refused the latest refused request. }
+            publishedAt: { type: datetime, source: system, from: ProductPublished.publishedAt, optional: true }
+            discontinuedReason: { type: string, source: system, from: ProductDiscontinued.reason, optional: true }
+            discontinuedAt: { type: datetime, source: system, from: ProductDiscontinued.discontinuedAt, optional: true }
+            replacementProductId: { type: uuid, source: system, from: ReplacementProductLinked.replacementProductId, optional: true }
+            replacementReasonCode: { type: string, source: system, from: ReplacementProductLinked.reasonCode, optional: true }
+    tests:
+      ShowsTheVeloxDraftInReview:
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, name: T-Motor Velox V2306 1750KV, brand: T-Motor, draftedAt: 2026-11-02T09:10:00Z }
+          - event: ProductSpecificationsRecorded
+            values: { productId: $velox, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 41.5, mounting: 16x16-m3, weight: 33.6 }
+          - event: ProductLifecycleChangeRequested
+            values: { productId: $velox, targetState: active, reason: Launch with the 5-inch freestyle range }
+          - event: ProductDrafted
+            values: { productId: $f405, sku: SPEEDYBEE-F405-V4, name: SpeedyBee F405 V4 Flight Controller, brand: SpeedyBee, draftedAt: 2026-11-02T09:50:00Z }
+        then:
+          - view: ProductDetails
+            keyed: { productId: $velox }
+            rows:
+              - { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, brand: T-Motor, draftedAt: 2026-11-02T09:10:00Z, name: T-Motor Velox V2306 1750KV, shortDescription: null, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 41.5, mounting: 16x16-m3, weight: 33.6, lifecycleState: draft, review: "in review: active", latestRefusal: null, publishedAt: null, discontinuedReason: null, discontinuedAt: null, replacementProductId: null, replacementReasonCode: null }
+      ShowsAnUnspecifiedDraft:
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, name: T-Motor Velox V2306 1750KV, brand: T-Motor, draftedAt: 2026-11-02T09:10:00Z }
+          - event: ProductDrafted
+            values: { productId: $f405, sku: SPEEDYBEE-F405-V4, name: SpeedyBee F405 V4 Flight Controller, brand: SpeedyBee, draftedAt: 2026-11-02T09:50:00Z }
+        then:
+          - view: ProductDetails
+            keyed: { productId: $f405 }
+            rows:
+              - { productId: $f405, sku: SPEEDYBEE-F405-V4, brand: SpeedyBee, draftedAt: 2026-11-02T09:50:00Z, name: SpeedyBee F405 V4 Flight Controller, shortDescription: null, minVoltage: null, maxVoltage: null, maxCurrent: null, mounting: null, weight: null, lifecycleState: draft, review: none, latestRefusal: null, publishedAt: null, discontinuedReason: null, discontinuedAt: null, replacementProductId: null, replacementReasonCode: null }
+      ShowsWhyTheLaunchWasRefused:
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, name: T-Motor Velox V2306 1750KV, brand: T-Motor, draftedAt: 2026-11-02T09:10:00Z }
+          - event: ProductSpecificationsRecorded
+            values: { productId: $velox, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 41.5, mounting: 16x16-m3, weight: 33.6 }
+          - event: ProductLifecycleChangeRequested
+            values: { productId: $velox, targetState: active, reason: Launch with the 5-inch freestyle range }
+          - event: ProductLifecycleChangeRefused
+            values: { productId: $velox, targetState: active, rationale: Datasheet does not state the maximum current }
+        then:
+          - view: ProductDetails
+            keyed: { productId: $velox }
+            rows:
+              - { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, brand: T-Motor, draftedAt: 2026-11-02T09:10:00Z, name: T-Motor Velox V2306 1750KV, shortDescription: null, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 41.5, mounting: 16x16-m3, weight: 33.6, lifecycleState: draft, review: "refused: active", latestRefusal: Datasheet does not state the maximum current, publishedAt: null, discontinuedReason: null, discontinuedAt: null, replacementProductId: null, replacementReasonCode: null }
+      FollowsTheVeloxFromDraftToReplaced:
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, name: T-Motor Velox V2306 1750KV, brand: T-Motor, draftedAt: 2026-11-02T09:10:00Z }
+          - event: ProductSpecificationsRecorded
+            values: { productId: $velox, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 41.5, mounting: 16x16-m3, weight: 33.6 }
+          - event: ProductLifecycleChangeRequested
+            values: { productId: $velox, targetState: active, reason: Launch with the 5-inch freestyle range }
+          - event: ProductLifecycleChangeCleared
+            values: { productId: $velox, targetState: active }
+          - event: ProductPublished
+            values: { productId: $velox, publishedAt: 2026-11-03T08:00:00Z }
+          - event: ProductSpecificationsRecorded
+            values: { productId: $velox, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 38.0, mounting: 16x16-m3, weight: 33.6 }
+          - event: ProductDetailsRevised
+            values: { productId: $velox, name: T-Motor Velox V2306 V2 1750KV, shortDescription: 2306 motor for 6S 5-inch freestyle builds }
+          - event: ProductDrafted
+            values: { productId: $velox3, sku: TMOTOR-VELOX-V2306V3-1950KV, name: T-Motor Velox V2306 V3 1950KV, brand: T-Motor, draftedAt: 2027-05-10T08:00:00Z }
+          - event: ProductLifecycleChangeRequested
+            values: { productId: $velox, targetState: discontinued, reason: Replaced by the V3 1950KV }
+          - event: ProductLifecycleChangeCleared
+            values: { productId: $velox, targetState: discontinued }
+          - event: ProductDiscontinued
+            values: { productId: $velox, reason: Replaced by the V3 1950KV, discontinuedAt: 2027-06-30T16:00:00Z }
+          - event: ReplacementProductLinked
+            values: { productId: $velox, replacementProductId: $velox3, reasonCode: successor-model }
+        then:
+          - view: ProductDetails
+            keyed: { productId: $velox }
+            rows:
+              - { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, brand: T-Motor, draftedAt: 2026-11-02T09:10:00Z, name: T-Motor Velox V2306 V2 1750KV, shortDescription: 2306 motor for 6S 5-inch freestyle builds, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 38.0, mounting: 16x16-m3, weight: 33.6, lifecycleState: discontinued, review: none, latestRefusal: null, publishedAt: 2026-11-03T08:00:00Z, discontinuedReason: Replaced by the V3 1950KV, discontinuedAt: 2027-06-30T16:00:00Z, replacementProductId: $velox3, replacementReasonCode: successor-model }
+
   # ================================================================== Review
 
   RequestLifecycleChange:
@@ -523,7 +659,7 @@ slices:
       name: LifecycleChangeForm
       actor: ProductLifecycleManager
       fields:
-        productId: { type: uuid, source: user, description: Picked from the products under management., example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
+        productId: { type: uuid, source: user, description: Set by the ProductDetailPage the task starts from; else picked from the products under management., example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
         targetState: { type: string, source: user, description: "active or discontinued.", example: active }
         reason: { type: string, source: user, example: Launch with the 5-inch freestyle range }
         riskLevel: { type: string, source: user, description: "low, medium or high.", example: medium }
@@ -791,6 +927,114 @@ slices:
               - { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: active, riskLevel: medium, rationale: Launch with the 5-inch freestyle range, reviewer: null, status: released }
               - { approvalCaseId: $retireCase, changeType: lifecycle-change, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: discontinued, riskLevel: high, rationale: Replaced by the V3 1950KV, reviewer: null, status: rejected }
 
+  ShowApprovalCaseDetails:
+    pattern: query
+    chapter: Review
+    description: >-
+      The reviewer picks a case from the ApprovalCaseList and sees all of it on one page: the
+      product and the change asked for, the reviewer, the decision and the publication gate. The
+      gate is not an entity of its own here: each approval case has one gate, and the gate events
+      carry only the approvalCaseId, so the gate shows as the `gate` field of its case. The page is
+      the case's task menu. Its tasks are AssignReviewerForm (AssignReviewer), ApproveForm
+      (ApproveChange), RejectForm (RejectChange) and ReleaseForm (ReleaseChange). Each task starts
+      with the page's approvalCaseId. No field on the page is edited directly (emf-vrf).
+      ADDR: Catalog Governance API ("expose case status"), ApprovalCase and PublicationGate resources; design/api-design.md has no operation that reads one case (proposed).
+    screen:
+      name: ApprovalCaseDetailPage
+      actor: GovernanceReviewer
+    views:
+      - single-view:
+          name: ApprovalCaseDetails
+          keyed-by: ApprovalCases.approvalCaseId
+          identity: approvalCaseId
+          reads:
+            ApprovalCaseSubmitted: create
+            ReviewerAssigned: update
+            ApprovalCaseApproved: update
+            ApprovalCaseRejected: update
+            PublicationGateReleased: update
+          fields:
+            approvalCaseId: { type: uuid, source: system, from: ApprovalCaseSubmitted.approvalCaseId, example: 03724352-c0cd-4fa7-ac65-bddf8df0474d }
+            changeType: { type: string, source: system, from: ApprovalCaseSubmitted.changeType }
+            sourceReferenceId: { type: uuid, source: system, from: ApprovalCaseSubmitted.sourceReferenceId }
+            sourceLabel: { type: string, source: system, from: ApprovalCaseSubmitted.sourceLabel }
+            requestedChange: { type: string, source: system, from: ApprovalCaseSubmitted.requestedChange }
+            riskLevel: { type: string, source: system, from: ApprovalCaseSubmitted.riskLevel }
+            rationale: { type: string, source: system, from: ApprovalCaseSubmitted.rationale }
+            submittedAt: { type: datetime, source: system, from: ApprovalCaseSubmitted.submittedAt }
+            reviewer: { type: string, source: system, from: ReviewerAssigned.reviewer, optional: true }
+            assignedAt: { type: datetime, source: system, from: ReviewerAssigned.assignedAt, optional: true }
+            status:
+              type: string
+              source: generated
+              description: "pending, approved, rejected or released."
+              example: pending
+            decisionRationale:
+              type: string
+              source: generated
+              optional: true
+              description: The rationale of the approval or the rejection; null while the case is pending.
+              example: Specifications match the supplier datasheet
+            decidedBy:
+              type: string
+              source: generated
+              optional: true
+              description: The reviewer who approved or rejected the case; null while the case is pending.
+              example: Lena Holm
+            decidedAt:
+              type: datetime
+              source: generated
+              optional: true
+              description: When the case was approved or rejected; null while the case is pending.
+              example: 2026-11-02T14:30:00Z
+            gate:
+              type: string
+              source: generated
+              description: "The publication gate of the case: locked until PublicationGateReleased, then released."
+              example: locked
+            releasedBy: { type: string, source: system, from: PublicationGateReleased.releasedBy, optional: true }
+            releasedAt: { type: datetime, source: system, from: PublicationGateReleased.releasedAt, optional: true }
+    tests:
+      ShowsThePendingVeloxLaunchWithItsReviewer:
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceReferenceId: $velox, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: active, riskLevel: medium, rationale: Launch with the 5-inch freestyle range, submittedAt: 2026-11-02T09:40:05Z }
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $f405Case, changeType: lifecycle-change, sourceReferenceId: $f405, sourceLabel: SPEEDYBEE-F405-V4, requestedChange: active, riskLevel: low, rationale: New flight controller for the 5-inch kits, submittedAt: 2026-11-02T10:05:00Z }
+          - event: ReviewerAssigned
+            values: { approvalCaseId: $launchCase, reviewer: Lena Holm, assignedAt: 2026-11-02T11:00:00Z }
+        then:
+          - view: ApprovalCaseDetails
+            keyed: { approvalCaseId: $launchCase }
+            rows:
+              - { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceReferenceId: $velox, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: active, riskLevel: medium, rationale: Launch with the 5-inch freestyle range, submittedAt: 2026-11-02T09:40:05Z, reviewer: Lena Holm, assignedAt: 2026-11-02T11:00:00Z, status: pending, decisionRationale: null, decidedBy: null, decidedAt: null, gate: locked, releasedBy: null, releasedAt: null }
+      ShowsTheReleasedVeloxLaunch:
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceReferenceId: $velox, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: active, riskLevel: medium, rationale: Launch with the 5-inch freestyle range, submittedAt: 2026-11-02T09:40:05Z }
+          - event: ReviewerAssigned
+            values: { approvalCaseId: $launchCase, reviewer: Lena Holm, assignedAt: 2026-11-02T11:00:00Z }
+          - event: ApprovalCaseApproved
+            values: { approvalCaseId: $launchCase, rationale: Specifications match the supplier datasheet, decidedBy: Lena Holm, decidedAt: 2026-11-02T14:30:00Z }
+          - event: PublicationGateReleased
+            values: { approvalCaseId: $launchCase, releasedBy: Lena Holm, releasedAt: 2026-11-02T15:00:00Z }
+        then:
+          - view: ApprovalCaseDetails
+            keyed: { approvalCaseId: $launchCase }
+            rows:
+              - { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceReferenceId: $velox, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: active, riskLevel: medium, rationale: Launch with the 5-inch freestyle range, submittedAt: 2026-11-02T09:40:05Z, reviewer: Lena Holm, assignedAt: 2026-11-02T11:00:00Z, status: released, decisionRationale: Specifications match the supplier datasheet, decidedBy: Lena Holm, decidedAt: 2026-11-02T14:30:00Z, gate: released, releasedBy: Lena Holm, releasedAt: 2026-11-02T15:00:00Z }
+      ShowsTheRejectedDiscontinuation:
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $retireCase, changeType: lifecycle-change, sourceReferenceId: $velox, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: discontinued, riskLevel: high, rationale: Replaced by the V3 1950KV, submittedAt: 2027-06-16T09:00:00Z }
+          - event: ApprovalCaseRejected
+            values: { approvalCaseId: $retireCase, rationale: Successor not yet in stock, decidedBy: Omar Vik, decidedAt: 2027-06-17T13:20:00Z }
+        then:
+          - view: ApprovalCaseDetails
+            keyed: { approvalCaseId: $retireCase }
+            rows:
+              - { approvalCaseId: $retireCase, changeType: lifecycle-change, sourceReferenceId: $velox, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: discontinued, riskLevel: high, rationale: Replaced by the V3 1950KV, submittedAt: 2027-06-16T09:00:00Z, reviewer: null, assignedAt: null, status: rejected, decisionRationale: Successor not yet in stock, decidedBy: Omar Vik, decidedAt: 2027-06-17T13:20:00Z, gate: locked, releasedBy: null, releasedAt: null }
+
   AssignReviewer:
     pattern: command
     chapter: Review
@@ -799,7 +1043,7 @@ slices:
       name: AssignReviewerForm
       actor: GovernanceReviewer
       fields:
-        approvalCaseId: { type: uuid, source: user, description: Picked from the approval cases., example: 03724352-c0cd-4fa7-ac65-bddf8df0474d }
+        approvalCaseId: { type: uuid, source: user, description: Set by the ApprovalCaseDetailPage the task starts from; else picked from the approval cases., example: 03724352-c0cd-4fa7-ac65-bddf8df0474d }
         reviewer: { type: string, source: user, description: Picked from the governance reviewers; the reviewer directory is outside this model., example: Lena Holm }
     command:
       name: AssignReviewer
@@ -838,7 +1082,7 @@ slices:
       name: ApproveForm
       actor: GovernanceReviewer
       fields:
-        approvalCaseId: { type: uuid, source: user, description: Picked from the approval cases., example: 03724352-c0cd-4fa7-ac65-bddf8df0474d }
+        approvalCaseId: { type: uuid, source: user, description: Set by the ApprovalCaseDetailPage the task starts from; else picked from the approval cases., example: 03724352-c0cd-4fa7-ac65-bddf8df0474d }
         rationale: { type: string, source: user, example: Specifications match the supplier datasheet }
         decidedBy: { type: string, source: user, description: "The signed-in reviewer; the reviewer does not type it.", example: Lena Holm }
     command:
@@ -898,7 +1142,7 @@ slices:
       name: RejectForm
       actor: GovernanceReviewer
       fields:
-        approvalCaseId: { type: uuid, source: user, description: Picked from the approval cases., example: 03724352-c0cd-4fa7-ac65-bddf8df0474d }
+        approvalCaseId: { type: uuid, source: user, description: Set by the ApprovalCaseDetailPage the task starts from; else picked from the approval cases., example: 03724352-c0cd-4fa7-ac65-bddf8df0474d }
         rationale: { type: string, source: user, example: Datasheet does not state the maximum current }
         decidedBy: { type: string, source: user, description: "The signed-in reviewer; the reviewer does not type it.", example: Lena Holm }
     command:
@@ -955,7 +1199,7 @@ slices:
       name: ReleaseForm
       actor: GovernanceReviewer
       fields:
-        approvalCaseId: { type: uuid, source: user, description: Picked from the approval cases., example: 03724352-c0cd-4fa7-ac65-bddf8df0474d }
+        approvalCaseId: { type: uuid, source: user, description: Set by the ApprovalCaseDetailPage the task starts from; else picked from the approval cases., example: 03724352-c0cd-4fa7-ac65-bddf8df0474d }
         releasedBy: { type: string, source: user, description: "The signed-in reviewer; the reviewer does not type it.", example: Lena Holm }
     command:
       name: ReleaseChange
@@ -1146,7 +1390,7 @@ slices:
       name: PublishProductForm
       actor: ProductLifecycleManager
       fields:
-        productId: { type: uuid, source: user, description: Picked from the products under management., example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
+        productId: { type: uuid, source: user, description: Set by the ProductDetailPage the task starts from; else picked from the products under management., example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
     command:
       name: PublishProduct
       fields:
@@ -1223,7 +1467,7 @@ slices:
       name: ProductDetailsForm
       actor: ProductLifecycleManager
       fields:
-        productId: { type: uuid, source: user, description: Picked from the products under management., example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
+        productId: { type: uuid, source: user, description: Set by the ProductDetailPage the task starts from; else picked from the products under management., example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
         name: { type: string, source: user, example: T-Motor Velox V2306 V2 1750KV }
         shortDescription: { type: string, source: user, example: 2306 motor for 6S 5-inch freestyle builds }
     command:
@@ -1271,7 +1515,7 @@ slices:
       name: DiscontinueProductForm
       actor: ProductLifecycleManager
       fields:
-        productId: { type: uuid, source: user, description: Picked from the products under management., example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
+        productId: { type: uuid, source: user, description: Set by the ProductDetailPage the task starts from; else picked from the products under management., example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
     command:
       name: DiscontinueProduct
       fields:
@@ -1342,7 +1586,7 @@ slices:
       name: ReplacementForm
       actor: ProductLifecycleManager
       fields:
-        productId: { type: uuid, source: user, description: "The discontinued product, picked from the products under management.", example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
+        productId: { type: uuid, source: user, description: "The discontinued product, set by the ProductDetailPage the task starts from; else picked from the products under management.", example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
         replacementProductId: { type: uuid, source: user, description: "The successor, picked from the products under management.", example: 9b2e4d6f-1a3c-4e5b-8d7f-2a4c6e8b0d13 }
         reasonCode: { type: string, source: user, example: successor-model }
     command:
