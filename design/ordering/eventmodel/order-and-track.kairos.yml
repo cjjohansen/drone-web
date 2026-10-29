@@ -51,6 +51,18 @@
 # apply: commands made offline and sent later, and the signed-in customer as the source of a
 # value and as the filter of "my" rows.
 #
+# Views per entity (CJ's rule, 2026-10-29: every entity the events are about gets a list view and
+# a detail view unless a reason is recorded). The entities follow from the event tags:
+#
+#   - Drone (productId): list DronesForSale (BrowseDrones), detail DroneDetails (ViewDrone).
+#   - Order (orderId): list MyOrders (ListMyOrders), detail OrderStatus (TrackOrder).
+#   - Payment (paymentId): list Payments (ListPayments), detail PaymentDetails (ViewPayment). For
+#     the order desk only; the customer sees a payment as the status of the order.
+#   - Payment mismatch (paymentId): list PaymentMismatches (CheckPaymentMismatches); its detail is
+#     PaymentDetails, because a mismatch is a fact about one payment.
+#   - Shipment (trackingNumber): no own views. One order has one parcel here, and the order views
+#     show the carrier, the tracking number and the dates. See the README.
+#
 # No rule is `status: proposed` now: every rule below is confirmed by CJ (2026-10-28).
 
 kairos: "0"
@@ -485,6 +497,88 @@ slices:
             rows:
               - { productId: $nazgul, name: iFlight Nazgul5 V3 6S BNF, unitPrice: 329.99, currency: USD, orderable: false }
 
+  ViewDrone:
+    pattern: query
+    chapter: Know what we sell
+    description: >-
+      Phone screen: one drone, opened by a tap in the list of drones for sale. It shows the name,
+      the SKU, the price and whether the drone can be ordered; an "Order" button opens the order
+      form for this drone. It is the detail view of the drone (CJ's rule of 2026-10-29: every
+      entity gets a list view and a detail view). Like DronesForSale, it should keep a price that
+      arrives before the product record (emf-m9a.67).
+    screen:
+      name: DroneDetailsScreen
+      actor: Customer
+    views:
+      - single-view:
+          name: DroneDetails
+          keyed-by: DronesForSale.productId
+          identity: productId
+          reads:
+            ProductDescribed: create
+            ProductPriced: update
+          fields:
+            productId: { type: uuid, source: system, from: ProductDescribed.productId, example: 3f6b2c1e-8a4d-4f0e-9b7a-1c2d3e4f5a60 }
+            sku: { type: string, source: system, from: ProductDescribed.sku }
+            name: { type: string, source: system, from: ProductDescribed.name }
+            lifecycleState: { type: string, source: system, from: ProductDescribed.lifecycleState }
+            unitPrice: { type: decimal, source: system, from: ProductPriced.unitPrice, optional: true }
+            currency: { type: string, source: system, from: ProductPriced.currency, optional: true }
+            orderable:
+              type: bool
+              source: generated
+              description: The product is active and has a price; the "Order" button is shown only then.
+              example: true
+    tests:
+      ShowsTheNazgulReadyToOrder:
+        given:
+          - event: ProductDescribed
+            values: { productId: $nazgul, sku: IFL-NAZ5V3-6S-BNF, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: active }
+          - event: ProductPriced
+            values: { productId: $nazgul, unitPrice: 329.99, currency: USD }
+          - event: ProductDescribed
+            values: { productId: $x500, sku: HB-X500V2-ARF, name: Holybro X500 V2 ARF Kit, lifecycleState: active }
+        then:
+          - view: DroneDetails
+            keyed: { productId: $nazgul }
+            rows:
+              - { productId: $nazgul, sku: IFL-NAZ5V3-6S-BNF, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: active, unitPrice: 329.99, currency: USD, orderable: true }
+      ShowsTheLatestPromotionPrice:
+        given:
+          - event: ProductDescribed
+            values: { productId: $nazgul, sku: IFL-NAZ5V3-6S-BNF, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: active }
+          - event: ProductPriced
+            values: { productId: $nazgul, unitPrice: 329.99, currency: USD }
+          - event: ProductPriced
+            values: { productId: $nazgul, unitPrice: 299.99, currency: USD }
+        then:
+          - view: DroneDetails
+            keyed: { productId: $nazgul }
+            rows:
+              - { productId: $nazgul, sku: IFL-NAZ5V3-6S-BNF, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: active, unitPrice: 299.99, currency: USD, orderable: true }
+      ShowsADiscontinuedDroneThatCannotBeOrdered:
+        given:
+          - event: ProductDescribed
+            values: { productId: $nazgul, sku: IFL-NAZ5V3-6S-BNF, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: active }
+          - event: ProductPriced
+            values: { productId: $nazgul, unitPrice: 329.99, currency: USD }
+          - event: ProductDescribed
+            values: { productId: $nazgul, sku: IFL-NAZ5V3-6S-BNF, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: discontinued }
+        then:
+          - view: DroneDetails
+            keyed: { productId: $nazgul }
+            rows:
+              - { productId: $nazgul, sku: IFL-NAZ5V3-6S-BNF, name: iFlight Nazgul5 V3 6S BNF, lifecycleState: discontinued, unitPrice: 329.99, currency: USD, orderable: false }
+      ShowsADroneWithoutAPriceYet:
+        given:
+          - event: ProductDescribed
+            values: { productId: $x500, sku: HB-X500V2-ARF, name: Holybro X500 V2 ARF Kit, lifecycleState: active }
+        then:
+          - view: DroneDetails
+            keyed: { productId: $x500 }
+            rows:
+              - { productId: $x500, sku: HB-X500V2-ARF, name: Holybro X500 V2 ARF Kit, lifecycleState: active, unitPrice: null, currency: null, orderable: false }
+
   # ---------------------------------------------------------------- Order and pay
 
   PlaceOrder:
@@ -906,10 +1000,155 @@ slices:
             values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2 }
         then: []
 
+  ListPayments:
+    pattern: query
+    chapter: Order and pay
+    description: >-
+      Staff screen: every payment attempt, newest first, with its order, the amount Drone Web
+      asked for and a status badge (started, captured or declined). A badge marks a payment whose
+      captured amount differs from the order total. One order can have several attempts: a
+      declined card and then a captured one. The customer never sees this list; the customer sees
+      the payment only as the status of the order (MyOrders, OrderStatus). It is the list view of
+      the payment (CJ's rule of 2026-10-29).
+    screen:
+      name: PaymentsScreen
+      actor: OrderDesk
+    views:
+      - list-view:
+          name: Payments
+          identity: paymentId
+          reads:
+            PaymentStarted: create
+            OrderPaid: update
+            OrderPaymentDeclined: update
+            PaymentAmountMismatched: update
+          fields:
+            paymentId: { type: string, source: system, from: PaymentStarted.paymentId, example: pi_3QDrn8F2eZvKYlo2 }
+            orderId: { type: uuid, source: system, from: PaymentStarted.orderId, example: 7c9e6679-7425-40de-944b-e07fc1f90ae7 }
+            amount: { type: decimal, source: system, from: PaymentStarted.amount }
+            currency: { type: string, source: system, from: PaymentStarted.currency }
+            startedAt: { type: datetime, source: system, from: PaymentStarted.startedAt }
+            status:
+              type: string
+              source: generated
+              description: "The badge: started (the provider has not answered yet), captured or declined."
+              example: captured
+            amountMismatch:
+              type: bool
+              source: generated
+              description: The provider captured an amount different from the order total.
+              example: false
+    tests:
+      ShowsEachAttemptWithItsOutcome:
+        given:
+          - event: PaymentStarted
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, currency: USD, startedAt: 2026-11-02T18:43:10Z }
+          - event: OrderPaymentDeclined
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, declineReason: Insufficient funds }
+          - event: PaymentStarted
+            values: { orderId: $miasOrder, paymentId: pi_3QDrp1K7aQwBx9M4, amount: 329.99, currency: USD, startedAt: 2026-11-02T18:50:02Z }
+          - event: OrderPaid
+            values: { orderId: $miasOrder, paymentId: pi_3QDrp1K7aQwBx9M4, amount: 329.99, paidAt: 2026-11-02T18:50:40Z }
+          - event: PaymentStarted
+            values: { orderId: $leosOrder, paymentId: pi_3QE1aa9Xc2RtYu7P, amount: 329.99, currency: USD, startedAt: 2026-11-03T08:11:05Z }
+        then:
+          - view: Payments
+            rows:
+              - { paymentId: pi_3QDrn8F2eZvKYlo2, orderId: $miasOrder, amount: 329.99, currency: USD, startedAt: 2026-11-02T18:43:10Z, status: declined, amountMismatch: false }
+              - { paymentId: pi_3QDrp1K7aQwBx9M4, orderId: $miasOrder, amount: 329.99, currency: USD, startedAt: 2026-11-02T18:50:02Z, status: captured, amountMismatch: false }
+              - { paymentId: pi_3QE1aa9Xc2RtYu7P, orderId: $leosOrder, amount: 329.99, currency: USD, startedAt: 2026-11-03T08:11:05Z, status: started, amountMismatch: false }
+      MarksAPaymentWhoseAmountDiffers:
+        given:
+          - event: PaymentStarted
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 659.98, currency: USD, startedAt: 2026-11-02T18:43:10Z }
+          - event: OrderPaid
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, paidAt: 2026-11-02T18:43:55Z }
+          - event: PaymentAmountMismatched
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, orderTotal: 659.98, capturedAmount: 329.99, currency: USD, difference: -329.99, capturedAt: 2026-11-02T18:43:55Z }
+        then:
+          - view: Payments
+            rows:
+              - { paymentId: pi_3QDrn8F2eZvKYlo2, orderId: $miasOrder, amount: 659.98, currency: USD, startedAt: 2026-11-02T18:43:10Z, status: captured, amountMismatch: true }
+
+  ViewPayment:
+    pattern: query
+    chapter: Order and pay
+    description: >-
+      Staff screen: one payment attempt, opened from the list of payments or from a row of
+      PaymentMismatches. It shows the amount Drone Web asked for, the amount the provider
+      captured, the decline reason and, for a mismatch, the difference. It is the detail view of
+      the payment and also of the payment mismatch: a mismatch is a fact about one payment and
+      has the same identity, paymentId. Kairos v0 lets keyed-by name one list only, so the board
+      draws the link from Payments only.
+    screen:
+      name: PaymentDetailsScreen
+      actor: OrderDesk
+    views:
+      - single-view:
+          name: PaymentDetails
+          keyed-by: Payments.paymentId
+          identity: paymentId
+          reads:
+            PaymentStarted: create
+            OrderPaid: update
+            OrderPaymentDeclined: update
+            PaymentAmountMismatched: update
+          fields:
+            paymentId: { type: string, source: system, from: PaymentStarted.paymentId, example: pi_3QDrn8F2eZvKYlo2 }
+            orderId: { type: uuid, source: system, from: PaymentStarted.orderId, example: 7c9e6679-7425-40de-944b-e07fc1f90ae7 }
+            amount: { type: decimal, source: system, from: PaymentStarted.amount }
+            currency: { type: string, source: system, from: PaymentStarted.currency }
+            startedAt: { type: datetime, source: system, from: PaymentStarted.startedAt }
+            status:
+              type: string
+              source: generated
+              description: "started, captured or declined."
+              example: captured
+            capturedAmount: { type: decimal, source: system, from: OrderPaid.amount, optional: true }
+            paidAt: { type: datetime, source: system, from: OrderPaid.paidAt, optional: true }
+            declineReason: { type: string, source: system, from: OrderPaymentDeclined.declineReason, optional: true }
+            difference: { type: decimal, source: system, from: PaymentAmountMismatched.difference, optional: true }
+    tests:
+      ShowsAPaymentThatWentThrough:
+        given:
+          - event: PaymentStarted
+            values: { orderId: $miasOrder, paymentId: pi_3QDrp1K7aQwBx9M4, amount: 329.99, currency: USD, startedAt: 2026-11-02T18:50:02Z }
+          - event: OrderPaid
+            values: { orderId: $miasOrder, paymentId: pi_3QDrp1K7aQwBx9M4, amount: 329.99, paidAt: 2026-11-02T18:50:40Z }
+        then:
+          - view: PaymentDetails
+            keyed: { paymentId: pi_3QDrp1K7aQwBx9M4 }
+            rows:
+              - { paymentId: pi_3QDrp1K7aQwBx9M4, orderId: $miasOrder, amount: 329.99, currency: USD, startedAt: 2026-11-02T18:50:02Z, status: captured, capturedAmount: 329.99, paidAt: 2026-11-02T18:50:40Z, declineReason: null, difference: null }
+      ShowsWhyACardWasDeclined:
+        given:
+          - event: PaymentStarted
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, currency: USD, startedAt: 2026-11-02T18:43:10Z }
+          - event: OrderPaymentDeclined
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, declineReason: Insufficient funds }
+        then:
+          - view: PaymentDetails
+            keyed: { paymentId: pi_3QDrn8F2eZvKYlo2 }
+            rows:
+              - { paymentId: pi_3QDrn8F2eZvKYlo2, orderId: $miasOrder, amount: 329.99, currency: USD, startedAt: 2026-11-02T18:43:10Z, status: declined, capturedAmount: null, paidAt: null, declineReason: Insufficient funds, difference: null }
+      ShowsTheDifferenceToCheck:
+        given:
+          - event: PaymentStarted
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 659.98, currency: USD, startedAt: 2026-11-02T18:43:10Z }
+          - event: OrderPaid
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, paidAt: 2026-11-02T18:43:55Z }
+          - event: PaymentAmountMismatched
+            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, orderTotal: 659.98, capturedAmount: 329.99, currency: USD, difference: -329.99, capturedAt: 2026-11-02T18:43:55Z }
+        then:
+          - view: PaymentDetails
+            keyed: { paymentId: pi_3QDrn8F2eZvKYlo2 }
+            rows:
+              - { paymentId: pi_3QDrn8F2eZvKYlo2, orderId: $miasOrder, amount: 659.98, currency: USD, startedAt: 2026-11-02T18:43:10Z, status: captured, capturedAmount: 329.99, paidAt: 2026-11-02T18:43:55Z, declineReason: null, difference: -329.99 }
+
   ListMyOrders:
     pattern: query
     chapter: Order and pay
-    description: "Phone screen: the customer's orders, newest first, each with the drone, the total and a status badge. Tapping one opens the order status."
+    description: "Phone screen: the customer's orders, newest first, each with the drone, the total and a status badge. Tapping one opens the order status. It is the list view of the order."
     screen:
       name: MyOrdersScreen
       actor: Customer
@@ -1177,7 +1416,7 @@ slices:
   TrackOrder:
     pattern: query
     chapter: Ship and deliver
-    description: "Phone screen: one order with a status timeline (placed, paid, shipped, delivered), the carrier and the tracking number."
+    description: "Phone screen: one order with a status timeline (placed, paid, shipped, delivered), the carrier and the tracking number. It is the detail view of the order and of its shipment."
     screen:
       name: OrderStatusScreen
       actor: Customer
