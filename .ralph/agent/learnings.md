@@ -176,3 +176,9 @@
 - **Context:** The ordering event model (`design/ordering/eventmodel/order-and-track.kairos.yml`) was built before any ADDR work for ordering existed. The storefront ADDR covers only the read flows and stops at "[to cart/checkout]", so the model had no ADDR artifacts to ground it and is now kept as a draft.
 - **Learning:** An event model drawn ahead of its ADDR work rests on assumptions (rules, amounts, refusals) that the ADDR phases would have surfaced. Check which ADDR work exists before you pick a flow to model.
 - **Action:** Before you model a flow, list `design/*/addr/` and confirm that the flow's domain has at least Align and Define artifacts. If it has none, pick a flow that has them, or mark the model "draft: no ADDR yet" in its header and README.
+
+## LRN-028 (2026-10-29)
+- **Category:** Governance / Traceability
+- **Context:** drone-web keeps its decisions in `.ralph/agent/decisions.md`. The galaxitech-website repo keeps its own series in `DECISIONS.md`, and many of those decisions are about drone-web. The two series overlap: both have a D-037 and a D-038, with different content. The ProductLifecycle event model cited "D-037" and "D-038" without saying which log it meant.
+- **Learning:** A bare decision number is ambiguous when two repos number decisions independently. Renumbering would break every existing reference, so the series stay as they are.
+- **Action:** In drone-web files, always name the source of a decision: "drone-web D-037" for `.ralph/agent/decisions.md`, "galaxitech-website D-038" for galaxitech-website `DECISIONS.md`. Do not renumber either series. Answers CJ gives to a model's open questions are cited as "CJ D1a" with the date and bead, unless they are recorded in one of the two logs.

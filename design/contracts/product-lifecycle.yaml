@@ -172,8 +172,8 @@ components:
           additionalProperties: true
         lifecycleState:
           type: string
+          description: Drafts are not published on product-records; a product appears when it goes live.
           enum:
-          - draft
           - active
           - discontinued
         replacementProductId:

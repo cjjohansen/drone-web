@@ -1,16 +1,23 @@
 # Drone Web catalog management: draft, review, publish, change and retire a product (JS1).
 # Written with the kairos-author skill of event-model-factory (bead galaxitech-website-498).
 #
-# The flow in words (chosen by CJ, 2026-10-28: "JS1 Product Lifecycle"):
+# The flow in words (chosen by CJ, 2026-10-28: "JS1 Product Lifecycle"; review rules from CJ's
+# answers of 2026-10-29, D1 to D10 in the README):
 #
 #   A Product Lifecycle Manager drafts a new product with its SKU, name and brand, and records its
-#   technical specifications. When the draft is complete, the manager asks for the product to go
-#   live. Catalog Governance opens an approval case for the request. A Governance Reviewer is
-#   assigned, approves or rejects the change, and releases the publication gate for an approved
-#   change. Product Data learns of the release (or the rejection), and the manager then publishes
-#   the product. Later the manager changes the product's details and specifications. To retire the
-#   product, the manager asks for its discontinuation, which goes through the same review; after the
-#   release the manager discontinues it and links the product that replaces it.
+#   technical specifications. While the product is a draft, the manager changes it freely. When
+#   the draft is complete, the manager asks for the product to go live. Every change to a product
+#   that is sold (going live, a new specification, a new name or description, the discontinuation)
+#   is a change request that Catalog Governance reviews. A Governance policy sets the risk level
+#   of the request from its change type; the manager may ask for a higher level, never a lower one.
+#   A low-risk change is approved by a review agent (an LLM). A medium-risk change is checked by
+#   the agent and confirmed by a person. A high-risk change is decided by a person. A person who
+#   decides is an assigned reviewer and never the manager who asked (four eyes). An approved
+#   change is released through its publication gate. A case that nobody decides expires after the
+#   review period. Product Data learns of the release, the rejection or the expiry; after a
+#   release the manager applies the change. To retire the product, the manager asks for its
+#   discontinuation, and after the release discontinues it and links the product that replaces it.
+#   A discontinued product keeps its specifications; its details may still change.
 #
 # Where the pieces come from (design/catalog-management-v2/addr/):
 #
@@ -18,19 +25,22 @@
 #   - align/personas.md gives the two actors: Product Lifecycle Manager and Governance Reviewer.
 #   - define/api-profiles.md (Product Lifecycle API, Catalog Governance API) gives the operations;
 #     each slice description names the operation it comes from.
-#   - define/boundaries.md gives the invariants. Rules that cite an invariant are `active`; rules
-#     that are our assumption are `status: proposed` and wait for CJ.
+#   - define/boundaries.md gives the invariants. Rules that cite an invariant or one of CJ's
+#     answers are `active`; rules that are our assumption are `status: proposed` and wait for CJ.
 #   - define/resources.md gives the fields and the states: lifecycle draft, active, discontinued;
-#     approval case pending, approved, rejected; gate locked, released.
+#     approval case pending, approved, rejected, released, expired; gate locked, released.
 #   - define/sequence-diagrams.md (JS1) gives the order: create, specify, submit approval case,
 #     decide, release gate, set lifecycle state active, discontinue, link replacement.
-#   - Decision D-037 (.ralph/agent/decisions.md) and design/contracts/product-lifecycle.yaml give
-#     the published stream product-records, which the ordering model reads.
+#   - Decision drone-web D-037 (.ralph/agent/decisions.md in this repo) and
+#     design/contracts/product-lifecycle.yaml give the published stream product-records, which the
+#     ordering model reads. galaxitech-website D-038 (DECISIONS.md in the galaxitech-website repo)
+#     says that approval happens before the owner publishes. The two repos number their decisions
+#     separately, so every citation names its repo.
 #
-# Two places where this model departs from ADDR on purpose, both marked proposed:
+# Where this model departs from ADDR on purpose, all marked proposed:
 #
-#   - The manager asks Product Data for a lifecycle change, and Product Data publishes the request
-#     to Catalog Governance. In the ADDR sequence diagram the manager calls Governance directly.
+#   - The manager asks Product Data for a change, and Product Data publishes the request to
+#     Catalog Governance. In the ADDR sequence diagram the manager calls Governance directly.
 #     Here the product rules (is the draft complete? is the move allowed?) stay in Product Data,
 #     as define/boundaries.md section D asks ("keep strong consistency rules inside aggregate
 #     boundaries").
@@ -43,41 +53,62 @@
 
 kairos: "0"
 model: ProductLifecycle
-description: A product goes from draft through Governance review to the shop, changes while it is sold, and is discontinued and replaced, again after review.
+description: A product goes from draft through Governance review to the shop, changes while it is sold only after review, and is discontinued and replaced, again after review.
 
 automations:
   Integration:
-    description: Takes in what the other context publishes.
+    description: Takes in what another context publishes.
+  AgentReview:
+    description: Sends low- and medium-risk approval cases to the review agent.
+  ReviewClock:
+    description: Expires approval cases that nobody decided in time.
 
 actors:
   ProductLifecycleManager:
     description: Owns product master data and lifecycle transitions (align/personas.md).
   GovernanceReviewer:
-    description: Owns approval and publication gates for high-risk writes, such as discontinuations (align/personas.md).
+    description: Owns approval and publication gates for catalog changes (align/personas.md).
+
+ports:
+  ChangeReviewAgent:
+    description: >-
+      The review agent: a large language model (LLM) with a review prompt. It reads one change
+      request and later answers through ReviewAgent.ChangeAssessed. The call is one-way.
+    operations:
+      AssessChange:
+        request:
+          approvalCaseId: uuid
+          changeType: string
+          sourceLabel: string
+          requestedChange: string
+          rationale: string
+          riskLevel: string
 
 contexts:
   ProductData:
     description: >-
-      The Product Lifecycle Service in the Product Data bounded context (D-037). The only writer of
-      product identity, attributes, specifications and lifecycle state.
+      The Product Lifecycle Service in the Product Data bounded context (drone-web D-037). The only
+      writer of product identity, attributes, specifications and lifecycle state.
     publishes:
-      LifecycleChangeForReview:
+      ChangeForReview:
         version: 1
-        description: A manager asks for a product to move to another lifecycle state. Catalog Governance opens an approval case for it.
-        from: ProductLifecycleChangeRequested
+        description: A manager asks for a change to a product. Catalog Governance opens an approval case for it.
+        from: ProductChangeRequested
         fields:
           productId: uuid
           sku: string
-          targetState: string
+          changeType: string
+          requestedChange: string
           reason: string
           riskLevel: string
+          requestedBy: string
       ProductRecordChanged:
         version: 1
         description: >-
-          The current record of a product on the product-records stream
-          (design/contracts/product-lifecycle.yaml). The ordering model reads it as
-          ProductData.ProductRecordChanged.
-        from: ProductsUnderManagement
+          The current record of a published product on the product-records stream
+          (design/contracts/product-lifecycle.yaml). Drafts are not on it (CJ D5a, galaxitech-website
+          D-038). The ordering model reads it as ProductData.ProductRecordChanged.
+        from: ProductRecords
         fields:
           productId: uuid
           sku: string
@@ -87,7 +118,7 @@ contexts:
           replacementProductId: uuid
 
   CatalogGovernance:
-    description: Approval cases and publication gates for high-risk catalog changes (Catalog Governance API, D-029).
+    description: Approval cases and publication gates for catalog changes (Catalog Governance API, drone-web D-029).
     publishes:
       ChangeReleased:
         version: 1
@@ -108,6 +139,30 @@ contexts:
           sourceReferenceId: uuid
           requestedChange: string
           rationale: string
+      ChangeExpired:
+        version: 1
+        description: Nobody decided a change within the review period. The owning context does not apply it.
+        from: ApprovalCaseExpired
+        fields:
+          approvalCaseId: uuid
+          changeType: string
+          sourceReferenceId: uuid
+          requestedChange: string
+
+  ReviewAgent:
+    foreign: true
+    description: >-
+      The review agent (an LLM) outside this model. It answers each AssessChange call with a
+      verdict and its findings. Its answer is advice: Catalog Governance's decision checks it
+      (GOV-008, GOV-011).
+    publishes:
+      ChangeAssessed:
+        version: 1
+        description: The review agent's verdict on one approval case.
+        fields:
+          approvalCaseId: uuid
+          verdict: string
+          findings: string
 
 events:
 
@@ -135,38 +190,53 @@ events:
       maxCurrent: { type: decimal, source: system, description: Highest continuous current in amperes., example: 41.5 }
       mounting: { type: string, source: system, description: Mounting pattern., example: 16x16-m3 }
       weight: { type: decimal, source: system, description: Weight in grams., example: 33.6 }
+      approvalCaseId: { type: uuid, source: system, from: ProductChangeCleared.approvalCaseId, optional: true, description: The released case for a change to an active product; null for a draft. }
       recordedAt: { type: datetime, source: generated, example: 2026-11-02T09:25:00Z }
 
-  ProductLifecycleChangeRequested:
+  ProductChangeRequested:
     context: ProductData
-    description: A manager asked for a product to move to another lifecycle state. The change waits for Governance.
+    description: A manager asked for a change to a product. The change waits for Governance.
     tags: [productId]
     fields:
       productId: { type: uuid, source: system }
       sku: { type: string, source: system, from: ProductDrafted.sku }
-      targetState: { type: string, source: system, description: "active or discontinued.", example: active }
+      changeType: { type: string, source: system, description: "lifecycle-change, specification-change or details-change.", example: lifecycle-change }
+      requestedChange: { type: string, source: system, description: "For a lifecycle change the state asked for (active or discontinued); else the change in words.", example: active }
       reason: { type: string, source: system, example: Launch with the 5-inch freestyle range }
-      riskLevel: { type: string, source: system, description: "low, medium or high (Catalog Governance API).", example: medium }
+      riskLevel: { type: string, source: system, description: "The level the manager asks for: low, medium, high or critical. Governance never sets it lower than its policy (GOV-004).", example: medium }
+      requestedBy: { type: string, source: system, description: The manager who asked., example: Nora Lund }
       requestedAt: { type: datetime, source: generated, example: 2026-11-02T09:40:00Z }
 
-  ProductLifecycleChangeCleared:
+  ProductChangeCleared:
     context: ProductData
-    description: Governance released the requested lifecycle change. The manager may now apply it.
+    description: Governance released the requested change. The manager may now apply it.
     tags: [productId]
     fields:
       productId: { type: uuid, source: system }
-      targetState: { type: string, source: system }
+      changeType: { type: string, source: system }
+      requestedChange: { type: string, source: system }
       approvalCaseId: { type: uuid, source: system, example: 03724352-c0cd-4fa7-ac65-bddf8df0474d }
 
-  ProductLifecycleChangeRefused:
+  ProductChangeRefused:
     context: ProductData
-    description: Governance rejected the requested lifecycle change. The product stays as it was.
+    description: Governance rejected the requested change. The product stays as it was.
     tags: [productId]
     fields:
       productId: { type: uuid, source: system }
-      targetState: { type: string, source: system }
+      changeType: { type: string, source: system }
+      requestedChange: { type: string, source: system }
       approvalCaseId: { type: uuid, source: system }
       rationale: { type: string, source: system, example: Datasheet does not state the maximum current }
+
+  ProductChangeExpired:
+    context: ProductData
+    description: Nobody at Governance decided the requested change in time. The product stays as it was, and the manager may ask again.
+    tags: [productId]
+    fields:
+      productId: { type: uuid, source: system }
+      changeType: { type: string, source: system }
+      requestedChange: { type: string, source: system }
+      approvalCaseId: { type: uuid, source: system }
 
   ProductPublished:
     context: ProductData
@@ -174,7 +244,14 @@ events:
     tags: [productId]
     fields:
       productId: { type: uuid, source: system }
-      approvalCaseId: { type: uuid, source: system, from: ProductLifecycleChangeCleared.approvalCaseId }
+      sku: { type: string, source: system, from: ProductDrafted.sku }
+      brand: { type: string, source: system, from: ProductDrafted.brand }
+      name:
+        type: string
+        source: generated
+        description: The name from the draft, or from the latest revision of the details.
+        example: T-Motor Velox V2306 1750KV
+      approvalCaseId: { type: uuid, source: system, from: ProductChangeCleared.approvalCaseId }
       publishedAt: { type: datetime, source: generated, example: 2026-11-03T08:00:00Z }
 
   ProductDetailsRevised:
@@ -185,6 +262,7 @@ events:
       productId: { type: uuid, source: system }
       name: { type: string, source: system }
       shortDescription: { type: string, source: system, example: 2306 motor for 6S 5-inch freestyle builds }
+      approvalCaseId: { type: uuid, source: system, from: ProductChangeCleared.approvalCaseId, optional: true, description: The released case for a change to an active product; null for a draft or a discontinued product. }
       revisedAt: { type: datetime, source: generated, example: 2026-12-01T10:00:00Z }
 
   ProductDiscontinued:
@@ -193,8 +271,8 @@ events:
     tags: [productId]
     fields:
       productId: { type: uuid, source: system }
-      reason: { type: string, source: system, from: ProductLifecycleChangeRequested.reason }
-      approvalCaseId: { type: uuid, source: system, from: ProductLifecycleChangeCleared.approvalCaseId }
+      reason: { type: string, source: system, from: ProductChangeRequested.reason }
+      approvalCaseId: { type: uuid, source: system, from: ProductChangeCleared.approvalCaseId }
       discontinuedAt: { type: datetime, source: generated, example: 2027-06-30T16:00:00Z }
 
   ReplacementProductLinked:
@@ -215,13 +293,63 @@ events:
     tags: [approvalCaseId, sourceReferenceId]
     fields:
       approvalCaseId: { type: uuid, source: generated, example: 03724352-c0cd-4fa7-ac65-bddf8df0474d }
-      changeType: { type: string, source: generated, description: "lifecycle-change for every case opened from a product lifecycle request.", example: lifecycle-change }
+      changeType: { type: string, source: system, example: lifecycle-change }
       sourceReferenceId: { type: uuid, source: system, description: The product the change is about., example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
       sourceLabel: { type: string, source: system, description: What a reviewer reads to know the product (its SKU)., example: TMOTOR-VELOX-V2306-1750KV }
-      requestedChange: { type: string, source: system, description: The lifecycle state asked for., example: active }
+      requestedChange: { type: string, source: system, example: active }
       rationale: { type: string, source: system, example: Launch with the 5-inch freestyle range }
-      riskLevel: { type: string, source: system, example: medium }
+      requestedRiskLevel: { type: string, source: system, description: The level the manager asked for., example: medium }
+      riskLevel:
+        type: string
+        source: generated
+        description: "The policy level for the change type (GOV-005), or the requested level when that is higher (GOV-004): low, medium, high or critical."
+        example: high
+      reviewRoute:
+        type: string
+        source: generated
+        description: "Who decides, from the risk level (GOV-008): agent (low), agent-then-person (medium) or person (high, critical)."
+        example: person
+      requestedBy: { type: string, source: system, example: Nora Lund }
       submittedAt: { type: datetime, source: generated, example: 2026-11-02T09:40:05Z }
+      expiresAt: { type: datetime, source: generated, description: submittedAt plus the review period of 14 days (GOV-010)., example: 2026-11-16T09:40:05Z }
+
+  AgentReviewRequested:
+    context: CatalogGovernance
+    description: Governance sent a low- or medium-risk case to the review agent.
+    tags: [approvalCaseId]
+    fields:
+      approvalCaseId: { type: uuid, source: system }
+      sentAt: { type: datetime, source: generated, example: 2026-11-02T09:40:10Z }
+
+  ChangeApprovedByAgent:
+    context: CatalogGovernance
+    description: The review agent approved a low-risk change. The case is approved; no person decides it.
+    tags: [approvalCaseId]
+    fields:
+      approvalCaseId: { type: uuid, source: system }
+      verdict: { type: string, source: system, description: The verdict as the agent gave it., example: approve }
+      findings: { type: string, source: system, description: What the agent checked and found., example: New description matches the datasheet; no claim about compatibility changed }
+      assessedAt: { type: datetime, source: generated, example: 2026-12-01T09:31:00Z }
+
+  ChangeRecommendedByAgent:
+    context: CatalogGovernance
+    description: The review agent found no problem with a medium-risk change. A person must still confirm it.
+    tags: [approvalCaseId]
+    fields:
+      approvalCaseId: { type: uuid, source: system }
+      verdict: { type: string, source: system }
+      findings: { type: string, source: system }
+      assessedAt: { type: datetime, source: generated }
+
+  ChangeEscalatedByAgent:
+    context: CatalogGovernance
+    description: The review agent did not approve the change. A person decides it.
+    tags: [approvalCaseId]
+    fields:
+      approvalCaseId: { type: uuid, source: system }
+      verdict: { type: string, source: system }
+      findings: { type: string, source: system }
+      assessedAt: { type: datetime, source: generated }
 
   ReviewerAssigned:
     context: CatalogGovernance
@@ -251,6 +379,17 @@ events:
       rationale: { type: string, source: system }
       decidedBy: { type: string, source: system }
       decidedAt: { type: datetime, source: generated, example: 2026-11-02T14:30:00Z }
+      changeType: { type: string, source: system, from: ApprovalCaseSubmitted.changeType }
+      sourceReferenceId: { type: uuid, source: system, from: ApprovalCaseSubmitted.sourceReferenceId }
+      requestedChange: { type: string, source: system, from: ApprovalCaseSubmitted.requestedChange }
+
+  ApprovalCaseExpired:
+    context: CatalogGovernance
+    description: Nobody decided the case within the review period. It is closed without a decision.
+    tags: [approvalCaseId, sourceReferenceId]
+    fields:
+      approvalCaseId: { type: uuid, source: system }
+      expiredAt: { type: datetime, source: generated, example: 2026-11-16T09:40:05Z }
       changeType: { type: string, source: system, from: ApprovalCaseSubmitted.changeType }
       sourceReferenceId: { type: uuid, source: system, from: ApprovalCaseSubmitted.sourceReferenceId }
       requestedChange: { type: string, source: system, from: ApprovalCaseSubmitted.requestedChange }
@@ -321,13 +460,15 @@ slices:
     chapter: Draft
     description: >-
       The manager records the specifications the compatibility rules read: voltage range, current,
-      mounting and weight (the Core spec model of D-037). Also used to correct an active product.
+      mounting and weight (the Core spec model of drone-web D-037). On a draft the values apply at
+      once. On an active product they apply only after Governance released a specification change
+      (CJ D3b). On a discontinued product they are frozen (CJ D4a).
       ADDR: JS1 "Add technical specifications"; updateProductSpecifications().
     screen:
       name: SpecificationsForm
       actor: ProductLifecycleManager
       fields:
-        productId: { type: uuid, source: user, description: Picked from the products under management., example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
+        productId: { type: uuid, source: user, description: Set by the ProductDetailPage the task starts from; else picked from the products under management., example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
         minVoltage: { type: decimal, source: user, example: 11.1 }
         maxVoltage: { type: decimal, source: user, example: 25.2 }
         maxCurrent: { type: decimal, source: user, example: 41.5 }
@@ -353,9 +494,20 @@ slices:
         title: The lowest supply voltage is not above the highest
         description: Assumed from the Range type (min, max) of the product-specifications contract.
         status: proposed
+      PLC-009:
+        title: A change of specifications or details on an active product takes effect only after Governance released it
+        description: >-
+          CJ D3b (2026-10-29): every change on an active product goes through Governance review.
+          One release allows one change of its type. A draft is not sold and changes without
+          review; it is reviewed as a whole when it goes live.
+      PLC-010:
+        title: A discontinued product keeps its specifications; its details may still change
+        description: CJ D4a (2026-10-29).
     errors:
       ProductUnknown: { description: No product was drafted under this id. }
       VoltageRangeReversed: { description: The lowest voltage is above the highest., rule: PLC-002 }
+      ChangeNotReleased: { description: The product is active and no released specification change waits for it., rule: PLC-009 }
+      SpecificationsFrozen: { description: The product is discontinued., rule: PLC-010 }
     tests:
       RecordsTheVeloxSpecifications:
         given:
@@ -365,8 +517,9 @@ slices:
           values: { productId: $velox, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 41.5, mounting: 16x16-m3, weight: 33.6 }
         then:
           - event: ProductSpecificationsRecorded
-            values: { productId: $velox, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 41.5, mounting: 16x16-m3, weight: 33.6 }
+            values: { productId: $velox, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 41.5, mounting: 16x16-m3, weight: 33.6, approvalCaseId: null }
       CorrectsTheCurrentOfAnActiveProduct:
+        rules: [PLC-009]
         given:
           - event: ProductDrafted
             values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV }
@@ -374,11 +527,56 @@ slices:
             values: { productId: $velox, maxCurrent: 41.5 }
           - event: ProductPublished
             values: { productId: $velox }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: specification-change, requestedChange: "maxCurrent 41.5 A to 38.0 A (datasheet rev C)" }
+          - event: ProductChangeCleared
+            values: { productId: $velox, changeType: specification-change, requestedChange: "maxCurrent 41.5 A to 38.0 A (datasheet rev C)", approvalCaseId: $specCase }
         when:
           values: { productId: $velox, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 38.0, mounting: 16x16-m3, weight: 33.6 }
         then:
           - event: ProductSpecificationsRecorded
-            values: { productId: $velox, maxCurrent: 38.0 }
+            values: { productId: $velox, maxCurrent: 38.0, approvalCaseId: $specCase }
+      RejectsChangingAnActiveProductWithoutARelease:
+        rules: [PLC-009]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox }
+          - event: ProductSpecificationsRecorded
+            values: { productId: $velox, maxCurrent: 41.5 }
+          - event: ProductPublished
+            values: { productId: $velox }
+        when:
+          values: { productId: $velox, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 38.0, mounting: 16x16-m3, weight: 33.6 }
+        then:
+          - error: ChangeNotReleased
+      RejectsUsingOneReleaseTwice:
+        rules: [PLC-009]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox }
+          - event: ProductPublished
+            values: { productId: $velox }
+          - event: ProductChangeCleared
+            values: { productId: $velox, changeType: specification-change, approvalCaseId: $specCase }
+          - event: ProductSpecificationsRecorded
+            values: { productId: $velox, maxCurrent: 38.0, approvalCaseId: $specCase }
+        when:
+          values: { productId: $velox, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 36.0, mounting: 16x16-m3, weight: 33.6 }
+        then:
+          - error: ChangeNotReleased
+      RejectsSpecificationsForADiscontinuedProduct:
+        rules: [PLC-010]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox }
+          - event: ProductPublished
+            values: { productId: $velox }
+          - event: ProductDiscontinued
+            values: { productId: $velox }
+        when:
+          values: { productId: $velox, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 38.0, mounting: 16x16-m3, weight: 33.6 }
+        then:
+          - error: SpecificationsFrozen
       RejectsAReversedVoltageRange:
         rules: [PLC-002]
         given:
@@ -402,9 +600,9 @@ slices:
     chapter: Draft
     description: >-
       The manager's product list: SKU, name, brand, lifecycle state, whether the specifications are
-      recorded, where the latest lifecycle request stands, and the replacement of a discontinued
-      product. ADDR: JS1 "Search products for management"; searchProductsForManagement().
-      The same view feeds the product-records stream (ProductRecordChanged).
+      recorded, where the latest change request stands, and the replacement of a discontinued
+      product. Drafts are here; they are not on product-records (FeedProductRecords).
+      ADDR: JS1 "Search products for management"; searchProductsForManagement().
     screen:
       name: ProductAdminList
       actor: ProductLifecycleManager
@@ -415,9 +613,10 @@ slices:
           reads:
             ProductDrafted: create
             ProductSpecificationsRecorded: update
-            ProductLifecycleChangeRequested: update
-            ProductLifecycleChangeCleared: update
-            ProductLifecycleChangeRefused: update
+            ProductChangeRequested: update
+            ProductChangeCleared: update
+            ProductChangeRefused: update
+            ProductChangeExpired: update
             ProductPublished: update
             ProductDetailsRevised: update
             ProductDiscontinued: update
@@ -444,7 +643,10 @@ slices:
             review:
               type: string
               source: generated
-              description: "Where the latest lifecycle request stands: none, in review, cleared or refused, with the state asked for."
+              description: >-
+                Where the latest change request stands: none, in review, cleared, refused or
+                expired, with the state asked for (a lifecycle change) or the change type. A cleared
+                change goes back to none when the manager applies it.
               example: "in review: active"
             replacementProductId: { type: uuid, source: system, from: ReplacementProductLinked.replacementProductId, optional: true }
     tests:
@@ -454,8 +656,8 @@ slices:
             values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, name: T-Motor Velox V2306 1750KV, brand: T-Motor }
           - event: ProductSpecificationsRecorded
             values: { productId: $velox }
-          - event: ProductLifecycleChangeRequested
-            values: { productId: $velox, targetState: active }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active }
           - event: ProductDrafted
             values: { productId: $f405, sku: SPEEDYBEE-F405-V4, name: SpeedyBee F405 V4 Flight Controller, brand: SpeedyBee }
         then:
@@ -463,40 +665,53 @@ slices:
             rows:
               - { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, brand: T-Motor, name: T-Motor Velox V2306 1750KV, lifecycleState: draft, specified: true, review: "in review: active", replacementProductId: null }
               - { productId: $f405, sku: SPEEDYBEE-F405-V4, brand: SpeedyBee, name: SpeedyBee F405 V4 Flight Controller, lifecycleState: draft, specified: false, review: none, replacementProductId: null }
-      ShowsARefusedRequest:
+      ShowsARefusedAndAnExpiredRequest:
         given:
           - event: ProductDrafted
             values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, name: T-Motor Velox V2306 1750KV, brand: T-Motor }
           - event: ProductSpecificationsRecorded
             values: { productId: $velox }
-          - event: ProductLifecycleChangeRequested
-            values: { productId: $velox, targetState: active }
-          - event: ProductLifecycleChangeRefused
-            values: { productId: $velox, targetState: active, rationale: Datasheet does not state the maximum current }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active }
+          - event: ProductChangeRefused
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active, rationale: Datasheet does not state the maximum current }
+          - event: ProductDrafted
+            values: { productId: $f405, sku: SPEEDYBEE-F405-V4, name: SpeedyBee F405 V4 Flight Controller, brand: SpeedyBee }
+          - event: ProductSpecificationsRecorded
+            values: { productId: $f405 }
+          - event: ProductChangeRequested
+            values: { productId: $f405, changeType: lifecycle-change, requestedChange: active }
+          - event: ProductChangeExpired
+            values: { productId: $f405, changeType: lifecycle-change, requestedChange: active }
         then:
           - view: ProductsUnderManagement
             rows:
               - { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, brand: T-Motor, name: T-Motor Velox V2306 1750KV, lifecycleState: draft, specified: true, review: "refused: active", replacementProductId: null }
+              - { productId: $f405, sku: SPEEDYBEE-F405-V4, brand: SpeedyBee, name: SpeedyBee F405 V4 Flight Controller, lifecycleState: draft, specified: true, review: "expired: active", replacementProductId: null }
       FollowsTheVeloxFromDraftToReplaced:
         given:
           - event: ProductDrafted
             values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, name: T-Motor Velox V2306 1750KV, brand: T-Motor }
           - event: ProductSpecificationsRecorded
             values: { productId: $velox }
-          - event: ProductLifecycleChangeRequested
-            values: { productId: $velox, targetState: active }
-          - event: ProductLifecycleChangeCleared
-            values: { productId: $velox, targetState: active }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active }
+          - event: ProductChangeCleared
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active }
           - event: ProductPublished
             values: { productId: $velox }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: details-change, requestedChange: "Name: add V2" }
+          - event: ProductChangeCleared
+            values: { productId: $velox, changeType: details-change, requestedChange: "Name: add V2" }
           - event: ProductDetailsRevised
             values: { productId: $velox, name: T-Motor Velox V2306 V2 1750KV }
           - event: ProductDrafted
             values: { productId: $velox3, sku: TMOTOR-VELOX-V2306V3-1950KV, name: T-Motor Velox V2306 V3 1950KV, brand: T-Motor }
-          - event: ProductLifecycleChangeRequested
-            values: { productId: $velox, targetState: discontinued }
-          - event: ProductLifecycleChangeCleared
-            values: { productId: $velox, targetState: discontinued }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: discontinued }
+          - event: ProductChangeCleared
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: discontinued }
           - event: ProductDiscontinued
             values: { productId: $velox }
           - event: ReplacementProductLinked
@@ -507,39 +722,191 @@ slices:
               - { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, brand: T-Motor, name: T-Motor Velox V2306 V2 1750KV, lifecycleState: discontinued, specified: true, review: none, replacementProductId: $velox3 }
               - { productId: $velox3, sku: TMOTOR-VELOX-V2306V3-1950KV, brand: T-Motor, name: T-Motor Velox V2306 V3 1950KV, lifecycleState: draft, specified: false, review: none, replacementProductId: null }
 
+  ShowProductDetails:
+    pattern: query
+    chapter: Draft
+    description: >-
+      The manager picks a product from the ProductAdminList and sees all of it on one page: identity,
+      details, specifications, lifecycle state, the latest change request and the replacement.
+      The page is the product's task menu. Its tasks are the command screens that change a product:
+      SpecificationsForm (RecordSpecifications), ProductChangeForm (RequestProductChange),
+      PublishProductForm (PublishProduct), ProductDetailsForm (ReviseProductDetails),
+      DiscontinueProductForm (DiscontinueProduct) and ReplacementForm (LinkReplacementProduct).
+      Each task starts with the page's productId. No field on the page is edited directly
+      (emf-vrf, drone-web D-038). ADDR: align/activity-steps.md JS1 ("Search/details projections update", "Product detail replacement section updates"); design/api-design.md has no operation that reads one product (proposed).
+    screen:
+      name: ProductDetailPage
+      actor: ProductLifecycleManager
+    views:
+      - single-view:
+          name: ProductDetails
+          keyed-by: ProductsUnderManagement.productId
+          identity: productId
+          reads:
+            ProductDrafted: create
+            ProductSpecificationsRecorded: update
+            ProductChangeRequested: update
+            ProductChangeCleared: update
+            ProductChangeRefused: update
+            ProductChangeExpired: update
+            ProductPublished: update
+            ProductDetailsRevised: update
+            ProductDiscontinued: update
+            ReplacementProductLinked: update
+          fields:
+            productId: { type: uuid, source: system, from: ProductDrafted.productId, example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
+            sku: { type: string, source: system, from: ProductDrafted.sku }
+            brand: { type: string, source: system, from: ProductDrafted.brand }
+            draftedAt: { type: datetime, source: system, from: ProductDrafted.draftedAt }
+            name:
+              type: string
+              source: generated
+              description: The name from the draft, or from the latest revision of the details.
+              example: T-Motor Velox V2306 1750KV
+            shortDescription: { type: string, source: system, from: ProductDetailsRevised.shortDescription, optional: true }
+            minVoltage: { type: decimal, source: system, from: ProductSpecificationsRecorded.minVoltage, optional: true }
+            maxVoltage: { type: decimal, source: system, from: ProductSpecificationsRecorded.maxVoltage, optional: true }
+            maxCurrent: { type: decimal, source: system, from: ProductSpecificationsRecorded.maxCurrent, optional: true }
+            mounting: { type: string, source: system, from: ProductSpecificationsRecorded.mounting, optional: true }
+            weight: { type: decimal, source: system, from: ProductSpecificationsRecorded.weight, optional: true }
+            lifecycleState:
+              type: string
+              source: generated
+              description: "draft; active after ProductPublished; discontinued after ProductDiscontinued."
+              example: draft
+            review:
+              type: string
+              source: generated
+              description: >-
+                Where the latest change request stands: none, in review, cleared, refused or
+                expired, with the state asked for (a lifecycle change) or the change type.
+              example: "in review: active"
+            latestRefusal: { type: string, source: system, from: ProductChangeRefused.rationale, optional: true, description: Why Governance refused the latest refused request. }
+            publishedAt: { type: datetime, source: system, from: ProductPublished.publishedAt, optional: true }
+            discontinuedReason: { type: string, source: system, from: ProductDiscontinued.reason, optional: true }
+            discontinuedAt: { type: datetime, source: system, from: ProductDiscontinued.discontinuedAt, optional: true }
+            replacementProductId: { type: uuid, source: system, from: ReplacementProductLinked.replacementProductId, optional: true }
+            replacementReasonCode: { type: string, source: system, from: ReplacementProductLinked.reasonCode, optional: true }
+    tests:
+      ShowsTheVeloxDraftInReview:
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, name: T-Motor Velox V2306 1750KV, brand: T-Motor, draftedAt: 2026-11-02T09:10:00Z }
+          - event: ProductSpecificationsRecorded
+            values: { productId: $velox, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 41.5, mounting: 16x16-m3, weight: 33.6 }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active, reason: Launch with the 5-inch freestyle range }
+          - event: ProductDrafted
+            values: { productId: $f405, sku: SPEEDYBEE-F405-V4, name: SpeedyBee F405 V4 Flight Controller, brand: SpeedyBee, draftedAt: 2026-11-02T09:50:00Z }
+        then:
+          - view: ProductDetails
+            keyed: { productId: $velox }
+            rows:
+              - { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, brand: T-Motor, draftedAt: 2026-11-02T09:10:00Z, name: T-Motor Velox V2306 1750KV, shortDescription: null, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 41.5, mounting: 16x16-m3, weight: 33.6, lifecycleState: draft, review: "in review: active", latestRefusal: null, publishedAt: null, discontinuedReason: null, discontinuedAt: null, replacementProductId: null, replacementReasonCode: null }
+      ShowsAnUnspecifiedDraft:
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, name: T-Motor Velox V2306 1750KV, brand: T-Motor, draftedAt: 2026-11-02T09:10:00Z }
+          - event: ProductDrafted
+            values: { productId: $f405, sku: SPEEDYBEE-F405-V4, name: SpeedyBee F405 V4 Flight Controller, brand: SpeedyBee, draftedAt: 2026-11-02T09:50:00Z }
+        then:
+          - view: ProductDetails
+            keyed: { productId: $f405 }
+            rows:
+              - { productId: $f405, sku: SPEEDYBEE-F405-V4, brand: SpeedyBee, draftedAt: 2026-11-02T09:50:00Z, name: SpeedyBee F405 V4 Flight Controller, shortDescription: null, minVoltage: null, maxVoltage: null, maxCurrent: null, mounting: null, weight: null, lifecycleState: draft, review: none, latestRefusal: null, publishedAt: null, discontinuedReason: null, discontinuedAt: null, replacementProductId: null, replacementReasonCode: null }
+      ShowsWhyTheLaunchWasRefused:
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, name: T-Motor Velox V2306 1750KV, brand: T-Motor, draftedAt: 2026-11-02T09:10:00Z }
+          - event: ProductSpecificationsRecorded
+            values: { productId: $velox, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 41.5, mounting: 16x16-m3, weight: 33.6 }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active, reason: Launch with the 5-inch freestyle range }
+          - event: ProductChangeRefused
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active, rationale: Datasheet does not state the maximum current }
+        then:
+          - view: ProductDetails
+            keyed: { productId: $velox }
+            rows:
+              - { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, brand: T-Motor, draftedAt: 2026-11-02T09:10:00Z, name: T-Motor Velox V2306 1750KV, shortDescription: null, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 41.5, mounting: 16x16-m3, weight: 33.6, lifecycleState: draft, review: "refused: active", latestRefusal: Datasheet does not state the maximum current, publishedAt: null, discontinuedReason: null, discontinuedAt: null, replacementProductId: null, replacementReasonCode: null }
+      FollowsTheVeloxFromDraftToReplaced:
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, name: T-Motor Velox V2306 1750KV, brand: T-Motor, draftedAt: 2026-11-02T09:10:00Z }
+          - event: ProductSpecificationsRecorded
+            values: { productId: $velox, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 41.5, mounting: 16x16-m3, weight: 33.6 }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active, reason: Launch with the 5-inch freestyle range }
+          - event: ProductChangeCleared
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active }
+          - event: ProductPublished
+            values: { productId: $velox, publishedAt: 2026-11-03T08:00:00Z }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: specification-change, requestedChange: "maxCurrent 41.5 A to 38.0 A (datasheet rev C)" }
+          - event: ProductChangeCleared
+            values: { productId: $velox, changeType: specification-change, requestedChange: "maxCurrent 41.5 A to 38.0 A (datasheet rev C)" }
+          - event: ProductSpecificationsRecorded
+            values: { productId: $velox, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 38.0, mounting: 16x16-m3, weight: 33.6 }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: details-change, requestedChange: "Name: add V2; new short description" }
+          - event: ProductChangeCleared
+            values: { productId: $velox, changeType: details-change, requestedChange: "Name: add V2; new short description" }
+          - event: ProductDetailsRevised
+            values: { productId: $velox, name: T-Motor Velox V2306 V2 1750KV, shortDescription: 2306 motor for 6S 5-inch freestyle builds }
+          - event: ProductDrafted
+            values: { productId: $velox3, sku: TMOTOR-VELOX-V2306V3-1950KV, name: T-Motor Velox V2306 V3 1950KV, brand: T-Motor, draftedAt: 2027-05-10T08:00:00Z }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: discontinued, reason: Replaced by the V3 1950KV }
+          - event: ProductChangeCleared
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: discontinued }
+          - event: ProductDiscontinued
+            values: { productId: $velox, reason: Replaced by the V3 1950KV, discontinuedAt: 2027-06-30T16:00:00Z }
+          - event: ReplacementProductLinked
+            values: { productId: $velox, replacementProductId: $velox3, reasonCode: successor-model }
+        then:
+          - view: ProductDetails
+            keyed: { productId: $velox }
+            rows:
+              - { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, brand: T-Motor, draftedAt: 2026-11-02T09:10:00Z, name: T-Motor Velox V2306 V2 1750KV, shortDescription: 2306 motor for 6S 5-inch freestyle builds, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 38.0, mounting: 16x16-m3, weight: 33.6, lifecycleState: discontinued, review: none, latestRefusal: null, publishedAt: 2026-11-03T08:00:00Z, discontinuedReason: Replaced by the V3 1950KV, discontinuedAt: 2027-06-30T16:00:00Z, replacementProductId: $velox3, replacementReasonCode: successor-model }
+
   # ================================================================== Review
 
-  RequestLifecycleChange:
+  RequestProductChange:
     pattern: command
     chapter: Review
     description: >-
-      The manager asks for a product to go live (active) or to be retired (discontinued), with a
-      reason and a risk level. Product Data checks the product rules and publishes the request to
+      The manager asks for a change to a product, with a reason and the risk level they see: a
+      lifecycle change (go live, or retire), or a change of the specifications or details of an
+      active product (CJ D3b). Product Data checks the product rules and publishes the request to
       Catalog Governance. ADDR: JS1 "Set initial lifecycle state" and "Mark product as
-      discontinued"; setProductLifecycleState(targetState, reason) and the lifecycle-change
-      approval case of submitApprovalCase(). Asking Product Data rather than Governance is
-      proposed (see the header).
+      discontinued"; setProductLifecycleState(targetState, reason), which answers 202 Accepted
+      with the approval case (CJ D7a); the approval case of submitApprovalCase(). Asking Product
+      Data rather than Governance is proposed (see the header).
     screen:
-      name: LifecycleChangeForm
+      name: ProductChangeForm
       actor: ProductLifecycleManager
       fields:
-        productId: { type: uuid, source: user, description: Picked from the products under management., example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
-        targetState: { type: string, source: user, description: "active or discontinued.", example: active }
+        productId: { type: uuid, source: user, description: Set by the ProductDetailPage the task starts from; else picked from the products under management., example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
+        changeType: { type: string, source: user, description: "lifecycle-change, specification-change or details-change.", example: lifecycle-change }
+        requestedChange: { type: string, source: user, description: "The state asked for (active or discontinued), or the change in words.", example: active }
         reason: { type: string, source: user, example: Launch with the 5-inch freestyle range }
-        riskLevel: { type: string, source: user, description: "low, medium or high.", example: medium }
+        riskLevel: { type: string, source: user, description: "low, medium, high or critical. Governance may raise it to its policy level, never lower it.", example: medium }
+        requestedBy: { type: string, source: user, description: "The signed-in manager; the manager does not type it.", example: Nora Lund }
     command:
-      name: RequestLifecycleChange
+      name: RequestProductChange
       fields:
         productId:
           type: uuid
           source: system
           from: screen.productId
           lookup: { view: ProductsUnderManagement, value: productId, label: name }
-        targetState: { type: string, source: system, from: screen.targetState }
+        changeType: { type: string, source: system, from: screen.changeType }
+        requestedChange: { type: string, source: system, from: screen.requestedChange }
         reason: { type: string, source: system, from: screen.reason }
         riskLevel: { type: string, source: system, from: screen.riskLevel }
+        requestedBy: { type: string, source: system, from: screen.requestedBy }
     emits:
-      - event: ProductLifecycleChangeRequested
+      - event: ProductChangeRequested
     rules:
       PLC-003:
         title: A product goes live only with its identity and specifications recorded
@@ -555,17 +922,21 @@ slices:
         status: proposed
       PLC-005:
         title: A discontinued product does not return to active
-        description: define/boundaries.md, Product Lifecycle invariant 3. ADDR names an "explicit reactivation policy" but does not define it.
+        description: >-
+          define/boundaries.md, Product Lifecycle invariant 3. CJ D9a (2026-10-29): there is no
+          reactivation; to sell the product again, the manager drafts a new product.
       PLC-006:
-        title: A product has at most one lifecycle request in review
-        description: A request is open until it is refused or applied (published or discontinued).
+        title: A product has at most one change request in review
+        description: A request is open until it is refused, expires, or is applied.
         status: proposed
     errors:
       ProductUnknown: { description: No product was drafted under this id. }
       SpecificationsMissing: { description: The product has no specifications yet., rule: PLC-003 }
       TransitionNotAllowed: { description: The product cannot move from its state to the state asked for., rule: PLC-004 }
-      ReactivationNotAllowed: { description: The product is discontinued., rule: PLC-005 }
-      RequestAlreadyInReview: { description: Another lifecycle request for this product is still open., rule: PLC-006 }
+      ReactivationNotAllowed: { description: The product is discontinued; draft a new product instead., rule: PLC-005 }
+      RequestAlreadyInReview: { description: Another change request for this product is still open., rule: PLC-006 }
+      ReviewNotNeeded: { description: "The product is a draft, or discontinued and only its details change: the manager changes it without review.", rule: PLC-009 }
+      SpecificationsFrozen: { description: The product is discontinued., rule: PLC-010 }
     tests:
       AsksToPublishTheVeloxMotor:
         rules: [PLC-003, PLC-004]
@@ -575,10 +946,24 @@ slices:
           - event: ProductSpecificationsRecorded
             values: { productId: $velox }
         when:
-          values: { productId: $velox, targetState: active, reason: Launch with the 5-inch freestyle range, riskLevel: medium }
+          values: { productId: $velox, changeType: lifecycle-change, requestedChange: active, reason: Launch with the 5-inch freestyle range, riskLevel: medium, requestedBy: Nora Lund }
         then:
-          - event: ProductLifecycleChangeRequested
-            values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, targetState: active, reason: Launch with the 5-inch freestyle range, riskLevel: medium }
+          - event: ProductChangeRequested
+            values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, changeType: lifecycle-change, requestedChange: active, reason: Launch with the 5-inch freestyle range, riskLevel: medium, requestedBy: Nora Lund }
+      AsksToCorrectTheCurrentOfTheActiveVelox:
+        rules: [PLC-009]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV }
+          - event: ProductSpecificationsRecorded
+            values: { productId: $velox }
+          - event: ProductPublished
+            values: { productId: $velox }
+        when:
+          values: { productId: $velox, changeType: specification-change, requestedChange: "maxCurrent 41.5 A to 38.0 A (datasheet rev C)", reason: Supplier corrected the datasheet, riskLevel: low, requestedBy: Nora Lund }
+        then:
+          - event: ProductChangeRequested
+            values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, changeType: specification-change, requestedChange: "maxCurrent 41.5 A to 38.0 A (datasheet rev C)", riskLevel: low }
       AsksToDiscontinueTheActiveVelox:
         rules: [PLC-004, PLC-006]
         given:
@@ -586,15 +971,15 @@ slices:
             values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV }
           - event: ProductSpecificationsRecorded
             values: { productId: $velox }
-          - event: ProductLifecycleChangeRequested
-            values: { productId: $velox, targetState: active }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active }
           - event: ProductPublished
             values: { productId: $velox }
         when:
-          values: { productId: $velox, targetState: discontinued, reason: Replaced by the V3 1950KV, riskLevel: high }
+          values: { productId: $velox, changeType: lifecycle-change, requestedChange: discontinued, reason: Replaced by the V3 1950KV, riskLevel: high, requestedBy: Nora Lund }
         then:
-          - event: ProductLifecycleChangeRequested
-            values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, targetState: discontinued, reason: Replaced by the V3 1950KV, riskLevel: high }
+          - event: ProductChangeRequested
+            values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, changeType: lifecycle-change, requestedChange: discontinued, reason: Replaced by the V3 1950KV, riskLevel: high }
       AsksAgainAfterARefusal:
         rules: [PLC-006]
         given:
@@ -602,22 +987,38 @@ slices:
             values: { productId: $velox }
           - event: ProductSpecificationsRecorded
             values: { productId: $velox, maxCurrent: 38.0 }
-          - event: ProductLifecycleChangeRequested
-            values: { productId: $velox, targetState: active }
-          - event: ProductLifecycleChangeRefused
-            values: { productId: $velox, targetState: active }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active }
+          - event: ProductChangeRefused
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active }
         when:
-          values: { productId: $velox, targetState: active, reason: Maximum current now on the datasheet, riskLevel: medium }
+          values: { productId: $velox, changeType: lifecycle-change, requestedChange: active, reason: Maximum current now on the datasheet, riskLevel: medium, requestedBy: Nora Lund }
         then:
-          - event: ProductLifecycleChangeRequested
-            values: { productId: $velox, targetState: active }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active }
+      AsksAgainAfterTheCaseExpired:
+        rules: [PLC-006]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox }
+          - event: ProductSpecificationsRecorded
+            values: { productId: $velox }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active }
+          - event: ProductChangeExpired
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active }
+        when:
+          values: { productId: $velox, changeType: lifecycle-change, requestedChange: active, reason: Launch with the 5-inch freestyle range, riskLevel: medium, requestedBy: Nora Lund }
+        then:
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active }
       RejectsADraftWithoutSpecifications:
         rules: [PLC-003]
         given:
           - event: ProductDrafted
             values: { productId: $velox }
         when:
-          values: { productId: $velox, targetState: active }
+          values: { productId: $velox, changeType: lifecycle-change, requestedChange: active }
         then:
           - error: SpecificationsMissing
       RejectsDiscontinuingADraft:
@@ -628,7 +1029,7 @@ slices:
           - event: ProductSpecificationsRecorded
             values: { productId: $velox }
         when:
-          values: { productId: $velox, targetState: discontinued }
+          values: { productId: $velox, changeType: lifecycle-change, requestedChange: discontinued }
         then:
           - error: TransitionNotAllowed
       RejectsPublishingAnActiveProductAgain:
@@ -641,7 +1042,7 @@ slices:
           - event: ProductPublished
             values: { productId: $velox }
         when:
-          values: { productId: $velox, targetState: active }
+          values: { productId: $velox, changeType: lifecycle-change, requestedChange: active }
         then:
           - error: TransitionNotAllowed
       RejectsReactivatingADiscontinuedProduct:
@@ -656,7 +1057,7 @@ slices:
           - event: ProductDiscontinued
             values: { productId: $velox }
         when:
-          values: { productId: $velox, targetState: active }
+          values: { productId: $velox, changeType: lifecycle-change, requestedChange: active }
         then:
           - error: ReactivationNotAllowed
       RejectsASecondRequestWhileOneIsInReview:
@@ -666,15 +1067,39 @@ slices:
             values: { productId: $velox }
           - event: ProductSpecificationsRecorded
             values: { productId: $velox }
-          - event: ProductLifecycleChangeRequested
-            values: { productId: $velox, targetState: active }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active }
         when:
-          values: { productId: $velox, targetState: active, reason: Please hurry }
+          values: { productId: $velox, changeType: lifecycle-change, requestedChange: active, reason: Please hurry }
         then:
           - error: RequestAlreadyInReview
+      RejectsAReviewForADraftsDetails:
+        rules: [PLC-009]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox }
+        when:
+          values: { productId: $velox, changeType: details-change, requestedChange: "Name: add V2" }
+        then:
+          - error: ReviewNotNeeded
+      RejectsASpecificationChangeOnADiscontinuedProduct:
+        rules: [PLC-010]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox }
+          - event: ProductSpecificationsRecorded
+            values: { productId: $velox }
+          - event: ProductPublished
+            values: { productId: $velox }
+          - event: ProductDiscontinued
+            values: { productId: $velox }
+        when:
+          values: { productId: $velox, changeType: specification-change, requestedChange: "maxCurrent 41.5 A to 38.0 A" }
+        then:
+          - error: SpecificationsFrozen
       RejectsARequestForAnUnknownProduct:
         when:
-          values: { productId: $nobody, targetState: active }
+          values: { productId: $nobody, changeType: lifecycle-change, requestedChange: active }
         then:
           - error: ProductUnknown
 
@@ -682,29 +1107,60 @@ slices:
     pattern: translation
     chapter: Review
     description: >-
-      Catalog Governance opens a pending approval case for each lifecycle request.
-      ADDR: submitApprovalCase(changeType=lifecycle-change, sourceReferenceId=productId).
-    message: ProductData.LifecycleChangeForReview
+      Catalog Governance opens a pending approval case for each change request. Its policy sets the
+      risk level from the change type; the manager may raise it, never lower it. The risk level
+      sets who decides (reviewRoute). ADDR: submitApprovalCase(changeType, sourceReferenceId=productId,
+      riskLevel, rationale).
+    message: ProductData.ChangeForReview
     processor:
-      name: LifecycleRequestListener
+      name: ChangeRequestListener
       lane: Integration
     command:
       name: SubmitApprovalCase
       fields:
         sourceReferenceId: { type: uuid, source: system, from: message.productId }
         sourceLabel: { type: string, source: system, from: message.sku }
-        requestedChange: { type: string, source: system, from: message.targetState }
+        changeType: { type: string, source: system, from: message.changeType }
+        requestedChange: { type: string, source: system, from: message.requestedChange }
         rationale: { type: string, source: system, from: message.reason }
-        riskLevel: { type: string, source: system, from: message.riskLevel }
+        requestedRiskLevel: { type: string, source: system, from: message.riskLevel }
+        requestedBy: { type: string, source: system, from: message.requestedBy }
     emits:
       - event: ApprovalCaseSubmitted
+    rules:
+      GOV-004:
+        title: The Governance policy sets the lowest risk level of a case; the requester cannot lower it
+        description: >-
+          CJ D2a (2026-10-29). The case gets the policy level for its change type, or the level the
+          requester asked for when that is higher.
+      GOV-005:
+        title: "The policy levels: details-change low, specification-change medium, lifecycle-change high"
+        description: >-
+          The exact table is our proposal. A specification change is medium because the
+          compatibility rules read the specifications (the Core spec model, drone-web D-037). No
+          change type in this flow is critical.
+        status: proposed
     tests:
       OpensACaseToPublishTheVelox:
+        rules: [GOV-004, GOV-005]
         when:
-          values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, targetState: active, reason: Launch with the 5-inch freestyle range, riskLevel: medium }
+          values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, changeType: lifecycle-change, requestedChange: active, reason: Launch with the 5-inch freestyle range, riskLevel: medium, requestedBy: Nora Lund }
         then:
           - event: ApprovalCaseSubmitted
-            values: { changeType: lifecycle-change, sourceReferenceId: $velox, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: active, rationale: Launch with the 5-inch freestyle range, riskLevel: medium }
+            values: { changeType: lifecycle-change, sourceReferenceId: $velox, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: active, rationale: Launch with the 5-inch freestyle range, requestedRiskLevel: medium, riskLevel: high, reviewRoute: person, requestedBy: Nora Lund }
+      SetsTheRiskFromThePolicy:
+        rules: [GOV-004, GOV-005]
+        when:
+          values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, changeType: <type>, requestedChange: <change>, reason: Keep the catalog right, riskLevel: <asked>, requestedBy: Nora Lund }
+        then:
+          - event: ApprovalCaseSubmitted
+            values: { changeType: <type>, sourceReferenceId: $velox, requestedRiskLevel: <asked>, riskLevel: <level>, reviewRoute: <route> }
+        examples:
+          - { type: details-change, change: "Short description: 6S 5-inch freestyle", asked: low, level: low, route: agent }
+          - { type: specification-change, change: "maxCurrent 41.5 A to 38.0 A", asked: low, level: medium, route: agent-then-person }
+          - { type: lifecycle-change, change: discontinued, asked: low, level: high, route: person }
+          - { type: details-change, change: "Name: add V2", asked: high, level: high, route: person }
+          - { type: specification-change, change: "Mounting 16x16-m3 to 19x19-m3", asked: critical, level: critical, route: person }
       OpensANewCaseAfterARejection:
         given:
           - event: ApprovalCaseSubmitted
@@ -712,25 +1168,25 @@ slices:
           - event: ApprovalCaseRejected
             values: { approvalCaseId: $firstCase, sourceReferenceId: $velox, requestedChange: active }
         when:
-          values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, targetState: active, reason: Maximum current now on the datasheet, riskLevel: medium }
+          values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, changeType: lifecycle-change, requestedChange: active, reason: Maximum current now on the datasheet, riskLevel: medium, requestedBy: Nora Lund }
         then:
           - event: ApprovalCaseSubmitted
             values: { sourceReferenceId: $velox, requestedChange: active, rationale: Maximum current now on the datasheet }
       IgnoresARequestItAlreadyOpened:
         given:
           - event: ApprovalCaseSubmitted
-            values: { approvalCaseId: $firstCase, sourceReferenceId: $velox, requestedChange: active }
+            values: { approvalCaseId: $firstCase, sourceReferenceId: $velox, changeType: lifecycle-change, requestedChange: active }
         when:
-          values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, targetState: active, reason: Launch with the 5-inch freestyle range, riskLevel: medium }
+          values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, changeType: lifecycle-change, requestedChange: active, reason: Launch with the 5-inch freestyle range, riskLevel: medium, requestedBy: Nora Lund }
         then: []
 
   ReviewApprovalCases:
     pattern: query
     chapter: Review
     description: >-
-      The reviewer's list of approval cases: the product (by SKU), the change asked for, the risk,
-      the rationale, the reviewer and the status. ADDR: Catalog Governance API ("expose case
-      status"); ApprovalCase resource.
+      The reviewer's list of approval cases: the product (by SKU), the change asked for, the risk
+      and who decides it, the rationale, the requester, the reviewer, the agent's check and the
+      status. ADDR: Catalog Governance API ("expose case status"); ApprovalCase resource.
     screen:
       name: ApprovalCaseList
       actor: GovernanceReviewer
@@ -740,9 +1196,14 @@ slices:
           identity: approvalCaseId
           reads:
             ApprovalCaseSubmitted: create
+            AgentReviewRequested: update
+            ChangeApprovedByAgent: update
+            ChangeRecommendedByAgent: update
+            ChangeEscalatedByAgent: update
             ReviewerAssigned: update
             ApprovalCaseApproved: update
             ApprovalCaseRejected: update
+            ApprovalCaseExpired: update
             PublicationGateReleased: update
           fields:
             approvalCaseId: { type: uuid, source: system, from: ApprovalCaseSubmitted.approvalCaseId, example: 03724352-c0cd-4fa7-ac65-bddf8df0474d }
@@ -750,20 +1211,31 @@ slices:
             sourceLabel: { type: string, source: system, from: ApprovalCaseSubmitted.sourceLabel }
             requestedChange: { type: string, source: system, from: ApprovalCaseSubmitted.requestedChange }
             riskLevel: { type: string, source: system, from: ApprovalCaseSubmitted.riskLevel }
+            reviewRoute: { type: string, source: system, from: ApprovalCaseSubmitted.reviewRoute }
             rationale: { type: string, source: system, from: ApprovalCaseSubmitted.rationale }
+            requestedBy: { type: string, source: system, from: ApprovalCaseSubmitted.requestedBy }
             reviewer: { type: string, source: system, from: ReviewerAssigned.reviewer, optional: true }
+            agentCheck:
+              type: string
+              source: generated
+              description: "none, sent, approved, recommended or escalated: how far the review agent has come."
+              example: none
             status:
               type: string
               source: generated
-              description: "pending, approved, rejected or released."
+              description: "pending, approved, rejected, released or expired."
               example: pending
     tests:
-      ShowsEachCaseWithItsStatus:
+      ShowsEachCaseWithItsRouteAndStatus:
         given:
           - event: ApprovalCaseSubmitted
-            values: { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: active, riskLevel: medium, rationale: Launch with the 5-inch freestyle range }
+            values: { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: active, riskLevel: high, reviewRoute: person, rationale: Launch with the 5-inch freestyle range, requestedBy: Nora Lund }
           - event: ApprovalCaseSubmitted
-            values: { approvalCaseId: $f405Case, changeType: lifecycle-change, sourceLabel: SPEEDYBEE-F405-V4, requestedChange: active, riskLevel: low, rationale: New flight controller for the 5-inch kits }
+            values: { approvalCaseId: $specCase, changeType: specification-change, sourceLabel: SPEEDYBEE-F405-V4, requestedChange: "Weight 9.5 g to 10.2 g", riskLevel: medium, reviewRoute: agent-then-person, rationale: Weighed with the connectors, requestedBy: Nora Lund }
+          - event: AgentReviewRequested
+            values: { approvalCaseId: $specCase }
+          - event: ChangeRecommendedByAgent
+            values: { approvalCaseId: $specCase, verdict: approve }
           - event: ReviewerAssigned
             values: { approvalCaseId: $launchCase, reviewer: Lena Holm }
           - event: ApprovalCaseApproved
@@ -771,35 +1243,483 @@ slices:
         then:
           - view: ApprovalCases
             rows:
-              - { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: active, riskLevel: medium, rationale: Launch with the 5-inch freestyle range, reviewer: Lena Holm, status: approved }
-              - { approvalCaseId: $f405Case, changeType: lifecycle-change, sourceLabel: SPEEDYBEE-F405-V4, requestedChange: active, riskLevel: low, rationale: New flight controller for the 5-inch kits, reviewer: null, status: pending }
-      ShowsReleasedAndRejectedCases:
+              - { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: active, riskLevel: high, reviewRoute: person, rationale: Launch with the 5-inch freestyle range, requestedBy: Nora Lund, reviewer: Lena Holm, agentCheck: none, status: approved }
+              - { approvalCaseId: $specCase, changeType: specification-change, sourceLabel: SPEEDYBEE-F405-V4, requestedChange: "Weight 9.5 g to 10.2 g", riskLevel: medium, reviewRoute: agent-then-person, rationale: Weighed with the connectors, requestedBy: Nora Lund, reviewer: null, agentCheck: recommended, status: pending }
+      ShowsReleasedRejectedAndExpiredCases:
         given:
           - event: ApprovalCaseSubmitted
-            values: { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: active, riskLevel: medium, rationale: Launch with the 5-inch freestyle range }
-          - event: ApprovalCaseApproved
-            values: { approvalCaseId: $launchCase }
+            values: { approvalCaseId: $detailsCase, changeType: details-change, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: "Short description: 6S 5-inch freestyle", riskLevel: low, reviewRoute: agent, rationale: Clearer for buyers, requestedBy: Nora Lund }
+          - event: AgentReviewRequested
+            values: { approvalCaseId: $detailsCase }
+          - event: ChangeApprovedByAgent
+            values: { approvalCaseId: $detailsCase, verdict: approve }
           - event: PublicationGateReleased
-            values: { approvalCaseId: $launchCase }
+            values: { approvalCaseId: $detailsCase }
           - event: ApprovalCaseSubmitted
-            values: { approvalCaseId: $retireCase, changeType: lifecycle-change, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: discontinued, riskLevel: high, rationale: Replaced by the V3 1950KV }
+            values: { approvalCaseId: $retireCase, changeType: lifecycle-change, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: discontinued, riskLevel: high, reviewRoute: person, rationale: Replaced by the V3 1950KV, requestedBy: Nora Lund }
           - event: ApprovalCaseRejected
             values: { approvalCaseId: $retireCase, rationale: Successor not yet in stock }
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $f405Case, changeType: lifecycle-change, sourceLabel: SPEEDYBEE-F405-V4, requestedChange: active, riskLevel: high, reviewRoute: person, rationale: New flight controller for the 5-inch kits, requestedBy: Nora Lund }
+          - event: ApprovalCaseExpired
+            values: { approvalCaseId: $f405Case }
         then:
           - view: ApprovalCases
             rows:
-              - { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: active, riskLevel: medium, rationale: Launch with the 5-inch freestyle range, reviewer: null, status: released }
-              - { approvalCaseId: $retireCase, changeType: lifecycle-change, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: discontinued, riskLevel: high, rationale: Replaced by the V3 1950KV, reviewer: null, status: rejected }
+              - { approvalCaseId: $detailsCase, changeType: details-change, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: "Short description: 6S 5-inch freestyle", riskLevel: low, reviewRoute: agent, rationale: Clearer for buyers, requestedBy: Nora Lund, reviewer: null, agentCheck: approved, status: released }
+              - { approvalCaseId: $retireCase, changeType: lifecycle-change, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: discontinued, riskLevel: high, reviewRoute: person, rationale: Replaced by the V3 1950KV, requestedBy: Nora Lund, reviewer: null, agentCheck: none, status: rejected }
+              - { approvalCaseId: $f405Case, changeType: lifecycle-change, sourceLabel: SPEEDYBEE-F405-V4, requestedChange: active, riskLevel: high, reviewRoute: person, rationale: New flight controller for the 5-inch kits, requestedBy: Nora Lund, reviewer: null, agentCheck: none, status: expired }
+
+  ShowApprovalCaseDetails:
+    pattern: query
+    chapter: Review
+    description: >-
+      The reviewer picks a case from the ApprovalCaseList and sees all of it on one page: the
+      product and the change asked for, the risk and its route, the requester, the agent's
+      findings, the reviewer, the decision and the publication gate. The gate is not an entity of
+      its own here: each approval case has one gate, and the gate events carry only the
+      approvalCaseId, so the gate shows as the `gate` field of its case. The page is the case's
+      task menu. Its tasks are AssignReviewerForm (AssignReviewer), ApproveForm (ApproveChange),
+      RejectForm (RejectChange) and ReleaseForm (ReleaseChange). Each task starts with the page's
+      approvalCaseId. No field on the page is edited directly (emf-vrf, drone-web D-038).
+      ADDR: Catalog Governance API ("expose case status"), ApprovalCase and PublicationGate resources; design/api-design.md has no operation that reads one case (proposed).
+    screen:
+      name: ApprovalCaseDetailPage
+      actor: GovernanceReviewer
+    views:
+      - single-view:
+          name: ApprovalCaseDetails
+          keyed-by: ApprovalCases.approvalCaseId
+          identity: approvalCaseId
+          reads:
+            ApprovalCaseSubmitted: create
+            AgentReviewRequested: update
+            ChangeApprovedByAgent: update
+            ChangeRecommendedByAgent: update
+            ChangeEscalatedByAgent: update
+            ReviewerAssigned: update
+            ApprovalCaseApproved: update
+            ApprovalCaseRejected: update
+            ApprovalCaseExpired: update
+            PublicationGateReleased: update
+          fields:
+            approvalCaseId: { type: uuid, source: system, from: ApprovalCaseSubmitted.approvalCaseId, example: 03724352-c0cd-4fa7-ac65-bddf8df0474d }
+            changeType: { type: string, source: system, from: ApprovalCaseSubmitted.changeType }
+            sourceReferenceId: { type: uuid, source: system, from: ApprovalCaseSubmitted.sourceReferenceId }
+            sourceLabel: { type: string, source: system, from: ApprovalCaseSubmitted.sourceLabel }
+            requestedChange: { type: string, source: system, from: ApprovalCaseSubmitted.requestedChange }
+            requestedRiskLevel: { type: string, source: system, from: ApprovalCaseSubmitted.requestedRiskLevel }
+            riskLevel: { type: string, source: system, from: ApprovalCaseSubmitted.riskLevel }
+            reviewRoute: { type: string, source: system, from: ApprovalCaseSubmitted.reviewRoute }
+            rationale: { type: string, source: system, from: ApprovalCaseSubmitted.rationale }
+            requestedBy: { type: string, source: system, from: ApprovalCaseSubmitted.requestedBy }
+            submittedAt: { type: datetime, source: system, from: ApprovalCaseSubmitted.submittedAt }
+            agentCheck:
+              type: string
+              source: generated
+              description: "none, sent, approved, recommended or escalated: how far the review agent has come."
+              example: none
+            agentFindings:
+              type: string
+              source: generated
+              optional: true
+              description: The findings of the agent's approval, recommendation or escalation; null until the agent answers.
+              example: New description matches the datasheet; no claim about compatibility changed
+            reviewer: { type: string, source: system, from: ReviewerAssigned.reviewer, optional: true }
+            assignedAt: { type: datetime, source: system, from: ReviewerAssigned.assignedAt, optional: true }
+            status:
+              type: string
+              source: generated
+              description: "pending, approved, rejected, released or expired."
+              example: pending
+            decisionRationale:
+              type: string
+              source: generated
+              optional: true
+              description: The rationale of a person's approval or rejection; null while no person decided.
+              example: Specifications match the supplier datasheet
+            decidedBy:
+              type: string
+              source: generated
+              optional: true
+              description: "The reviewer who approved or rejected the case, or review agent for an agent approval; null while the case is undecided."
+              example: Lena Holm
+            decidedAt:
+              type: datetime
+              source: generated
+              optional: true
+              description: When the case was approved or rejected; null while the case is undecided.
+              example: 2026-11-02T14:30:00Z
+            expiredAt: { type: datetime, source: system, from: ApprovalCaseExpired.expiredAt, optional: true }
+            gate:
+              type: string
+              source: generated
+              description: "The publication gate of the case: locked until PublicationGateReleased, then released."
+              example: locked
+            releasedBy: { type: string, source: system, from: PublicationGateReleased.releasedBy, optional: true }
+            releasedAt: { type: datetime, source: system, from: PublicationGateReleased.releasedAt, optional: true }
+    tests:
+      ShowsThePendingVeloxLaunchWithItsReviewer:
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceReferenceId: $velox, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: active, requestedRiskLevel: medium, riskLevel: high, reviewRoute: person, rationale: Launch with the 5-inch freestyle range, requestedBy: Nora Lund, submittedAt: 2026-11-02T09:40:05Z }
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $f405Case, changeType: lifecycle-change, sourceReferenceId: $f405, sourceLabel: SPEEDYBEE-F405-V4, requestedChange: active, requestedRiskLevel: high, riskLevel: high, reviewRoute: person, rationale: New flight controller for the 5-inch kits, requestedBy: Nora Lund, submittedAt: 2026-11-02T10:05:00Z }
+          - event: ReviewerAssigned
+            values: { approvalCaseId: $launchCase, reviewer: Lena Holm, assignedAt: 2026-11-02T11:00:00Z }
+        then:
+          - view: ApprovalCaseDetails
+            keyed: { approvalCaseId: $launchCase }
+            rows:
+              - { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceReferenceId: $velox, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: active, requestedRiskLevel: medium, riskLevel: high, reviewRoute: person, rationale: Launch with the 5-inch freestyle range, requestedBy: Nora Lund, submittedAt: 2026-11-02T09:40:05Z, agentCheck: none, agentFindings: null, reviewer: Lena Holm, assignedAt: 2026-11-02T11:00:00Z, status: pending, decisionRationale: null, decidedBy: null, decidedAt: null, expiredAt: null, gate: locked, releasedBy: null, releasedAt: null }
+      ShowsTheReleasedVeloxLaunch:
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceReferenceId: $velox, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: active, requestedRiskLevel: medium, riskLevel: high, reviewRoute: person, rationale: Launch with the 5-inch freestyle range, requestedBy: Nora Lund, submittedAt: 2026-11-02T09:40:05Z }
+          - event: ReviewerAssigned
+            values: { approvalCaseId: $launchCase, reviewer: Lena Holm, assignedAt: 2026-11-02T11:00:00Z }
+          - event: ApprovalCaseApproved
+            values: { approvalCaseId: $launchCase, rationale: Specifications match the supplier datasheet, decidedBy: Lena Holm, decidedAt: 2026-11-02T14:30:00Z }
+          - event: PublicationGateReleased
+            values: { approvalCaseId: $launchCase, releasedBy: Lena Holm, releasedAt: 2026-11-02T15:00:00Z }
+        then:
+          - view: ApprovalCaseDetails
+            keyed: { approvalCaseId: $launchCase }
+            rows:
+              - { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceReferenceId: $velox, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: active, requestedRiskLevel: medium, riskLevel: high, reviewRoute: person, rationale: Launch with the 5-inch freestyle range, requestedBy: Nora Lund, submittedAt: 2026-11-02T09:40:05Z, agentCheck: none, agentFindings: null, reviewer: Lena Holm, assignedAt: 2026-11-02T11:00:00Z, status: released, decisionRationale: Specifications match the supplier datasheet, decidedBy: Lena Holm, decidedAt: 2026-11-02T14:30:00Z, expiredAt: null, gate: released, releasedBy: Lena Holm, releasedAt: 2026-11-02T15:00:00Z }
+      ShowsADetailsChangeTheAgentApproved:
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $detailsCase, changeType: details-change, sourceReferenceId: $velox, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: "Short description: 6S 5-inch freestyle", requestedRiskLevel: low, riskLevel: low, reviewRoute: agent, rationale: Clearer for buyers, requestedBy: Nora Lund, submittedAt: 2026-12-01T09:30:00Z }
+          - event: AgentReviewRequested
+            values: { approvalCaseId: $detailsCase }
+          - event: ChangeApprovedByAgent
+            values: { approvalCaseId: $detailsCase, verdict: approve, findings: New description matches the datasheet; no claim about compatibility changed, assessedAt: 2026-12-01T09:31:00Z }
+        then:
+          - view: ApprovalCaseDetails
+            keyed: { approvalCaseId: $detailsCase }
+            rows:
+              - { approvalCaseId: $detailsCase, changeType: details-change, sourceReferenceId: $velox, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: "Short description: 6S 5-inch freestyle", requestedRiskLevel: low, riskLevel: low, reviewRoute: agent, rationale: Clearer for buyers, requestedBy: Nora Lund, submittedAt: 2026-12-01T09:30:00Z, agentCheck: approved, agentFindings: New description matches the datasheet; no claim about compatibility changed, reviewer: null, assignedAt: null, status: approved, decisionRationale: null, decidedBy: review agent, decidedAt: 2026-12-01T09:31:00Z, expiredAt: null, gate: locked, releasedBy: null, releasedAt: null }
+      ShowsTheRejectedDiscontinuation:
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $retireCase, changeType: lifecycle-change, sourceReferenceId: $velox, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: discontinued, requestedRiskLevel: high, riskLevel: high, reviewRoute: person, rationale: Replaced by the V3 1950KV, requestedBy: Nora Lund, submittedAt: 2027-06-16T09:00:00Z }
+          - event: ReviewerAssigned
+            values: { approvalCaseId: $retireCase, reviewer: Omar Vik, assignedAt: 2027-06-16T10:00:00Z }
+          - event: ApprovalCaseRejected
+            values: { approvalCaseId: $retireCase, rationale: Successor not yet in stock, decidedBy: Omar Vik, decidedAt: 2027-06-17T13:20:00Z }
+        then:
+          - view: ApprovalCaseDetails
+            keyed: { approvalCaseId: $retireCase }
+            rows:
+              - { approvalCaseId: $retireCase, changeType: lifecycle-change, sourceReferenceId: $velox, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedChange: discontinued, requestedRiskLevel: high, riskLevel: high, reviewRoute: person, rationale: Replaced by the V3 1950KV, requestedBy: Nora Lund, submittedAt: 2027-06-16T09:00:00Z, agentCheck: none, agentFindings: null, reviewer: Omar Vik, assignedAt: 2027-06-16T10:00:00Z, status: rejected, decisionRationale: Successor not yet in stock, decidedBy: Omar Vik, decidedAt: 2027-06-17T13:20:00Z, expiredAt: null, gate: locked, releasedBy: null, releasedAt: null }
+
+  AskAgentForReview:
+    pattern: automation
+    chapter: Review
+    description: >-
+      Governance sends each low- and medium-risk case to the review agent, once. A high- or
+      critical-risk case stays on the list for a person and is not sent (GOV-008). The agent
+      answers later through ReviewAgent.ChangeAssessed (ApproveAsAgent, RecommendAsAgent, EscalateToPerson).
+    views:
+      - list-view:
+          name: CasesForTheAgent
+          identity: approvalCaseId
+          reads:
+            ApprovalCaseSubmitted: create
+            AgentReviewRequested: remove
+            ApprovalCaseApproved: remove
+            ApprovalCaseRejected: remove
+            ApprovalCaseExpired: remove
+          fields:
+            approvalCaseId: { type: uuid, source: system, from: ApprovalCaseSubmitted.approvalCaseId }
+            changeType: { type: string, source: system, from: ApprovalCaseSubmitted.changeType }
+            sourceLabel: { type: string, source: system, from: ApprovalCaseSubmitted.sourceLabel }
+            requestedChange: { type: string, source: system, from: ApprovalCaseSubmitted.requestedChange }
+            rationale: { type: string, source: system, from: ApprovalCaseSubmitted.rationale }
+            riskLevel: { type: string, source: system, from: ApprovalCaseSubmitted.riskLevel }
+    processor:
+      name: AgentReviewDispatcher
+      lane: AgentReview
+      calls: [ChangeReviewAgent.AssessChange]
+    command:
+      name: RequestAgentReview
+      fields:
+        approvalCaseId: { type: uuid, source: system, from: CasesForTheAgent.approvalCaseId }
+        riskLevel: { type: string, source: system, from: CasesForTheAgent.riskLevel }
+    emits:
+      - event: AgentReviewRequested
+    tests:
+      SendsALowRiskDetailsChangeToTheAgent:
+        rules: [GOV-008]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $detailsCase, changeType: details-change, riskLevel: low, reviewRoute: agent }
+        then:
+          - event: AgentReviewRequested
+            values: { approvalCaseId: $detailsCase }
+      SendsAMediumRiskSpecificationChangeToTheAgent:
+        rules: [GOV-008]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $specCase, changeType: specification-change, riskLevel: medium, reviewRoute: agent-then-person }
+        then:
+          - event: AgentReviewRequested
+            values: { approvalCaseId: $specCase }
+      LeavesAHighRiskCaseToAPerson:
+        rules: [GOV-008]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $launchCase, changeType: lifecycle-change, riskLevel: high, reviewRoute: person }
+        then: []
+      SendsEachCaseOnce:
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $detailsCase, changeType: details-change, riskLevel: low, reviewRoute: agent }
+          - event: AgentReviewRequested
+            values: { approvalCaseId: $detailsCase }
+        then: []
+
+  ApproveAsAgent:
+    pattern: translation
+    chapter: Review
+    description: >-
+      The LLM decision, outcome one of three. The review agent's answer arrives as a message from
+      outside the model; three listeners read it, and each turns the answers it is for into one
+      typed command. This one takes an approve verdict on a low-risk case and approves it
+      (ChangeApprovedByAgent): no person decides. The decision checks the verdict against the
+      case's risk level, so the LLM never approves more than the policy allows. CJ D2a and D3b
+      (2026-10-29).
+    message: ReviewAgent.ChangeAssessed
+    processor:
+      name: AgentApprovalListener
+      lane: Integration
+    command:
+      name: ApproveAsAgent
+      fields:
+        approvalCaseId: { type: uuid, source: system, from: message.approvalCaseId }
+        verdict: { type: string, source: system, from: message.verdict }
+        findings: { type: string, source: system, from: message.findings }
+    emits:
+      - event: ChangeApprovedByAgent
+    rules:
+      GOV-008:
+        title: The agent alone approves only a low-risk change; a person confirms a medium-risk change and decides a high- or critical-risk change
+        description: CJ D2a and D3b (2026-10-29).
+    tests:
+      ApprovesALowRiskDetailsChange:
+        rules: [GOV-008]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $detailsCase, changeType: details-change, riskLevel: low, reviewRoute: agent }
+          - event: AgentReviewRequested
+            values: { approvalCaseId: $detailsCase }
+        when:
+          values: { approvalCaseId: $detailsCase, verdict: approve, findings: New description matches the datasheet; no claim about compatibility changed }
+        then:
+          - event: ChangeApprovedByAgent
+            values: { approvalCaseId: $detailsCase, verdict: approve, findings: New description matches the datasheet; no claim about compatibility changed }
+      LeavesAMediumRiskApprovalToARecommendation:
+        rules: [GOV-008]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $specCase, changeType: specification-change, riskLevel: medium, reviewRoute: agent-then-person }
+          - event: AgentReviewRequested
+            values: { approvalCaseId: $specCase }
+        when:
+          values: { approvalCaseId: $specCase, verdict: approve, findings: 38.0 A matches datasheet rev C }
+        then: []
+      IgnoresAnApprovalOfAHighRiskCase:
+        rules: [GOV-008]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $launchCase, changeType: lifecycle-change, riskLevel: high, reviewRoute: person }
+        when:
+          values: { approvalCaseId: $launchCase, verdict: approve, findings: Looks complete }
+        then: []
+      IgnoresAnEscalation:
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $detailsCase, changeType: details-change, riskLevel: low, reviewRoute: agent }
+          - event: AgentReviewRequested
+            values: { approvalCaseId: $detailsCase }
+        when:
+          values: { approvalCaseId: $detailsCase, verdict: escalate, findings: The new name claims 8S support; the specifications say 6S }
+        then: []
+      IgnoresAnApprovalItAlreadyRecorded:
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $detailsCase, changeType: details-change, riskLevel: low, reviewRoute: agent }
+          - event: AgentReviewRequested
+            values: { approvalCaseId: $detailsCase }
+          - event: ChangeApprovedByAgent
+            values: { approvalCaseId: $detailsCase, verdict: approve }
+        when:
+          values: { approvalCaseId: $detailsCase, verdict: approve, findings: New description matches the datasheet; no claim about compatibility changed }
+        then: []
+      IgnoresAnAnswerForAnUnknownCase:
+        when:
+          values: { approvalCaseId: $nocase, verdict: approve, findings: Looks complete }
+        then: []
+
+  RecommendAsAgent:
+    pattern: translation
+    chapter: Review
+    description: >-
+      The LLM decision, outcome two of three. An approve verdict on a medium-risk case is only a
+      recommendation (ChangeRecommendedByAgent): a person must still confirm it (ApproveChange).
+      CJ D2a and D3b (2026-10-29).
+    message: ReviewAgent.ChangeAssessed
+    processor:
+      name: AgentRecommendationListener
+      lane: Integration
+    command:
+      name: RecommendAsAgent
+      fields:
+        approvalCaseId: { type: uuid, source: system, from: message.approvalCaseId }
+        verdict: { type: string, source: system, from: message.verdict }
+        findings: { type: string, source: system, from: message.findings }
+    emits:
+      - event: ChangeRecommendedByAgent
+    tests:
+      RecommendsAMediumRiskSpecificationChange:
+        rules: [GOV-008]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $specCase, changeType: specification-change, riskLevel: medium, reviewRoute: agent-then-person }
+          - event: AgentReviewRequested
+            values: { approvalCaseId: $specCase }
+        when:
+          values: { approvalCaseId: $specCase, verdict: approve, findings: 38.0 A matches datasheet rev C; no rule in the compatibility set reads a current above 38 A }
+        then:
+          - event: ChangeRecommendedByAgent
+            values: { approvalCaseId: $specCase, verdict: approve, findings: 38.0 A matches datasheet rev C; no rule in the compatibility set reads a current above 38 A }
+      LeavesALowRiskApprovalToTheAgent:
+        rules: [GOV-008]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $detailsCase, changeType: details-change, riskLevel: low, reviewRoute: agent }
+          - event: AgentReviewRequested
+            values: { approvalCaseId: $detailsCase }
+        when:
+          values: { approvalCaseId: $detailsCase, verdict: approve, findings: New description matches the datasheet }
+        then: []
+      IgnoresAnEscalation:
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $specCase, changeType: specification-change, riskLevel: medium, reviewRoute: agent-then-person }
+          - event: AgentReviewRequested
+            values: { approvalCaseId: $specCase }
+        when:
+          values: { approvalCaseId: $specCase, verdict: escalate, findings: Datasheet rev C is not attached }
+        then: []
+      IgnoresARecommendationItAlreadyRecorded:
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $specCase, changeType: specification-change, riskLevel: medium, reviewRoute: agent-then-person }
+          - event: AgentReviewRequested
+            values: { approvalCaseId: $specCase }
+          - event: ChangeRecommendedByAgent
+            values: { approvalCaseId: $specCase, verdict: approve }
+        when:
+          values: { approvalCaseId: $specCase, verdict: approve, findings: 38.0 A matches datasheet rev C; no rule in the compatibility set reads a current above 38 A }
+        then: []
+      IgnoresAnAnswerForAnUnknownCase:
+        when:
+          values: { approvalCaseId: $nocase, verdict: approve, findings: Looks complete }
+        then: []
+
+  EscalateToPerson:
+    pattern: translation
+    chapter: Review
+    description: >-
+      The LLM decision, outcome three of three. An escalate verdict, or any verdict the listener
+      cannot read as approve, sends a low- or medium-risk case to a person
+      (ChangeEscalatedByAgent), with the agent's findings. CJ D2a and D3b (2026-10-29); GOV-011.
+    message: ReviewAgent.ChangeAssessed
+    processor:
+      name: AgentEscalationListener
+      lane: Integration
+    command:
+      name: EscalateToPerson
+      fields:
+        approvalCaseId: { type: uuid, source: system, from: message.approvalCaseId }
+        verdict: { type: string, source: system, from: message.verdict }
+        findings: { type: string, source: system, from: message.findings }
+    emits:
+      - event: ChangeEscalatedByAgent
+    rules:
+      GOV-011:
+        title: A verdict other than approve sends the case to a person
+        description: Our proposal, so that an unclear or malformed answer from the LLM never approves a change.
+        status: proposed
+    tests:
+      EscalatesADetailsChangeTheAgentDoubts:
+        rules: [GOV-011]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $detailsCase, changeType: details-change, riskLevel: low, reviewRoute: agent }
+          - event: AgentReviewRequested
+            values: { approvalCaseId: $detailsCase }
+        when:
+          values: { approvalCaseId: $detailsCase, verdict: escalate, findings: The new name claims 8S support; the specifications say 6S }
+        then:
+          - event: ChangeEscalatedByAgent
+            values: { approvalCaseId: $detailsCase, verdict: escalate, findings: The new name claims 8S support; the specifications say 6S }
+      SendsAnUnclearVerdictToAPerson:
+        rules: [GOV-011]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $detailsCase, changeType: details-change, riskLevel: low, reviewRoute: agent }
+          - event: AgentReviewRequested
+            values: { approvalCaseId: $detailsCase }
+        when:
+          values: { approvalCaseId: $detailsCase, verdict: probably fine, findings: Looks right to me }
+        then:
+          - event: ChangeEscalatedByAgent
+            values: { approvalCaseId: $detailsCase, verdict: probably fine }
+      IgnoresAnApproval:
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $detailsCase, changeType: details-change, riskLevel: low, reviewRoute: agent }
+          - event: AgentReviewRequested
+            values: { approvalCaseId: $detailsCase }
+        when:
+          values: { approvalCaseId: $detailsCase, verdict: approve, findings: New description matches the datasheet }
+        then: []
+      IgnoresAnEscalationOfAHighRiskCase:
+        rules: [GOV-008]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $launchCase, changeType: lifecycle-change, riskLevel: high, reviewRoute: person }
+        when:
+          values: { approvalCaseId: $launchCase, verdict: escalate, findings: Not sure }
+        then: []
+      IgnoresAnEscalationItAlreadyRecorded:
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $detailsCase, changeType: details-change, riskLevel: low, reviewRoute: agent }
+          - event: AgentReviewRequested
+            values: { approvalCaseId: $detailsCase }
+          - event: ChangeEscalatedByAgent
+            values: { approvalCaseId: $detailsCase, verdict: escalate }
+        when:
+          values: { approvalCaseId: $detailsCase, verdict: escalate, findings: The new name claims 8S support; the specifications say 6S }
+        then: []
+      IgnoresAnAnswerForAnUnknownCase:
+        when:
+          values: { approvalCaseId: $nocase, verdict: escalate, findings: Not sure }
+        then: []
 
   AssignReviewer:
     pattern: command
     chapter: Review
-    description: "A reviewer takes an approval case. ADDR: assignApprovalReviewer()."
+    description: "A reviewer takes an approval case. The manager who asked for the change cannot take it (four eyes). ADDR: assignApprovalReviewer()."
     screen:
       name: AssignReviewerForm
       actor: GovernanceReviewer
       fields:
-        approvalCaseId: { type: uuid, source: user, description: Picked from the approval cases., example: 03724352-c0cd-4fa7-ac65-bddf8df0474d }
+        approvalCaseId: { type: uuid, source: user, description: Set by the ApprovalCaseDetailPage the task starts from; else picked from the approval cases., example: 03724352-c0cd-4fa7-ac65-bddf8df0474d }
         reviewer: { type: string, source: user, description: Picked from the governance reviewers; the reviewer directory is outside this model., example: Lena Holm }
     command:
       name: AssignReviewer
@@ -814,16 +1734,27 @@ slices:
       - event: ReviewerAssigned
     errors:
       ApprovalCaseUnknown: { description: No approval case was opened under this id. }
+      RequesterCannotReview: { description: The reviewer is the manager who asked for the change., rule: GOV-007 }
     tests:
       AssignsLenaToTheVeloxLaunch:
+        rules: [GOV-007]
         given:
           - event: ApprovalCaseSubmitted
-            values: { approvalCaseId: $launchCase, sourceLabel: TMOTOR-VELOX-V2306-1750KV }
+            values: { approvalCaseId: $launchCase, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedBy: Nora Lund }
         when:
           values: { approvalCaseId: $launchCase, reviewer: Lena Holm }
         then:
           - event: ReviewerAssigned
             values: { approvalCaseId: $launchCase, reviewer: Lena Holm }
+      RejectsTheRequesterAsReviewer:
+        rules: [GOV-007]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $launchCase, sourceLabel: TMOTOR-VELOX-V2306-1750KV, requestedBy: Nora Lund }
+        when:
+          values: { approvalCaseId: $launchCase, reviewer: Nora Lund }
+        then:
+          - error: RequesterCannotReview
       RejectsAnUnknownCase:
         when:
           values: { approvalCaseId: $nocase, reviewer: Lena Holm }
@@ -833,12 +1764,16 @@ slices:
   ApproveChange:
     pattern: command
     chapter: Review
-    description: "The reviewer approves the change with a rationale. ADDR: recordApprovalDecision(decision=approve)."
+    description: >-
+      A person approves the change with a rationale: the assigned reviewer, never the manager who
+      asked (CJ D1a). For a medium-risk change the person confirms the agent's check; for a
+      low-risk change a person decides only after the agent escalated it.
+      ADDR: recordApprovalDecision(decision=approve).
     screen:
       name: ApproveForm
       actor: GovernanceReviewer
       fields:
-        approvalCaseId: { type: uuid, source: user, description: Picked from the approval cases., example: 03724352-c0cd-4fa7-ac65-bddf8df0474d }
+        approvalCaseId: { type: uuid, source: user, description: Set by the ApprovalCaseDetailPage the task starts from; else picked from the approval cases., example: 03724352-c0cd-4fa7-ac65-bddf8df0474d }
         rationale: { type: string, source: user, example: Specifications match the supplier datasheet }
         decidedBy: { type: string, source: user, description: "The signed-in reviewer; the reviewer does not type it.", example: Lena Holm }
     command:
@@ -857,15 +1792,30 @@ slices:
       GOV-001:
         title: An approval case is decided once
         description: define/boundaries.md, Catalog Governance invariant 2 ("approval decisions are immutable audit events").
+      GOV-006:
+        title: A person decides a case only after a reviewer is assigned to it
+        description: CJ D1a (2026-10-29).
+      GOV-007:
+        title: The manager who asked for a change does not review or approve it
+        description: CJ D1a (2026-10-29), four eyes.
+      GOV-012:
+        title: Only the reviewer assigned to a case approves it
+        description: Our reading of CJ D1a; an assignment that anyone else could act on would not mean much.
+        status: proposed
     errors:
       ApprovalCaseUnknown: { description: No approval case was opened under this id. }
       CaseAlreadyDecided: { description: The case is already approved or rejected., rule: GOV-001 }
+      ReviewerNotAssigned: { description: No reviewer is assigned to the case., rule: GOV-006 }
+      RequesterCannotApprove: { description: The person approving is the manager who asked for the change., rule: GOV-007 }
+      NotTheAssignedReviewer: { description: The person approving is not the reviewer assigned to the case., rule: GOV-012 }
+      AgentReviewPending: { description: The case is low or medium risk and the agent has not answered yet., rule: GOV-008 }
+      CaseExpired: { description: The case expired without a decision., rule: GOV-009 }
     tests:
       ApprovesTheVeloxLaunch:
-        rules: [GOV-001]
+        rules: [GOV-001, GOV-006, GOV-007]
         given:
           - event: ApprovalCaseSubmitted
-            values: { approvalCaseId: $launchCase, sourceReferenceId: $velox, requestedChange: active }
+            values: { approvalCaseId: $launchCase, sourceReferenceId: $velox, requestedChange: active, riskLevel: high, reviewRoute: person, requestedBy: Nora Lund }
           - event: ReviewerAssigned
             values: { approvalCaseId: $launchCase, reviewer: Lena Holm }
         when:
@@ -873,17 +1823,102 @@ slices:
         then:
           - event: ApprovalCaseApproved
             values: { approvalCaseId: $launchCase, rationale: Specifications match the supplier datasheet, decidedBy: Lena Holm }
+      ConfirmsTheAgentsRecommendation:
+        rules: [GOV-008]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $specCase, changeType: specification-change, riskLevel: medium, reviewRoute: agent-then-person, requestedBy: Nora Lund }
+          - event: ChangeRecommendedByAgent
+            values: { approvalCaseId: $specCase, verdict: approve }
+          - event: ReviewerAssigned
+            values: { approvalCaseId: $specCase, reviewer: Lena Holm }
+        when:
+          values: { approvalCaseId: $specCase, rationale: Agent check confirmed against datasheet rev C, decidedBy: Lena Holm }
+        then:
+          - event: ApprovalCaseApproved
+            values: { approvalCaseId: $specCase, decidedBy: Lena Holm }
+      DecidesADetailsChangeTheAgentEscalated:
+        rules: [GOV-008]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $detailsCase, changeType: details-change, riskLevel: low, reviewRoute: agent, requestedBy: Nora Lund }
+          - event: ChangeEscalatedByAgent
+            values: { approvalCaseId: $detailsCase, verdict: escalate }
+          - event: ReviewerAssigned
+            values: { approvalCaseId: $detailsCase, reviewer: Omar Vik }
+        when:
+          values: { approvalCaseId: $detailsCase, rationale: 8S claim removed from the name before release, decidedBy: Omar Vik }
+        then:
+          - event: ApprovalCaseApproved
+            values: { approvalCaseId: $detailsCase, decidedBy: Omar Vik }
+      RejectsApprovingWithoutAReviewer:
+        rules: [GOV-006]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $launchCase, riskLevel: high, reviewRoute: person, requestedBy: Nora Lund }
+        when:
+          values: { approvalCaseId: $launchCase, decidedBy: Lena Holm }
+        then:
+          - error: ReviewerNotAssigned
+      RejectsTheRequesterApprovingTheirOwnChange:
+        rules: [GOV-007]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $launchCase, riskLevel: high, reviewRoute: person, requestedBy: Nora Lund }
+          - event: ReviewerAssigned
+            values: { approvalCaseId: $launchCase, reviewer: Lena Holm }
+        when:
+          values: { approvalCaseId: $launchCase, decidedBy: Nora Lund }
+        then:
+          - error: RequesterCannotApprove
+      RejectsADecisionByAnotherReviewer:
+        rules: [GOV-012]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $launchCase, riskLevel: high, reviewRoute: person, requestedBy: Nora Lund }
+          - event: ReviewerAssigned
+            values: { approvalCaseId: $launchCase, reviewer: Lena Holm }
+        when:
+          values: { approvalCaseId: $launchCase, rationale: Looks fine to me, decidedBy: Omar Vik }
+        then:
+          - error: NotTheAssignedReviewer
+      RejectsConfirmingBeforeTheAgentAnswered:
+        rules: [GOV-008]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $specCase, changeType: specification-change, riskLevel: medium, reviewRoute: agent-then-person, requestedBy: Nora Lund }
+          - event: ReviewerAssigned
+            values: { approvalCaseId: $specCase, reviewer: Lena Holm }
+        when:
+          values: { approvalCaseId: $specCase, decidedBy: Lena Holm }
+        then:
+          - error: AgentReviewPending
       RejectsApprovingARejectedCase:
         rules: [GOV-001]
         given:
           - event: ApprovalCaseSubmitted
-            values: { approvalCaseId: $launchCase }
+            values: { approvalCaseId: $launchCase, riskLevel: high, reviewRoute: person, requestedBy: Nora Lund }
+          - event: ReviewerAssigned
+            values: { approvalCaseId: $launchCase, reviewer: Lena Holm }
           - event: ApprovalCaseRejected
             values: { approvalCaseId: $launchCase, decidedBy: Lena Holm }
         when:
-          values: { approvalCaseId: $launchCase, decidedBy: Omar Vik }
+          values: { approvalCaseId: $launchCase, decidedBy: Lena Holm }
         then:
           - error: CaseAlreadyDecided
+      RejectsApprovingAnExpiredCase:
+        rules: [GOV-009]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $launchCase, riskLevel: high, reviewRoute: person, requestedBy: Nora Lund }
+          - event: ReviewerAssigned
+            values: { approvalCaseId: $launchCase, reviewer: Lena Holm }
+          - event: ApprovalCaseExpired
+            values: { approvalCaseId: $launchCase }
+        when:
+          values: { approvalCaseId: $launchCase, decidedBy: Lena Holm }
+        then:
+          - error: CaseExpired
       RejectsAnUnknownCase:
         when:
           values: { approvalCaseId: $nocase }
@@ -893,12 +1928,14 @@ slices:
   RejectChange:
     pattern: command
     chapter: Review
-    description: "The reviewer rejects the change with a rationale. ADDR: recordApprovalDecision(decision=reject)."
+    description: >-
+      The assigned reviewer rejects the change with a rationale, at any point before a decision,
+      also before the agent answered. ADDR: recordApprovalDecision(decision=reject).
     screen:
       name: RejectForm
       actor: GovernanceReviewer
       fields:
-        approvalCaseId: { type: uuid, source: user, description: Picked from the approval cases., example: 03724352-c0cd-4fa7-ac65-bddf8df0474d }
+        approvalCaseId: { type: uuid, source: user, description: Set by the ApprovalCaseDetailPage the task starts from; else picked from the approval cases., example: 03724352-c0cd-4fa7-ac65-bddf8df0474d }
         rationale: { type: string, source: user, example: Datasheet does not state the maximum current }
         decidedBy: { type: string, source: user, description: "The signed-in reviewer; the reviewer does not type it.", example: Lena Holm }
     command:
@@ -916,28 +1953,56 @@ slices:
     errors:
       ApprovalCaseUnknown: { description: No approval case was opened under this id. }
       CaseAlreadyDecided: { description: The case is already approved or rejected., rule: GOV-001 }
+      ReviewerNotAssigned: { description: No reviewer is assigned to the case., rule: GOV-006 }
+      CaseExpired: { description: The case expired without a decision., rule: GOV-009 }
     tests:
       RejectsTheVeloxLaunchForAMissingCurrent:
-        rules: [GOV-001]
+        rules: [GOV-001, GOV-006]
         given:
           - event: ApprovalCaseSubmitted
             values: { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceReferenceId: $velox, requestedChange: active }
+          - event: ReviewerAssigned
+            values: { approvalCaseId: $launchCase, reviewer: Lena Holm }
         when:
           values: { approvalCaseId: $launchCase, rationale: Datasheet does not state the maximum current, decidedBy: Lena Holm }
         then:
           - event: ApprovalCaseRejected
             values: { approvalCaseId: $launchCase, rationale: Datasheet does not state the maximum current, decidedBy: Lena Holm, changeType: lifecycle-change, sourceReferenceId: $velox, requestedChange: active }
+      RejectsRejectingWithoutAReviewer:
+        rules: [GOV-006]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $launchCase }
+        when:
+          values: { approvalCaseId: $launchCase, rationale: Datasheet does not state the maximum current, decidedBy: Lena Holm }
+        then:
+          - error: ReviewerNotAssigned
       RejectsRejectingAnApprovedCase:
         rules: [GOV-001]
         given:
           - event: ApprovalCaseSubmitted
             values: { approvalCaseId: $launchCase }
+          - event: ReviewerAssigned
+            values: { approvalCaseId: $launchCase, reviewer: Lena Holm }
           - event: ApprovalCaseApproved
             values: { approvalCaseId: $launchCase }
         when:
           values: { approvalCaseId: $launchCase, rationale: Changed my mind }
         then:
           - error: CaseAlreadyDecided
+      RejectsRejectingAnExpiredCase:
+        rules: [GOV-009]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $launchCase }
+          - event: ReviewerAssigned
+            values: { approvalCaseId: $launchCase, reviewer: Lena Holm }
+          - event: ApprovalCaseExpired
+            values: { approvalCaseId: $launchCase }
+        when:
+          values: { approvalCaseId: $launchCase, rationale: Too late }
+        then:
+          - error: CaseExpired
       RejectsAnUnknownCase:
         when:
           values: { approvalCaseId: $nocase }
@@ -948,14 +2013,14 @@ slices:
     pattern: command
     chapter: Review
     description: >-
-      The reviewer releases the publication gate for an approved change; Catalog Governance
-      publishes ChangeReleased. ADDR: releasePublicationGate(); PublicationGate resource
-      (locked, released).
+      The reviewer releases the publication gate for an approved change, approved by a person or by
+      the agent; Catalog Governance publishes ChangeReleased. ADDR: releasePublicationGate();
+      PublicationGate resource (locked, released).
     screen:
       name: ReleaseForm
       actor: GovernanceReviewer
       fields:
-        approvalCaseId: { type: uuid, source: user, description: Picked from the approval cases., example: 03724352-c0cd-4fa7-ac65-bddf8df0474d }
+        approvalCaseId: { type: uuid, source: user, description: Set by the ApprovalCaseDetailPage the task starts from; else picked from the approval cases., example: 03724352-c0cd-4fa7-ac65-bddf8df0474d }
         releasedBy: { type: string, source: user, description: "The signed-in reviewer; the reviewer does not type it.", example: Lena Holm }
     command:
       name: ReleaseChange
@@ -971,14 +2036,14 @@ slices:
     rules:
       GOV-002:
         title: A change is released only after it is approved
-        description: define/boundaries.md, Catalog Governance invariant 1 ("high-risk changes must be approved before publication").
+        description: define/boundaries.md, Catalog Governance invariant 1 ("high-risk changes must be approved before publication"). An approval by the agent (low risk) counts.
       GOV-003:
         title: A publication gate is released once
         description: Assumed from the gate states locked and released in define/resources.md.
         status: proposed
     errors:
       ApprovalCaseUnknown: { description: No approval case was opened under this id. }
-      CaseNotApproved: { description: The case is pending or rejected., rule: GOV-002 }
+      CaseNotApproved: { description: "The case is pending, rejected or expired.", rule: GOV-002 }
       GateAlreadyReleased: { description: The gate for this case is already released., rule: GOV-003 }
     tests:
       ReleasesTheApprovedVeloxLaunch:
@@ -993,6 +2058,18 @@ slices:
         then:
           - event: PublicationGateReleased
             values: { approvalCaseId: $launchCase, releasedBy: Lena Holm, changeType: lifecycle-change, sourceReferenceId: $velox, requestedChange: active }
+      ReleasesADetailsChangeTheAgentApproved:
+        rules: [GOV-002]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $detailsCase, changeType: details-change, sourceReferenceId: $velox, requestedChange: "Short description: 6S 5-inch freestyle" }
+          - event: ChangeApprovedByAgent
+            values: { approvalCaseId: $detailsCase, verdict: approve }
+        when:
+          values: { approvalCaseId: $detailsCase, releasedBy: Lena Holm }
+        then:
+          - event: PublicationGateReleased
+            values: { approvalCaseId: $detailsCase, changeType: details-change, sourceReferenceId: $velox }
       RejectsReleasingAPendingCase:
         rules: [GOV-002]
         given:
@@ -1011,6 +2088,17 @@ slices:
             values: { approvalCaseId: $launchCase }
         when:
           values: { approvalCaseId: $launchCase }
+        then:
+          - error: CaseNotApproved
+      RejectsReleasingOnTheAgentsRecommendationAlone:
+        rules: [GOV-002, GOV-008]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $specCase, changeType: specification-change, riskLevel: medium }
+          - event: ChangeRecommendedByAgent
+            values: { approvalCaseId: $specCase, verdict: approve }
+        when:
+          values: { approvalCaseId: $specCase }
         then:
           - error: CaseNotApproved
       RejectsReleasingTwice:
@@ -1032,50 +2120,134 @@ slices:
         then:
           - error: ApprovalCaseUnknown
 
+  ExpireUndecidedCase:
+    pattern: automation
+    chapter: Review
+    description: >-
+      A case that nobody approves or rejects within the review period expires (CJ D10b). An agent
+      recommendation or escalation is not a decision. Catalog Governance publishes ChangeExpired.
+      The period is 14 days (proposed, GOV-010).
+    views:
+      - list-view:
+          name: UndecidedCases
+          identity: approvalCaseId
+          reads:
+            ApprovalCaseSubmitted: create
+            ChangeApprovedByAgent: remove
+            ApprovalCaseApproved: remove
+            ApprovalCaseRejected: remove
+            ApprovalCaseExpired: remove
+          fields:
+            approvalCaseId: { type: uuid, source: system, from: ApprovalCaseSubmitted.approvalCaseId }
+            submittedAt: { type: datetime, source: system, from: ApprovalCaseSubmitted.submittedAt }
+            expiresAt: { type: datetime, source: system, from: ApprovalCaseSubmitted.expiresAt }
+    processor:
+      name: CaseExpiryClock
+      lane: ReviewClock
+      trigger: { after: expiresAt }
+    command:
+      name: ExpireApprovalCase
+      fields:
+        approvalCaseId: { type: uuid, source: system, from: UndecidedCases.approvalCaseId }
+    emits:
+      - event: ApprovalCaseExpired
+    rules:
+      GOV-009:
+        title: An approval case that nobody decides within the review period expires
+        description: CJ D10b (2026-10-29). define/boundaries.md and define/resources.md list the status expired.
+      GOV-010:
+        title: The review period is 14 days
+        description: Our proposal for N; CJ named no number.
+        status: proposed
+    tests:
+      ExpiresTheUndecidedF405Launch:
+        rules: [GOV-009, GOV-010]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $f405Case, changeType: lifecycle-change, sourceReferenceId: $f405, requestedChange: active, submittedAt: 2026-11-02T10:05:00Z }
+        then:
+          - event: ApprovalCaseExpired
+            values: { approvalCaseId: $f405Case, changeType: lifecycle-change, sourceReferenceId: $f405, requestedChange: active }
+      ExpiresACaseTheAgentOnlyRecommended:
+        rules: [GOV-009]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $specCase, changeType: specification-change, riskLevel: medium }
+          - event: ChangeRecommendedByAgent
+            values: { approvalCaseId: $specCase, verdict: approve }
+        then:
+          - event: ApprovalCaseExpired
+            values: { approvalCaseId: $specCase }
+      LeavesADecidedCaseAlone:
+        rules: [GOV-009]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $launchCase }
+          - event: ApprovalCaseApproved
+            values: { approvalCaseId: $launchCase }
+        then: []
+      ExpiresOnce:
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $f405Case }
+          - event: ApprovalCaseExpired
+            values: { approvalCaseId: $f405Case }
+        then: []
+
   # ================================================================== Publish
 
-  ClearLifecycleChange:
+  ClearProductChange:
     pattern: translation
     chapter: Publish
     description: >-
-      Product Data learns that Governance released a lifecycle change for one of its products.
-      Releases of other change types (pricing, rules, imports) are not for Product Data.
+      Product Data learns that Governance released a change to one of its products: a lifecycle,
+      specification or details change. Releases of other change types (pricing, rules, imports)
+      are not for Product Data.
     message: CatalogGovernance.ChangeReleased
     processor:
       name: ReleaseListener
       lane: Integration
     command:
-      name: ClearLifecycleChange
+      name: ClearProductChange
       fields:
         approvalCaseId: { type: uuid, source: system, from: message.approvalCaseId }
         changeType: { type: string, source: system, from: message.changeType }
         productId: { type: uuid, source: system, from: message.sourceReferenceId }
-        targetState: { type: string, source: system, from: message.requestedChange }
+        requestedChange: { type: string, source: system, from: message.requestedChange }
     emits:
-      - event: ProductLifecycleChangeCleared
+      - event: ProductChangeCleared
     tests:
       ClearsTheVeloxLaunch:
         given:
-          - event: ProductLifecycleChangeRequested
-            values: { productId: $velox, targetState: active }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active }
         when:
           values: { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceReferenceId: $velox, requestedChange: active }
         then:
-          - event: ProductLifecycleChangeCleared
-            values: { productId: $velox, targetState: active, approvalCaseId: $launchCase }
+          - event: ProductChangeCleared
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active, approvalCaseId: $launchCase }
+      ClearsASpecificationChange:
+        given:
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: specification-change, requestedChange: "maxCurrent 41.5 A to 38.0 A (datasheet rev C)" }
+        when:
+          values: { approvalCaseId: $specCase, changeType: specification-change, sourceReferenceId: $velox, requestedChange: "maxCurrent 41.5 A to 38.0 A (datasheet rev C)" }
+        then:
+          - event: ProductChangeCleared
+            values: { productId: $velox, changeType: specification-change, approvalCaseId: $specCase }
       IgnoresAReleaseOfAnotherChangeType:
         given:
-          - event: ProductLifecycleChangeRequested
-            values: { productId: $velox, targetState: active }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active }
         when:
           values: { approvalCaseId: $priceCase, changeType: pricing-change, sourceReferenceId: $velox, requestedChange: active }
         then: []
       IgnoresAReleaseItAlreadyRecorded:
         given:
-          - event: ProductLifecycleChangeRequested
-            values: { productId: $velox, targetState: active }
-          - event: ProductLifecycleChangeCleared
-            values: { productId: $velox, targetState: active, approvalCaseId: $launchCase }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active }
+          - event: ProductChangeCleared
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active, approvalCaseId: $launchCase }
         when:
           values: { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceReferenceId: $velox, requestedChange: active }
         then: []
@@ -1084,49 +2256,49 @@ slices:
           values: { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceReferenceId: $nobody, requestedChange: active }
         then: []
 
-  RecordRefusedLifecycleChange:
+  RecordRefusedProductChange:
     pattern: translation
     chapter: Publish
     description: >-
-      Product Data learns that Governance rejected a lifecycle change. The product keeps its state
-      and the manager may ask again (proposed: ADDR does not say what a rejection does to the product).
+      Product Data learns that Governance rejected a change. The product keeps its state and the
+      manager may ask again (proposed: ADDR does not say what a rejection does to the product).
     message: CatalogGovernance.ChangeRejected
     processor:
       name: RejectionListener
       lane: Integration
     command:
-      name: RecordRefusedLifecycleChange
+      name: RecordRefusedProductChange
       fields:
         approvalCaseId: { type: uuid, source: system, from: message.approvalCaseId }
         changeType: { type: string, source: system, from: message.changeType }
         productId: { type: uuid, source: system, from: message.sourceReferenceId }
-        targetState: { type: string, source: system, from: message.requestedChange }
+        requestedChange: { type: string, source: system, from: message.requestedChange }
         rationale: { type: string, source: system, from: message.rationale }
     emits:
-      - event: ProductLifecycleChangeRefused
+      - event: ProductChangeRefused
     tests:
       RecordsThatTheVeloxLaunchWasRefused:
         given:
-          - event: ProductLifecycleChangeRequested
-            values: { productId: $velox, targetState: active }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active }
         when:
           values: { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceReferenceId: $velox, requestedChange: active, rationale: Datasheet does not state the maximum current }
         then:
-          - event: ProductLifecycleChangeRefused
-            values: { productId: $velox, targetState: active, approvalCaseId: $launchCase, rationale: Datasheet does not state the maximum current }
+          - event: ProductChangeRefused
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active, approvalCaseId: $launchCase, rationale: Datasheet does not state the maximum current }
       IgnoresARejectionOfAnotherChangeType:
         given:
-          - event: ProductLifecycleChangeRequested
-            values: { productId: $velox, targetState: active }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active }
         when:
           values: { approvalCaseId: $priceCase, changeType: pricing-change, sourceReferenceId: $velox, requestedChange: active, rationale: Margin too low }
         then: []
       IgnoresARejectionItAlreadyRecorded:
         given:
-          - event: ProductLifecycleChangeRequested
-            values: { productId: $velox, targetState: active }
-          - event: ProductLifecycleChangeRefused
-            values: { productId: $velox, targetState: active, approvalCaseId: $launchCase }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active }
+          - event: ProductChangeRefused
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active, approvalCaseId: $launchCase }
         when:
           values: { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceReferenceId: $velox, requestedChange: active, rationale: Datasheet does not state the maximum current }
         then: []
@@ -1135,18 +2307,68 @@ slices:
           values: { approvalCaseId: $launchCase, changeType: lifecycle-change, sourceReferenceId: $nobody, requestedChange: active, rationale: Datasheet does not state the maximum current }
         then: []
 
+  RecordExpiredProductChange:
+    pattern: translation
+    chapter: Publish
+    description: >-
+      Product Data learns that Governance let a change expire. The product keeps its state, the
+      request is closed, and the manager may ask again (CJ D10b).
+    message: CatalogGovernance.ChangeExpired
+    processor:
+      name: ExpiryListener
+      lane: Integration
+    command:
+      name: RecordExpiredProductChange
+      fields:
+        approvalCaseId: { type: uuid, source: system, from: message.approvalCaseId }
+        changeType: { type: string, source: system, from: message.changeType }
+        productId: { type: uuid, source: system, from: message.sourceReferenceId }
+        requestedChange: { type: string, source: system, from: message.requestedChange }
+    emits:
+      - event: ProductChangeExpired
+    tests:
+      RecordsThatTheF405LaunchExpired:
+        given:
+          - event: ProductChangeRequested
+            values: { productId: $f405, changeType: lifecycle-change, requestedChange: active }
+        when:
+          values: { approvalCaseId: $f405Case, changeType: lifecycle-change, sourceReferenceId: $f405, requestedChange: active }
+        then:
+          - event: ProductChangeExpired
+            values: { productId: $f405, changeType: lifecycle-change, requestedChange: active, approvalCaseId: $f405Case }
+      IgnoresAnExpiryOfAnotherChangeType:
+        given:
+          - event: ProductChangeRequested
+            values: { productId: $f405, changeType: lifecycle-change, requestedChange: active }
+        when:
+          values: { approvalCaseId: $priceCase, changeType: pricing-change, sourceReferenceId: $f405, requestedChange: active }
+        then: []
+      IgnoresAnExpiryItAlreadyRecorded:
+        given:
+          - event: ProductChangeRequested
+            values: { productId: $f405, changeType: lifecycle-change, requestedChange: active }
+          - event: ProductChangeExpired
+            values: { productId: $f405, changeType: lifecycle-change, requestedChange: active, approvalCaseId: $f405Case }
+        when:
+          values: { approvalCaseId: $f405Case, changeType: lifecycle-change, sourceReferenceId: $f405, requestedChange: active }
+        then: []
+      IgnoresAnExpiryForAProductNobodyAskedAbout:
+        when:
+          values: { approvalCaseId: $f405Case, changeType: lifecycle-change, sourceReferenceId: $nobody, requestedChange: active }
+        then: []
+
   PublishProduct:
     pattern: command
     chapter: Publish
     description: >-
-      After the release, the manager makes the product active; the product-records stream then
-      carries it as active to the shop. ADDR: sequence diagram JS1, setProductLifecycleState(targetState=active)
-      after releasePublicationGate().
+      After the release, the manager makes the product active (CJ D6a); the product-records stream
+      then carries it to the shop. ADDR: sequence diagram JS1, the effect of
+      setProductLifecycleState(targetState=active) after releasePublicationGate().
     screen:
       name: PublishProductForm
       actor: ProductLifecycleManager
       fields:
-        productId: { type: uuid, source: user, description: Picked from the products under management., example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
+        productId: { type: uuid, source: user, description: Set by the ProductDetailPage the task starts from; else picked from the products under management., example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
     command:
       name: PublishProduct
       fields:
@@ -1161,9 +2383,9 @@ slices:
       PLC-007:
         title: A lifecycle change takes effect only after Governance released it
         description: >-
-          define/boundaries.md, Catalog Governance invariant 1 and pitfall "approval bypass"; D-037
-          ("when a change needs Governance approval, the owner publishes only after the decision").
-          One release allows one change.
+          define/boundaries.md, Catalog Governance invariant 1 and pitfall "approval bypass";
+          drone-web D-037 and galaxitech-website D-038 ("approval happens before the owner
+          publishes"). One release allows one change.
     errors:
       ProductUnknown: { description: No product was drafted under this id. }
       NotClearedForRelease: { description: No released approval waits for this product to go active., rule: PLC-007 }
@@ -1172,21 +2394,32 @@ slices:
         rules: [PLC-007]
         given:
           - event: ProductDrafted
-            values: { productId: $velox }
-          - event: ProductLifecycleChangeCleared
-            values: { productId: $velox, targetState: active, approvalCaseId: $launchCase }
+            values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, name: T-Motor Velox V2306 1750KV, brand: T-Motor }
+          - event: ProductChangeCleared
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active, approvalCaseId: $launchCase }
         when:
           values: { productId: $velox }
         then:
           - event: ProductPublished
-            values: { productId: $velox, approvalCaseId: $launchCase }
+            values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, name: T-Motor Velox V2306 1750KV, brand: T-Motor, approvalCaseId: $launchCase }
       RejectsPublishingBeforeTheRelease:
         rules: [PLC-007]
         given:
           - event: ProductDrafted
             values: { productId: $velox }
-          - event: ProductLifecycleChangeRequested
-            values: { productId: $velox, targetState: active }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active }
+        when:
+          values: { productId: $velox }
+        then:
+          - error: NotClearedForRelease
+      RejectsPublishingOnASpecificationRelease:
+        rules: [PLC-007]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox }
+          - event: ProductChangeCleared
+            values: { productId: $velox, changeType: specification-change, requestedChange: "maxCurrent 41.5 A to 38.0 A", approvalCaseId: $specCase }
         when:
           values: { productId: $velox }
         then:
@@ -1196,8 +2429,8 @@ slices:
         given:
           - event: ProductDrafted
             values: { productId: $velox }
-          - event: ProductLifecycleChangeCleared
-            values: { productId: $velox, targetState: active, approvalCaseId: $launchCase }
+          - event: ProductChangeCleared
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active, approvalCaseId: $launchCase }
           - event: ProductPublished
             values: { productId: $velox, approvalCaseId: $launchCase }
         when:
@@ -1210,20 +2443,79 @@ slices:
         then:
           - error: ProductUnknown
 
+  FeedProductRecords:
+    pattern: query
+    chapter: Publish
+    description: >-
+      The record of each published product, as the product-records stream carries it
+      (ProductRecordChanged). A row appears when the product goes live, so drafts never reach the
+      stream (CJ D5a; galaxitech-website D-038: consumers never see unapproved facts). No person
+      reads this view; the ordering model does, through the stream.
+    views:
+      - list-view:
+          name: ProductRecords
+          identity: productId
+          reads:
+            ProductPublished: create
+            ProductDetailsRevised: update
+            ProductDiscontinued: update
+            ReplacementProductLinked: update
+          fields:
+            productId: { type: uuid, source: system, from: ProductPublished.productId, example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
+            sku: { type: string, source: system, from: ProductPublished.sku }
+            brand: { type: string, source: system, from: ProductPublished.brand }
+            name:
+              type: string
+              source: generated
+              description: The name at publication, or from the latest revision of the details.
+              example: T-Motor Velox V2306 1750KV
+            lifecycleState:
+              type: string
+              source: generated
+              description: "active; discontinued after ProductDiscontinued. Never draft."
+              example: active
+            replacementProductId: { type: uuid, source: system, from: ReplacementProductLinked.replacementProductId, optional: true }
+    tests:
+      CarriesOnlyPublishedProducts:
+        given:
+          - event: ProductPublished
+            values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, name: T-Motor Velox V2306 1750KV, brand: T-Motor }
+          - event: ProductDetailsRevised
+            values: { productId: $f405, name: SpeedyBee F405 V4 FC, shortDescription: 30x30 flight controller for 5-inch builds }
+        then:
+          - view: ProductRecords
+            rows:
+              - { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, brand: T-Motor, name: T-Motor Velox V2306 1750KV, lifecycleState: active, replacementProductId: null }
+      FollowsTheVeloxToItsSuccessor:
+        given:
+          - event: ProductPublished
+            values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, name: T-Motor Velox V2306 1750KV, brand: T-Motor }
+          - event: ProductDetailsRevised
+            values: { productId: $velox, name: T-Motor Velox V2306 V2 1750KV }
+          - event: ProductDiscontinued
+            values: { productId: $velox }
+          - event: ReplacementProductLinked
+            values: { productId: $velox, replacementProductId: $velox3 }
+        then:
+          - view: ProductRecords
+            rows:
+              - { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, brand: T-Motor, name: T-Motor Velox V2306 V2 1750KV, lifecycleState: discontinued, replacementProductId: $velox3 }
+
   # ================================================================== Change
 
   ReviseProductDetails:
     pattern: command
     chapter: Change
     description: >-
-      The manager changes the name or the short description of a product, in draft or active.
-      Specifications change through RecordSpecifications. ADDR: JS1 "Update product core
-      attributes"; updateProductAttributes().
+      The manager changes the name or the short description of a product. On a draft or a
+      discontinued product (CJ D4a) the change applies at once. On an active product it applies only
+      after Governance released a details change (CJ D3b). Specifications change through
+      RecordSpecifications. ADDR: JS1 "Update product core attributes"; updateProductAttributes().
     screen:
       name: ProductDetailsForm
       actor: ProductLifecycleManager
       fields:
-        productId: { type: uuid, source: user, description: Picked from the products under management., example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
+        productId: { type: uuid, source: user, description: Set by the ProductDetailPage the task starts from; else picked from the products under management., example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
         name: { type: string, source: user, example: T-Motor Velox V2306 V2 1750KV }
         shortDescription: { type: string, source: user, example: 2306 motor for 6S 5-inch freestyle builds }
     command:
@@ -1240,18 +2532,56 @@ slices:
       - event: ProductDetailsRevised
     errors:
       ProductUnknown: { description: No product was drafted under this id. }
+      ChangeNotReleased: { description: The product is active and no released details change waits for it., rule: PLC-009 }
     tests:
-      RenamesTheActiveVelox:
+      RenamesTheVeloxDraft:
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox, name: T-Motor Velox V2306 1750KV }
+        when:
+          values: { productId: $velox, name: T-Motor Velox V2306 1750KV Freestyle, shortDescription: 2306 motor for 6S 5-inch freestyle builds }
+        then:
+          - event: ProductDetailsRevised
+            values: { productId: $velox, name: T-Motor Velox V2306 1750KV Freestyle, approvalCaseId: null }
+      RenamesTheActiveVeloxAfterTheRelease:
+        rules: [PLC-009]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox, name: T-Motor Velox V2306 1750KV }
+          - event: ProductPublished
+            values: { productId: $velox }
+          - event: ProductChangeCleared
+            values: { productId: $velox, changeType: details-change, requestedChange: "Name: add V2", approvalCaseId: $detailsCase }
+        when:
+          values: { productId: $velox, name: T-Motor Velox V2306 V2 1750KV, shortDescription: 2306 motor for 6S 5-inch freestyle builds }
+        then:
+          - event: ProductDetailsRevised
+            values: { productId: $velox, name: T-Motor Velox V2306 V2 1750KV, shortDescription: 2306 motor for 6S 5-inch freestyle builds, approvalCaseId: $detailsCase }
+      RejectsRenamingAnActiveProductWithoutARelease:
+        rules: [PLC-009]
         given:
           - event: ProductDrafted
             values: { productId: $velox, name: T-Motor Velox V2306 1750KV }
           - event: ProductPublished
             values: { productId: $velox }
         when:
-          values: { productId: $velox, name: T-Motor Velox V2306 V2 1750KV, shortDescription: 2306 motor for 6S 5-inch freestyle builds }
+          values: { productId: $velox, name: T-Motor Velox V2306 V2 1750KV }
+        then:
+          - error: ChangeNotReleased
+      CorrectsTheDescriptionOfADiscontinuedProduct:
+        rules: [PLC-010]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox, name: T-Motor Velox V2306 V2 1750KV }
+          - event: ProductPublished
+            values: { productId: $velox }
+          - event: ProductDiscontinued
+            values: { productId: $velox }
+        when:
+          values: { productId: $velox, name: T-Motor Velox V2306 V2 1750KV, shortDescription: Discontinued; see the V3 1950KV }
         then:
           - event: ProductDetailsRevised
-            values: { productId: $velox, name: T-Motor Velox V2306 V2 1750KV, shortDescription: 2306 motor for 6S 5-inch freestyle builds }
+            values: { productId: $velox, shortDescription: Discontinued; see the V3 1950KV, approvalCaseId: null }
       RejectsRevisingAnUnknownProduct:
         when:
           values: { productId: $nobody, name: Ghost motor }
@@ -1266,12 +2596,13 @@ slices:
     description: >-
       After Governance released the discontinuation, the manager discontinues the product. It
       stays in the catalog as discontinued. ADDR: JS1 "Mark product as discontinued";
-      discontinueProduct().
+      discontinueProduct(), the effect after the release (CJ D7a); the request was
+      setProductLifecycleState(targetState=discontinued).
     screen:
       name: DiscontinueProductForm
       actor: ProductLifecycleManager
       fields:
-        productId: { type: uuid, source: user, description: Picked from the products under management., example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
+        productId: { type: uuid, source: user, description: Set by the ProductDetailPage the task starts from; else picked from the products under management., example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
     command:
       name: DiscontinueProduct
       fields:
@@ -1293,10 +2624,10 @@ slices:
             values: { productId: $velox }
           - event: ProductPublished
             values: { productId: $velox }
-          - event: ProductLifecycleChangeRequested
-            values: { productId: $velox, targetState: discontinued, reason: Replaced by the V3 1950KV }
-          - event: ProductLifecycleChangeCleared
-            values: { productId: $velox, targetState: discontinued, approvalCaseId: $retireCase }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: discontinued, reason: Replaced by the V3 1950KV }
+          - event: ProductChangeCleared
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: discontinued, approvalCaseId: $retireCase }
         when:
           values: { productId: $velox }
         then:
@@ -1309,8 +2640,8 @@ slices:
             values: { productId: $velox }
           - event: ProductPublished
             values: { productId: $velox }
-          - event: ProductLifecycleChangeRequested
-            values: { productId: $velox, targetState: discontinued }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: discontinued }
         when:
           values: { productId: $velox }
         then:
@@ -1320,8 +2651,8 @@ slices:
         given:
           - event: ProductDrafted
             values: { productId: $velox }
-          - event: ProductLifecycleChangeCleared
-            values: { productId: $velox, targetState: active, approvalCaseId: $launchCase }
+          - event: ProductChangeCleared
+            values: { productId: $velox, changeType: lifecycle-change, requestedChange: active, approvalCaseId: $launchCase }
         when:
           values: { productId: $velox }
         then:
@@ -1342,7 +2673,7 @@ slices:
       name: ReplacementForm
       actor: ProductLifecycleManager
       fields:
-        productId: { type: uuid, source: user, description: "The discontinued product, picked from the products under management.", example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
+        productId: { type: uuid, source: user, description: "The discontinued product, set by the ProductDetailPage the task starts from; else picked from the products under management.", example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
         replacementProductId: { type: uuid, source: user, description: "The successor, picked from the products under management.", example: 9b2e4d6f-1a3c-4e5b-8d7f-2a4c6e8b0d13 }
         reasonCode: { type: string, source: user, example: successor-model }
     command:
@@ -1365,12 +2696,20 @@ slices:
       PLC-008:
         title: Only a discontinued product gets a replacement
         description: define/api-profiles.md, linkReplacementProduct() "for discontinued item".
+      PLC-011:
+        title: The replacement product exists and is active
+        description: >-
+          CJ D8a (2026-10-29). Not checked yet: the decision would have to load the replacement
+          product under the field name replacementProductId, which Kairos check K27 does not allow
+          (galaxitech-website-k1x). The test LinksTheV3AsTheVeloxSuccessor names the rule but
+          cannot show the replacement's state.
+        status: proposed
     errors:
       ProductUnknown: { description: No product was drafted under this id. }
       ProductNotDiscontinued: { description: The product is still draft or active., rule: PLC-008 }
     tests:
       LinksTheV3AsTheVeloxSuccessor:
-        rules: [PLC-008]
+        rules: [PLC-008, PLC-011]
         given:
           - event: ProductDrafted
             values: { productId: $velox }
