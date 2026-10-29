@@ -3,6 +3,7 @@ intention: to-be
 validationTarget: prototype
 purpose: >-
   JS1 Product Lifecycle of catalog-management-v2: a Product Lifecycle Manager drafts a product,
-  Catalog Governance reviews and releases the change, the product is published, changed while it
-  is sold, and discontinued and replaced after a second review. Grounded in
-  design/catalog-management-v2/addr/; assumptions are rules with status proposed.
+  Catalog Governance reviews every change to it by risk level (a review agent for low risk, a
+  person for high risk), the product is published, changed while it is sold, and discontinued and
+  replaced after review. Grounded in design/catalog-management-v2/addr/ and CJ's answers of
+  2026-10-29; assumptions are rules with status proposed.
