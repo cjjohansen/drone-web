@@ -98,7 +98,11 @@ paths:
   /products/{productId}/lifecycle-transitions:
     post:
       operationId: setProductLifecycleState
-      summary: Transition lifecycle state
+      summary: Request a lifecycle transition for Governance review
+      description: >-
+        The transition is a change request. Catalog Governance opens an approval case for it, and
+        the product keeps its state until Governance releases the change. A released
+        discontinuation takes effect through discontinueProduct.
       tags: [ProductLifecycle]
       parameters:
         - $ref: '#/components/parameters/productId'
@@ -110,12 +114,12 @@ paths:
             schema:
               $ref: '#/components/schemas/LifecycleTransitionRequest'
       responses:
-        '201':
-          description: Transition recorded
+        '202':
+          description: Change request accepted; the approval case is pending
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LifecycleTransitionResult'
+                $ref: '#/components/schemas/LifecycleChangeAccepted'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -152,7 +156,10 @@ paths:
   /products/{productId}/discontinuations:
     post:
       operationId: discontinueProduct
-      summary: Mark product as discontinued
+      summary: Apply a released discontinuation
+      description: >-
+        The effect of a setProductLifecycleState request for `discontinued`, after Catalog
+        Governance released it. Answers 409 when no released discontinuation waits for the product.
       tags: [ProductLifecycle]
       parameters:
         - $ref: '#/components/parameters/productId'
@@ -333,6 +340,18 @@ components:
       properties:
         targetState: { type: string }
         reason: { type: string }
+    LifecycleChangeAccepted:
+      type: object
+      required: [approvalCaseId, status, product]
+      properties:
+        approvalCaseId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [pending]
+        product:
+          $ref: '#/components/schemas/Product'
     LifecycleTransitionResult:
       type: object
       required: [transitionId, product]

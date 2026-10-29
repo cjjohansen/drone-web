@@ -301,7 +301,7 @@
 | boundarySource | Originating boundary |
 | sourceReferenceId | Identifier of proposed change entity |
 | riskLevel | low, medium, high, critical |
-| status | pending, approved, rejected, expired |
+| status | pending, approved, rejected, released, expired (expired: no decision within the review period) |
 | submittedBy | Actor that submitted case |
 | submittedAt | Submission timestamp |
 | decidedAt | Optional decision timestamp |

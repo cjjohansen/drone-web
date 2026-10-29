@@ -117,7 +117,7 @@ components:
         changeType: { type: string }
         sourceReferenceId: { type: string }
         riskLevel: { type: string, enum: [low, medium, high] }
-        status: { type: string, enum: [pending, approved, rejected, released] }
+        status: { type: string, enum: [pending, approved, rejected, released, expired] }
     ApprovalCaseSubmission:
       type: object
       required: [changeType, boundarySource, sourceReferenceId, riskLevel, rationale]

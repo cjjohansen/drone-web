@@ -100,7 +100,7 @@ Using the Align v2 boundary map, job stories, and activity steps, the following 
 - **Key Invariants:**
   - High-risk changes must be approved before publication.
   - Approval decisions are immutable audit events.
-  - Gate state must be explicit (pending, approved, rejected, expired).
+  - Gate state must be explicit (pending, approved, rejected, released, expired). A case that nobody decides within the review period expires.
 - **Why separate:** Governance language and policy lifecycle cut across multiple admin domains.
 - **Expected API responsibilities:** Submit changes for review, assign reviewers, approve/reject, expose case status.
 
