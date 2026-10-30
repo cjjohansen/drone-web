@@ -1225,7 +1225,7 @@ slices:
           - event: OrderPaid
             values: { orderId: $miasNazgul, paymentId: $miasPayment, amount: 329.99 }
           - event: OrderPaymentDeclined
-            values: { orderId: $miasX500, paymentId: pi_3QDs02Lm4TnVc8Hk, declineReason: Insufficient funds }
+            values: { orderId: $miasX500, paymentId: $miasX500Payment, declineReason: Insufficient funds }
         then:
           - view: MyOrders
             rows:
