@@ -21,8 +21,8 @@ replace them.
 **Decision numbers.** This repo (`.ralph/agent/decisions.md`) and the galaxitech-website repo
 (`DECISIONS.md`) number their decisions separately, and both have a D-037 and a D-038. This
 folder therefore always names the repo: "drone-web D-037", "galaxitech-website D-038". CJ's
-answers to the open questions of this model are "CJ D1a" to "CJ D10b" (2026-10-29, bead
-`galaxitech-website-498`); they are not entries in either decision log.
+answers to the open questions of this model are "CJ D1a" to "CJ D10b" (2026-10-29); they are
+not entries in either decision log.
 
 ## The flow
 
@@ -204,18 +204,18 @@ the prototype factory cannot generate yet, not what is wrong in the model.
   the expiry (both close a request, PLC-006), the publication and the discontinuation (PLC-004,
   PLC-005, PLC-010).
 - F30 on `ApproveAsAgent`, `RecommendAsAgent` and `EscalateToPerson`: the agent's answer comes from
-  a context outside the model, over a broker, and the factory has no broker binding yet (emf-bzu.14).
+  a context outside the model, over a broker, and the factory has no broker binding yet.
 
 The info findings are K33 (three pairs of events with almost the same fields; each pair is two
 different facts) and M5 on the six translations (a message from another context cannot prove
 that the row exists). Each translation has a test that ignores a message for an unknown product or
-case (emf-m9a.67: views ignore updates for rows they do not have).
+case (Kairos v0 views ignore updates for rows they do not have).
 
 ## What Kairos cannot say yet
 
 - A decision cannot load a second thing of the same kind under another field name. The replacement
   in `LinkReplacementProduct` is a product, but the command names it `replacementProductId`. K27
-  rejects a `given` event for it, so the model does not check PLC-011 (`galaxitech-website-k1x`).
+  rejects a `given` event for it, so the model does not check PLC-011.
 - One slice, one command. CJ's example of a typed command, "ApproveChange or EscalateChange", is
   one choice between commands. Kairos gives each slice one command, so the agent's answer goes to
   three translation slices on the same message, each with its own command and a test that it
@@ -226,7 +226,7 @@ case (emf-m9a.67: views ignore updates for rows they do not have).
 - A task menu. Kairos has no link from a detail view or its screen to the command screens that
   start from it. A `lookup` points only at a list view (K7). The model names the tasks in the
   description of `ShowProductDetails` and `ShowApprovalCaseDetails`, and each command screen says
-  that its id comes from the detail page. The menu belongs in a Tessera file
-  (`galaxitech-website-sa8`).
-- The signed-in user as the source of a value (emf-bzu.31). `requestedBy`, `decidedBy` and
+  that its id comes from the detail page. The menu belongs in a Tessera file,
+  which does not exist yet.
+- The signed-in user as the source of a value. `requestedBy`, `decidedBy` and
   `releasedBy` are screen fields with a description.

@@ -4,7 +4,7 @@
 > domain. It is not an Align, Define, Design or Refine artifact. The personas and job stories below are drafts for
 > that Align run to accept, change or drop.
 >
-> Bead: Probe: how buyers find the right drone (galaxitech-website-zv6). Written 2026-10-28. Updated 2026-10-29 with
+> Research: how buyers find the right drone. Written 2026-10-28. Updated 2026-10-29 with
 > CJ's answers to the open questions (see "CJ's answers (2026-10-29)").
 > Label key: [web] = taken from a cited source. [inference] = my own reasoning. [CJ] = a decision from CJ's answers.
 
@@ -15,7 +15,7 @@
 3. Give drones and parts equal weight, on two separate paths. [CJ E2c] Drones go through the guided finder (OB1).
    Parts go through a saved build (OB6).
 4. Build the guided "find the right drone" flow as a read-only layer on the existing catalog (JS1 to JS5). Do not
-   make it a new write model. "Ask drone-web" (galaxitech-website-2kv) is one entry into this flow (OB1). [CJ E6a]
+   make it a new write model. "Ask drone-web" (a planned agent that answers customers' questions) is one entry into this flow (OB1). [CJ E6a]
 5. Make four steps state-changing in v1: saved shortlist, saved build, contact request, order. Everything before them
    reads only. The quote flow (OB7) is later; v1 uses a contact form. [CJ E5a]
 6. Treat legal class (C0 to C4) and radio/video compatibility as first-class filters, not text in descriptions.
@@ -112,7 +112,7 @@ Guided selling asks questions and offers answer options so the shopper can defin
 tools can give better access to the range than filters or free-text search for complex products. [web:
 [Wikipedia](https://en.wikipedia.org/wiki/Guided_selling)] Vendor material says the same; I saw no effect size.
 
-Entry points [CJ E6a]: the finder start page, and "Ask drone-web" (galaxitech-website-2kv). "Ask drone-web" is one
+Entry points [CJ E6a]: the finder start page, and "Ask drone-web". "Ask drone-web" is one
 entry into OB1. It starts the same flow and fills in the answers it can.
 
 Proposed flow [inference]:
@@ -144,7 +144,7 @@ contexts only through published streams (P3). Catalog must publish the compatibi
 reads them. [inference from `design/ordering/eventmodel/README.md`]
 
 Guest shortlist [CJ E3a]: a device-only shortlist needs no customer id. Keeping it across devices needs the
-signed-in customer, which the event model lists as a gap (emf-a9t). [inference]
+signed-in customer, which the event model lists as a gap. [inference]
 
 ## Proposed personas (names for Align)
 
@@ -163,7 +163,7 @@ WHEN I do not know which drone suits what I want to do,
 I WANT TO answer a few plain questions about use, place, budget and gear,
 SO I CAN see a short list of drones that fit and why.
 
-Entry points: the finder start page and "Ask drone-web" (galaxitech-website-2kv). [CJ E6a]
+Entry points: the finder start page and "Ask drone-web". [CJ E6a]
 
 **OB2: Legal Fit**
 WHEN I plan to fly in the EU without more training than I have,
@@ -227,18 +227,17 @@ cites.
 | E3a | Do guests save shortlists, or must they sign in? | Guests save a shortlist on their device. Signing in keeps it across devices. |
 | E4a | Does Ordering or Catalog own the saved build? | Ordering owns the saved build. It reads the compatibility rules that Catalog publishes. |
 | E5a | Quote flow now, or a contact form first? | A contact form in v1. A quote flow comes later. |
-| E6a | Where does "Ask drone-web" (galaxitech-website-2kv) fit? | It is one entry into OB1. |
+| E6a | Where does "Ask drone-web" fit? | It is one entry into OB1. |
 
-Follow-up beads from this research: **Probe: EU 2019/945 and 2019/947 class marks primary check for catalog data
-model** (`galaxitech-website-ia1`) and **Probe: forum and review study of drone buyer questions (r/fpv, r/dji)**
-(`galaxitech-website-rc8`).
+Follow-up research: a primary check of the EU 2019/945 and 2019/947 class marks for the catalog data model, and a
+forum and review study of drone buyer questions (r/fpv, r/dji).
 
 ## Unchecked and how to check
 
-- EASA primary text and C5/C6 status: read Regulations (EU) 2019/945 and 2019/947 on EUR-Lex (galaxitech-website-ia1).
+- EASA primary text and C5/C6 status: read Regulations (EU) 2019/945 and 2019/947 on EUR-Lex.
 - Goggle, video-system and battery compatibility rules for FPV: read ExpressLRS, DJI and Walksnail docs.
 - Buy triggers and conversion: interview 5 buyers per segment, or read the shop's analytics once live.
 - Baymard guided-selling findings: not found; the search returned only vendor material.
-- Forum and review sources (the bead listed them): not covered. Cheapest check: sample r/fpv and r/dji threads
-  for "what should I buy" questions and code the follow-up questions (galaxitech-website-rc8).
+- Forum and review sources (the research brief listed them): not covered. Cheapest check: sample r/fpv and r/dji threads
+  for "what should I buy" questions and code the follow-up questions.
 - Licence: web pages read for facts only; no text copied.
