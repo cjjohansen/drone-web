@@ -251,8 +251,8 @@ Both validate collision constraints after each piece placement and throw on ille
 
 ### D-038: Every entity that events are about gets a list view and a detail view
 **Date:** 2026-10-29
-**Decision:** Every entity that events are about gets a list view and a detail view, unless the model records a reason. The detail view is a read model plus a task menu: the command screens that act on the entity start from it, and no field on it is edited directly (event-model-factory `emf-vrf`). The first model to follow this is `design/catalog-management-v2/eventmodel/product-lifecycle.kairos.yml` (`ProductDetails`, `ApprovalCaseDetails`).
-**Rationale:** A person picks a thing from a list and acts on it from its detail. A model with only list views leaves the place where the person acts unmodelled. The factory does not check or generate this yet; the gap is tracked in `galaxitech-website-cq5`.
+**Decision:** Every entity that events are about gets a list view and a detail view, unless the model records a reason. The detail view is a read model plus a task menu: the command screens that act on the entity start from it, and no field on it is edited directly (an event-model-factory pattern). The first model to follow this is `design/catalog-management-v2/eventmodel/product-lifecycle.kairos.yml` (`ProductDetails`, `ApprovalCaseDetails`).
+**Rationale:** A person picks a thing from a list and acts on it from its detail. A model with only list views leaves the place where the person acts unmodelled. The factory does not check or generate this yet.
 
 ---
 
