@@ -70,6 +70,8 @@
 
 **Description:** Owns approval and publication gates for high-risk writes (for example, major repricing, discontinuations, and rule changes).
 
+**Reviewer roles:** Holds the reviewer role for one or more risk levels (low, medium, high, critical). Any holder of the role for a case's risk level may decide the case, never the person who asked for the change. A review agent approves low-risk catalog changes, and the reviewers get a notice of each such approval (drone-web D-039).
+
 **Goals:** Enforce policy and change control before write-side effects become externally visible.
 
 **Primary Job Stories:** JS1, JS3, JS6

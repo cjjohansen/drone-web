@@ -41,16 +41,32 @@ sequenceDiagram
     participant Manager as Product Lifecycle Manager
     participant GOV as Catalog Governance API
     participant Reviewer as Governance Reviewer
+    participant Agent as Review Agent (LLM)
+    participant DIR as Reviewer Directory
     participant EVT as Event Bus
 
-    Manager->>GOV: POST /catalog-governance/v1/approval-cases
-    GOV-->>Manager: 201 Created (ApprovalCase)
-    Reviewer->>GOV: POST /catalog-governance/v1/approval-cases/{id}/decisions
-    GOV-->>Reviewer: 201 Created (ApprovalDecisionResult)
-    GOV->>EVT: governance.decision-recorded
-    Reviewer->>GOV: POST /catalog-governance/v1/approval-cases/{id}/publication-gate-releases
-    GOV-->>Reviewer: 201 Created (PublicationGate)
+    Manager->>GOV: POST /catalog-governance/v1/approval-cases (requestedChange made from typed values)
+    GOV-->>Manager: 201 Created (ApprovalCase, reviewRoute)
+    alt low risk, the agent approves
+        GOV->>Agent: assess the change
+        Agent-->>GOV: verdict approve
+        Note over GOV: approval releases the gate (GOV-013)
+        GOV->>Reviewer: notice of the agent approval (reviewersToldAt)
+    else a person decides (medium after the agent check, high, critical, or escalated)
+        Reviewer->>GOV: POST /catalog-governance/v1/approval-cases/{id}/decisions
+        GOV->>DIR: reviewer roles of the signed-in person
+        DIR-->>GOV: risk levels
+        GOV-->>Reviewer: 201 Created (ApprovalDecisionResult) or 403 without the role for the risk level (GOV-012)
+        GOV->>EVT: governance.decision-recorded
+        Reviewer->>GOV: POST /catalog-governance/v1/approval-cases/{id}/publication-gate-releases
+        GOV-->>Reviewer: 201 Created (PublicationGate)
+    end
+    GOV->>EVT: change released (once per case, both routes)
 ```
+
+Any person who holds the reviewer role for the case's risk level may decide, not only the assigned
+reviewer; the person who asked never decides. The release message is `ChangeReleased` in the JS1
+event model (`../../eventmodel/`); this file has no published contract for it yet (drone-web D-039).
 
 ## JS5: Taxonomy and Facet Management
 
