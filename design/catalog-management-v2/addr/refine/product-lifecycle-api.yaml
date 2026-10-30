@@ -72,6 +72,11 @@ paths:
     patch:
       operationId: updateProductSpecifications
       summary: Update technical specifications
+      description: >-
+        On a draft the values apply at once. On an active product they apply only after Catalog
+        Governance released a specification change for it, and only with the values of that
+        released request (PLC-012, drone-web D-039). The status code on an active product is open
+        (galaxitech-website-k93).
       tags: [ProductLifecycle]
       parameters:
         - $ref: '#/components/parameters/productId'
@@ -93,6 +98,15 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
+        '409':
+          description: >-
+            The product is active and no released change of this kind waits for it
+            (change-not-released), or the values differ from the new values in the released
+            request (values-differ-from-the-approved-ones).
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
         '412':
           $ref: '#/components/responses/PreconditionFailed'
   /products/{productId}/lifecycle-transitions:
@@ -130,6 +144,11 @@ paths:
     patch:
       operationId: updateProductAttributes
       summary: Update non-spec product attributes
+      description: >-
+        On a draft the values apply at once. On an active product a change of name or short
+        description applies only after Catalog Governance released a details change for it, and
+        only with the values of that released request (PLC-012, drone-web D-039). The status code on
+        an active product is open (galaxitech-website-k93).
       tags: [ProductLifecycle]
       parameters:
         - $ref: '#/components/parameters/productId'
@@ -151,6 +170,15 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
+        '409':
+          description: >-
+            The product is active and no released change of this kind waits for it
+            (change-not-released), or the values differ from the new values in the released
+            request (values-differ-from-the-approved-ones).
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
         '412':
           $ref: '#/components/responses/PreconditionFailed'
   /products/{productId}/discontinuations:
@@ -338,7 +366,12 @@ components:
       type: object
       required: [targetState, reason]
       properties:
-        targetState: { type: string }
+        targetState:
+          type: string
+          enum: [active, discontinued]
+          description: >-
+            The typed value of the lifecycle change. The approval case shows it as the text the
+            reviewer reads, and only this state is applied after the release (PLC-012).
         reason: { type: string }
     LifecycleChangeAccepted:
       type: object
