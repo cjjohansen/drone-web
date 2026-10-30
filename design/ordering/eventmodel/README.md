@@ -62,25 +62,36 @@ Reasons and notes:
 
 ## Validate and render
 
-With a current [event-model-factory](https://github.com/cjjohansen/event-model-factory) checked out
-next to this repo and `npm ci` run in `dsl/kairos/tools` (an old checkout rejects `chapter`):
+Use [event-model-factory](https://github.com/cjjohansen/event-model-factory) at commit `fd3a2ac`
+(2026-10-30) or later, checked out next to this repo, with `npm ci` run in `dsl/kairos/tools`.
+An older checkout gives other results: before `ba691d2` it does not check K29, and a much older
+one rejects `chapter`. The factory checks (F rules) now live in the factory and run only with
+`--checks`:
 
 ```bash
-node ../event-model-factory/dsl/kairos/tools/validate.mjs --receipt design/ordering/eventmodel/order-and-track.kairos.yml
+node ../event-model-factory/dsl/kairos/tools/validate.mjs --receipt --checks ../event-model-factory/factory/kairos-checks/factory-support.mjs design/ordering/eventmodel/order-and-track.kairos.yml
 node ../event-model-factory/dsl/kairos/tools/render.mjs design/ordering/eventmodel/order-and-track.kairos.yml
 ```
 
-The intention sidecar sets the target `prototype`. The validator reports 0 errors, 9 warnings and
-7 M5 infos (a translation cannot prove that the row it updates exists).
-All nine are factory limits, not modelling errors:
+The intention sidecar sets the target `prototype`. The validator reports 0 errors, 10 warnings and
+7 M5 infos (a translation cannot prove that the row it updates exists). Without `--checks` it
+reports 0 warnings. All ten warnings are factory limits, not modelling errors:
 
 - 7 × F30: the prototype factory cannot yet generate a translation that listens to a foreign
   context's broker messages.
-- 2 × F6: the factory fills a port request from command fields only. `PayForOrder` takes the total
-  and currency from the order's own events, so `StartPayment` lacks them on the command. CJ keeps
-  `PayForOrder` as it is (2026-10-29). The 2 F6 warnings stay until event-model-factory lets a port
+- 3 × F6: the factory fills a port request from command fields only. `PayForOrder` takes the total
+  and currency from the order's own events, and `PaymentStarted` mints the `paymentId` that
+  `StartPayment` sends to the provider, so the command does not carry them. CJ keeps
+  `PayForOrder` as it is (2026-10-29). The F6 warnings stay until event-model-factory lets a port
   request take values from the events the decision loads. Then CJ revisits where `PayForOrder`
   takes its amount.
+
+**Payment ids (K29).** `PaymentStarted` mints Drone Web's own `paymentId` (a uuid). The
+provider's id is the ordinary field `providerPaymentId`, never a tag: a foreign id is never our
+key. `StartPayment` sends `paymentId` to the provider as payment metadata, so the webhooks
+(`PaymentCaptured`, `PaymentDeclined`) name the payment by Drone Web's id. The staff views
+`Payments` and `PaymentDetails` show `providerPaymentId`, so the order desk can find a payment
+in the provider's dashboard (2026-10-30).
 
 ## Open questions
 
