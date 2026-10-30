@@ -2023,8 +2023,8 @@ slices:
         title: A person decides a case only after a reviewer is assigned to it
         description: CJ D1a (2026-10-29).
       GOV-007:
-        title: The manager who asked for a change does not review or approve it
-        description: CJ D1a (2026-10-29), four eyes.
+        title: The manager who asked for a change does not review, approve or reject it
+        description: CJ D1a (2026-10-29), four eyes. The requester decides neither way on their own change.
       GOV-012:
         title: Any person who holds the reviewer role for the case's risk level may decide it
         description: >-
@@ -2175,7 +2175,8 @@ slices:
     chapter: Review
     description: >-
       A person who holds the reviewer role for the case's risk level rejects the change with a
-      rationale (GOV-012), at any point before a decision, also before the agent answered.
+      rationale (GOV-012), at any point before a decision, also before the agent answered. The
+      manager who asked for the change never rejects it (GOV-007, four eyes).
       ADDR: recordApprovalDecision(decision=reject).
     screen:
       name: RejectForm
@@ -2201,6 +2202,7 @@ slices:
       ApprovalCaseUnknown: { description: No approval case was opened under this id. }
       CaseAlreadyDecided: { description: The case is already approved or rejected., rule: GOV-001 }
       ReviewerNotAssigned: { description: No reviewer is assigned to the case., rule: GOV-006 }
+      RequesterCannotApprove: { description: The person deciding is the manager who asked for the change., rule: GOV-007 }
       NoReviewerRoleForTheRisk: { description: "The person does not hold the reviewer role for the case's risk level.", rule: GOV-012 }
       CaseExpired: { description: The case expired without a decision., rule: GOV-009 }
     tests:
@@ -2225,6 +2227,17 @@ slices:
           values: { approvalCaseId: $launchCase, rationale: Datasheet does not state the maximum current, decidedBy: Lena Holm, deciderRiskLevels: "medium, high" }
         then:
           - error: ReviewerNotAssigned
+      RejectsTheRequesterRejectingTheirOwnChange:
+        rules: [GOV-007]
+        given:
+          - event: ApprovalCaseSubmitted
+            values: { approvalCaseId: $launchCase, riskLevel: high, reviewRoute: person, requestedBy: Nora Lund }
+          - event: ReviewerAssigned
+            values: { approvalCaseId: $launchCase, reviewer: Lena Holm }
+        when:
+          values: { approvalCaseId: $launchCase, rationale: I want to change the name first, decidedBy: Nora Lund, deciderRiskLevels: high }
+        then:
+          - error: RequesterCannotApprove
       RejectsARejectionByAPersonWithoutTheRole:
         rules: [GOV-012]
         given:
