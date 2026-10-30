@@ -1,7 +1,7 @@
 # Intention sidecar for order-and-track.kairos.yml (Kairos spec section 2).
 # Draft: no ADDR yet. No ADDR run covers ordering; see the model header.
 intention: to-be
-# The 7 F30 warnings (translations from foreign contexts need broker bindings) stay until
+# With the factory checks, the 7 F30 warnings (translations from foreign contexts need broker bindings) stay until
 # emf-bzu.14 lands. CJ chose prototype over information on 2026-10-28.
 validationTarget: prototype
 purpose: "Draft, no ADDR yet: a customer orders a drone on a phone, pays for it, and follows it until it is delivered."

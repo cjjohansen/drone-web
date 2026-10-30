@@ -37,8 +37,11 @@
 #     order total. An underpaid order is held; an overpaid order ships. How the surplus is
 #     refunded is an open question. Rule ORD-007 on RecordCapturedPayment, proposed.
 #   - Whether a row ever leaves the staff list PaymentMismatches stays open until ordering has ADDR.
-#   - PayForOrder stays as it is. Its 2 F6 warnings stay until galaxitech-website-nzd is done
+#   - PayForOrder stays as it is. Its 3 F6 warnings stay until galaxitech-website-nzd is done
 #     (reminder bead galaxitech-website-8za).
+#   - PaymentStarted mints Drone Web's own paymentId (uuid). The provider's id is the ordinary
+#     field providerPaymentId, never a tag (K29). StartPayment sends paymentId as metadata, so the
+#     webhooks name the payment by Drone Web's id (galaxitech-website-bqq, 2026-10-30).
 #
 # Where the pieces come from in drone-web:
 #
@@ -136,13 +139,13 @@ contexts:
 
   PaymentProvider:
     foreign: true
-    description: The bought payment service. It takes the card on its own payment sheet and tells Drone Web the outcome by webhook.
+    description: The bought payment service. It takes the card on its own payment sheet and tells Drone Web the outcome by webhook. Each webhook gives back the orderId and Drone Web's own paymentId, which StartPayment sent as payment metadata. The provider's own payment id is ordinary data, never Ordering's key (K29).
     publishes:
       PaymentCaptured:
         version: 1
         description: The provider took the money for an order.
         fields:
-          paymentId: string
+          paymentId: uuid
           orderId: uuid
           amount: decimal
           capturedAt: datetime
@@ -150,7 +153,7 @@ contexts:
         version: 1
         description: The provider could not take the money for an order.
         fields:
-          paymentId: string
+          paymentId: uuid
           orderId: uuid
           declineReason: string
 
@@ -180,15 +183,16 @@ contexts:
 
 ports:
   PaymentApi:
-    description: The payment provider's API. Drone Web asks it to start a payment for an order's total and gets the provider's payment id back. The total and currency come from the order's own OrderPlaced event, never from a view.
+    description: The payment provider's API. Drone Web asks it to start a payment for an order's total and gets the provider's payment id back. The total and currency come from the order's own OrderPlaced event, never from a view. Drone Web sends its own paymentId as payment metadata, so the webhooks name the payment by Drone Web's id.
     operations:
       StartPayment:
         request:
           orderId: uuid
+          paymentId: uuid
           total: decimal
           currency: string
         reply:
-          paymentId: string
+          providerPaymentId: string
   PushNotifications:
     description: The bought push service. It knows which phones belong to a customer and delivers the message to them.
     operations:
@@ -253,7 +257,8 @@ events:
     tags: [orderId, paymentId]
     fields:
       orderId: { type: uuid, source: system }
-      paymentId: { type: string, source: external, example: pi_3QDrn8F2eZvKYlo2 }
+      paymentId: { type: uuid, source: generated, description: "Drone Web mints its own payment id (K29). The provider's id is the ordinary field providerPaymentId.", example: 5d2a8f41-93c7-4b6e-a1f0-2e8c7d9b3a64 }
+      providerPaymentId: { type: string, source: external, description: "The payment provider's own id for the payment. Ordinary data, not a tag. Staff use it to find the payment in the provider's dashboard.", example: pi_3QDrn8F2eZvKYlo2 }
       amount: { type: decimal, source: system, from: OrderPlaced.total, example: 329.99 }
       currency: { type: string, source: system, from: OrderPlaced.currency, example: EUR }
       startedAt: { type: datetime, source: generated, example: 2026-11-02T18:43:10Z }
@@ -264,7 +269,7 @@ events:
     tags: [orderId, paymentId]
     fields:
       orderId: { type: uuid, source: system }
-      paymentId: { type: string, source: system }
+      paymentId: { type: uuid, source: system }
       amount: { type: decimal, source: system, example: 329.99 }
       paidAt: { type: datetime, source: system, example: 2026-11-02T18:43:55Z }
       productId: { type: uuid, source: system, from: OrderPlaced.productId }
@@ -288,7 +293,7 @@ events:
     tags: [orderId, paymentId]
     fields:
       orderId: { type: uuid, source: system }
-      paymentId: { type: string, source: system }
+      paymentId: { type: uuid, source: system }
       orderTotal: { type: decimal, source: system, from: OrderPlaced.total, example: 659.98 }
       capturedAmount: { type: decimal, source: system, example: 329.99 }
       currency: { type: string, source: system, from: OrderPlaced.currency, example: EUR }
@@ -301,7 +306,7 @@ events:
     tags: [orderId, paymentId]
     fields:
       orderId: { type: uuid, source: system }
-      paymentId: { type: string, source: system }
+      paymentId: { type: uuid, source: system }
       declineReason: { type: string, source: system, example: Insufficient funds }
       customerId: { type: uuid, source: system, from: OrderPlaced.customerId }
       productName: { type: string, source: system, from: OrderPlaced.productName }
@@ -312,7 +317,7 @@ events:
     tags: [orderId, paymentId]
     fields:
       orderId: { type: uuid, source: system }
-      paymentId: { type: string, source: system }
+      paymentId: { type: uuid, source: system }
       toldAt: { type: datetime, source: generated, example: 2026-11-02T18:44:20Z }
 
   OrderShipped:
@@ -723,9 +728,11 @@ slices:
       Phone screen with one button: "Pay 329.99 EUR". The provider's own payment sheet takes the
       card, so card data never reaches Drone Web. The outcome arrives later by webhook. The
       amount and currency come from the order's own OrderPlaced event, which the decision loads
-      by orderId; the MyOrders view only helps the customer pick the order. The prototype factory
-      fills a port request from command fields only, so it warns (F6) that StartPayment's total
-      and currency are not on the command. That is a factory limit, not a modelling choice.
+      by orderId; the MyOrders view only helps the customer pick the order. PaymentStarted mints
+      Drone Web's own paymentId, which StartPayment sends to the provider as metadata; the
+      provider's reply, providerPaymentId, is ordinary data (K29). The prototype factory fills a
+      port request from command fields only, so it warns (F6) that StartPayment's paymentId,
+      total and currency are not on the command. That is a factory limit, not a modelling choice.
     screen:
       name: PaymentScreen
       actor: Customer
@@ -739,7 +746,7 @@ slices:
           source: system
           from: screen.orderId
           lookup: { view: MyOrders, value: orderId, label: productName }
-        paymentId: { type: string, source: external, from: PaymentApi.StartPayment.paymentId }
+        providerPaymentId: { type: string, source: external, from: PaymentApi.StartPayment.providerPaymentId }
     emits:
       - event: PaymentStarted
     rules:
@@ -755,45 +762,45 @@ slices:
           - event: OrderPlaced
             values: { orderId: $miasOrder, customerId: $mia, total: 329.99, currency: EUR }
         when:
-          values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2 }
+          values: { orderId: $miasOrder, providerPaymentId: pi_3QDrn8F2eZvKYlo2 }
         then:
           - event: PaymentStarted
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, currency: EUR }
+            values: { orderId: $miasOrder, providerPaymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, currency: EUR }
       ChargesTheTotalTheOrderWasPlacedAt:
         given:
           - event: OrderPlaced
             values: { orderId: $miasOrder, customerId: $mia, productId: $nazgul, quantity: 2, unitPrice: 329.99, total: 659.98, currency: EUR }
         when:
-          values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2 }
+          values: { orderId: $miasOrder, providerPaymentId: pi_3QDrn8F2eZvKYlo2 }
         then:
           - event: PaymentStarted
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 659.98, currency: EUR }
+            values: { orderId: $miasOrder, providerPaymentId: pi_3QDrn8F2eZvKYlo2, amount: 659.98, currency: EUR }
       TriesAgainAfterADeclinedCard:
         rules: [ORD-004]
         given:
           - event: OrderPlaced
             values: { orderId: $miasOrder, total: 329.99, currency: EUR }
           - event: OrderPaymentDeclined
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, declineReason: Insufficient funds }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, declineReason: Insufficient funds }
         when:
-          values: { orderId: $miasOrder, paymentId: pi_3QDrp1K7aQwBx9M4 }
+          values: { orderId: $miasOrder, providerPaymentId: pi_3QDrp1K7aQwBx9M4 }
         then:
           - event: PaymentStarted
-            values: { orderId: $miasOrder, paymentId: pi_3QDrp1K7aQwBx9M4, amount: 329.99 }
+            values: { orderId: $miasOrder, providerPaymentId: pi_3QDrp1K7aQwBx9M4, amount: 329.99 }
       RejectsPayingAPaidOrder:
         rules: [ORD-004]
         given:
           - event: OrderPlaced
             values: { orderId: $miasOrder, total: 329.99 }
           - event: OrderPaid
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99 }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, amount: 329.99 }
         when:
-          values: { orderId: $miasOrder, paymentId: pi_3QDrp1K7aQwBx9M4 }
+          values: { orderId: $miasOrder, providerPaymentId: pi_3QDrp1K7aQwBx9M4 }
         then:
           - error: OrderAlreadyPaid
       RejectsPayingAnOrderNobodyPlaced:
         when:
-          values: { orderId: $noOrder, paymentId: pi_3QDrn8F2eZvKYlo2 }
+          values: { orderId: $noOrder, providerPaymentId: pi_3QDrn8F2eZvKYlo2 }
         then:
           - error: OrderUnknown
 
@@ -813,7 +820,7 @@ slices:
       name: RecordCapturedPayment
       fields:
         orderId: { type: uuid, source: system, from: message.orderId }
-        paymentId: { type: string, source: system, from: message.paymentId }
+        paymentId: { type: uuid, source: system, from: message.paymentId }
         amount: { type: decimal, source: system, from: message.amount }
         paidAt: { type: datetime, source: system, from: message.capturedAt }
     emits:
@@ -824,31 +831,31 @@ slices:
           - event: OrderPlaced
             values: { orderId: $miasOrder, productId: $nazgul, quantity: 1, total: 329.99, deliveryAddress: "Kaiserstrasse 12, 60311 Frankfurt am Main, Germany" }
         when:
-          values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, capturedAt: 2026-11-02T18:43:55Z }
+          values: { orderId: $miasOrder, paymentId: $miasPayment, amount: 329.99, capturedAt: 2026-11-02T18:43:55Z }
         then:
           - event: OrderPaid
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, paidAt: 2026-11-02T18:43:55Z, productId: $nazgul, quantity: 1, deliveryAddress: "Kaiserstrasse 12, 60311 Frankfurt am Main, Germany" }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, amount: 329.99, paidAt: 2026-11-02T18:43:55Z, productId: $nazgul, quantity: 1, deliveryAddress: "Kaiserstrasse 12, 60311 Frankfurt am Main, Germany" }
       RecordsTheAmountTheProviderTookEvenWhenItDiffers:
         given:
           - event: OrderPlaced
             values: { orderId: $miasOrder, productId: $nazgul, quantity: 2, total: 659.98, deliveryAddress: "Kaiserstrasse 12, 60311 Frankfurt am Main, Germany" }
         when:
-          values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, capturedAt: 2026-11-02T18:43:55Z }
+          values: { orderId: $miasOrder, paymentId: $miasPayment, amount: 329.99, capturedAt: 2026-11-02T18:43:55Z }
         then:
           - event: OrderPaid
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, paidAt: 2026-11-02T18:43:55Z, productId: $nazgul, quantity: 2 }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, amount: 329.99, paidAt: 2026-11-02T18:43:55Z, productId: $nazgul, quantity: 2 }
       IgnoresAPaymentItAlreadyRecorded:
         given:
           - event: OrderPlaced
             values: { orderId: $miasOrder, productId: $nazgul, quantity: 1, total: 329.99 }
           - event: OrderPaid
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99 }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, amount: 329.99 }
         when:
-          values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, capturedAt: 2026-11-02T18:43:55Z }
+          values: { orderId: $miasOrder, paymentId: $miasPayment, amount: 329.99, capturedAt: 2026-11-02T18:43:55Z }
         then: []
       IgnoresAPaymentForAnOrderNobodyPlaced:
         when:
-          values: { orderId: $noOrder, paymentId: pi_3QDtZZ0q1WxYv2Rb, amount: 329.99, capturedAt: 2026-11-02T18:43:55Z }
+          values: { orderId: $noOrder, paymentId: $strayPayment, amount: 329.99, capturedAt: 2026-11-02T18:43:55Z }
         then: []
 
   FlagPaymentAmountMismatch:
@@ -866,7 +873,7 @@ slices:
       name: CheckCapturedAmount
       fields:
         orderId: { type: uuid, source: system, from: message.orderId }
-        paymentId: { type: string, source: system, from: message.paymentId }
+        paymentId: { type: uuid, source: system, from: message.paymentId }
         capturedAmount: { type: decimal, source: system, from: message.amount }
         capturedAt: { type: datetime, source: system, from: message.capturedAt }
     emits:
@@ -882,10 +889,10 @@ slices:
           - event: OrderPlaced
             values: { orderId: $miasOrder, productId: $nazgul, quantity: <quantity>, total: <total>, currency: EUR }
         when:
-          values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: <captured>, capturedAt: 2026-11-02T18:43:55Z }
+          values: { orderId: $miasOrder, paymentId: $miasPayment, amount: <captured>, capturedAt: 2026-11-02T18:43:55Z }
         then:
           - event: PaymentAmountMismatched
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, orderTotal: <total>, capturedAmount: <captured>, currency: EUR, difference: <difference>, capturedAt: 2026-11-02T18:43:55Z }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, orderTotal: <total>, capturedAmount: <captured>, currency: EUR, difference: <difference>, capturedAt: 2026-11-02T18:43:55Z }
         examples:
           - { quantity: 2, total: 659.98, captured: 329.99, difference: -329.99 }
           - { quantity: 1, total: 329.99, captured: 330.00, difference: 0.01 }
@@ -895,20 +902,20 @@ slices:
           - event: OrderPlaced
             values: { orderId: $miasOrder, productId: $nazgul, quantity: 1, total: 329.99, currency: EUR }
         when:
-          values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, capturedAt: 2026-11-02T18:43:55Z }
+          values: { orderId: $miasOrder, paymentId: $miasPayment, amount: 329.99, capturedAt: 2026-11-02T18:43:55Z }
         then: []
       IgnoresAMismatchItAlreadyFlagged:
         given:
           - event: OrderPlaced
             values: { orderId: $miasOrder, quantity: 2, total: 659.98, currency: EUR }
           - event: PaymentAmountMismatched
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, orderTotal: 659.98, capturedAmount: 329.99 }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, orderTotal: 659.98, capturedAmount: 329.99 }
         when:
-          values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, capturedAt: 2026-11-02T18:43:55Z }
+          values: { orderId: $miasOrder, paymentId: $miasPayment, amount: 329.99, capturedAt: 2026-11-02T18:43:55Z }
         then: []
       IgnoresAPaymentForAnOrderNobodyPlaced:
         when:
-          values: { orderId: $noOrder, paymentId: pi_3QDtZZ0q1WxYv2Rb, amount: 329.99, capturedAt: 2026-11-02T18:43:55Z }
+          values: { orderId: $noOrder, paymentId: $strayPayment, amount: 329.99, capturedAt: 2026-11-02T18:43:55Z }
         then: []
 
   CheckPaymentMismatches:
@@ -925,7 +932,7 @@ slices:
           reads:
             PaymentAmountMismatched: create
           fields:
-            paymentId: { type: string, source: system, from: PaymentAmountMismatched.paymentId, example: pi_3QDrn8F2eZvKYlo2 }
+            paymentId: { type: uuid, source: system, from: PaymentAmountMismatched.paymentId, example: 5d2a8f41-93c7-4b6e-a1f0-2e8c7d9b3a64 }
             orderId: { type: uuid, source: system, from: PaymentAmountMismatched.orderId, example: 7c9e6679-7425-40de-944b-e07fc1f90ae7 }
             orderTotal: { type: decimal, source: system, from: PaymentAmountMismatched.orderTotal }
             capturedAmount: { type: decimal, source: system, from: PaymentAmountMismatched.capturedAmount }
@@ -936,14 +943,14 @@ slices:
       ListsEachPaymentToCheck:
         given:
           - event: PaymentAmountMismatched
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, orderTotal: 659.98, capturedAmount: 329.99, currency: EUR, difference: -329.99, capturedAt: 2026-11-02T18:43:55Z }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, orderTotal: 659.98, capturedAmount: 329.99, currency: EUR, difference: -329.99, capturedAt: 2026-11-02T18:43:55Z }
           - event: PaymentAmountMismatched
-            values: { orderId: $leosOrder, paymentId: pi_3QE1aa9Xc2RtYu7P, orderTotal: 329.99, capturedAmount: 330.00, currency: EUR, difference: 0.01, capturedAt: 2026-11-03T08:11:30Z }
+            values: { orderId: $leosOrder, paymentId: $leosPayment, orderTotal: 329.99, capturedAmount: 330.00, currency: EUR, difference: 0.01, capturedAt: 2026-11-03T08:11:30Z }
         then:
           - view: PaymentMismatches
             rows:
-              - { paymentId: pi_3QDrn8F2eZvKYlo2, orderId: $miasOrder, orderTotal: 659.98, capturedAmount: 329.99, currency: EUR, difference: -329.99, capturedAt: 2026-11-02T18:43:55Z }
-              - { paymentId: pi_3QE1aa9Xc2RtYu7P, orderId: $leosOrder, orderTotal: 329.99, capturedAmount: 330.00, currency: EUR, difference: 0.01, capturedAt: 2026-11-03T08:11:30Z }
+              - { paymentId: $miasPayment, orderId: $miasOrder, orderTotal: 659.98, capturedAmount: 329.99, currency: EUR, difference: -329.99, capturedAt: 2026-11-02T18:43:55Z }
+              - { paymentId: $leosPayment, orderId: $leosOrder, orderTotal: 329.99, capturedAmount: 330.00, currency: EUR, difference: 0.01, capturedAt: 2026-11-03T08:11:30Z }
 
   RecordDeclinedPayment:
     pattern: translation
@@ -957,7 +964,7 @@ slices:
       name: RecordDeclinedPayment
       fields:
         orderId: { type: uuid, source: system, from: message.orderId }
-        paymentId: { type: string, source: system, from: message.paymentId }
+        paymentId: { type: uuid, source: system, from: message.paymentId }
         declineReason: { type: string, source: system, from: message.declineReason }
     emits:
       - event: OrderPaymentDeclined
@@ -967,22 +974,22 @@ slices:
           - event: OrderPlaced
             values: { orderId: $miasOrder, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF, total: 329.99 }
         when:
-          values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, declineReason: Insufficient funds }
+          values: { orderId: $miasOrder, paymentId: $miasPayment, declineReason: Insufficient funds }
         then:
           - event: OrderPaymentDeclined
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, declineReason: Insufficient funds, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, declineReason: Insufficient funds, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF }
       IgnoresADeclineItAlreadyRecorded:
         given:
           - event: OrderPlaced
             values: { orderId: $miasOrder, total: 329.99 }
           - event: OrderPaymentDeclined
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, declineReason: Insufficient funds }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, declineReason: Insufficient funds }
         when:
-          values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, declineReason: Insufficient funds }
+          values: { orderId: $miasOrder, paymentId: $miasPayment, declineReason: Insufficient funds }
         then: []
       IgnoresADeclineForAnOrderNobodyPlaced:
         when:
-          values: { orderId: $noOrder, paymentId: pi_3QDtZZ0q1WxYv2Rb, declineReason: Insufficient funds }
+          values: { orderId: $noOrder, paymentId: $strayPayment, declineReason: Insufficient funds }
         then: []
 
   NotifyPaymentDeclined:
@@ -997,7 +1004,7 @@ slices:
             OrderPaymentDeclined: create
             CustomerToldPaymentDeclined: remove
           fields:
-            paymentId: { type: string, source: system, from: OrderPaymentDeclined.paymentId }
+            paymentId: { type: uuid, source: system, from: OrderPaymentDeclined.paymentId }
             orderId: { type: uuid, source: system, from: OrderPaymentDeclined.orderId }
             customerId: { type: uuid, source: system, from: OrderPaymentDeclined.customerId }
             productName: { type: string, source: system, from: OrderPaymentDeclined.productName }
@@ -1010,23 +1017,23 @@ slices:
       name: RecordDeclinedPush
       fields:
         orderId: { type: uuid, source: system, from: DeclinesToAnnounce.orderId }
-        paymentId: { type: string, source: system, from: DeclinesToAnnounce.paymentId }
+        paymentId: { type: uuid, source: system, from: DeclinesToAnnounce.paymentId }
     emits:
       - event: CustomerToldPaymentDeclined
     tests:
       TellsMiaHerCardWasDeclined:
         given:
           - event: OrderPaymentDeclined
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, declineReason: Insufficient funds, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, declineReason: Insufficient funds, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF }
         then:
           - event: CustomerToldPaymentDeclined
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2 }
+            values: { orderId: $miasOrder, paymentId: $miasPayment }
       TellsMiaOnlyOncePerDecline:
         given:
           - event: OrderPaymentDeclined
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, declineReason: Insufficient funds, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, declineReason: Insufficient funds, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF }
           - event: CustomerToldPaymentDeclined
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2 }
+            values: { orderId: $miasOrder, paymentId: $miasPayment }
         then: []
 
   ListPayments:
@@ -1052,7 +1059,8 @@ slices:
             OrderPaymentDeclined: update
             PaymentAmountMismatched: update
           fields:
-            paymentId: { type: string, source: system, from: PaymentStarted.paymentId, example: pi_3QDrn8F2eZvKYlo2 }
+            paymentId: { type: uuid, source: system, from: PaymentStarted.paymentId, example: 5d2a8f41-93c7-4b6e-a1f0-2e8c7d9b3a64 }
+            providerPaymentId: { type: string, source: system, from: PaymentStarted.providerPaymentId, example: pi_3QDrn8F2eZvKYlo2 }
             orderId: { type: uuid, source: system, from: PaymentStarted.orderId, example: 7c9e6679-7425-40de-944b-e07fc1f90ae7 }
             amount: { type: decimal, source: system, from: PaymentStarted.amount }
             currency: { type: string, source: system, from: PaymentStarted.currency }
@@ -1071,33 +1079,33 @@ slices:
       ShowsEachAttemptWithItsOutcome:
         given:
           - event: PaymentStarted
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, currency: EUR, startedAt: 2026-11-02T18:43:10Z }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, providerPaymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, currency: EUR, startedAt: 2026-11-02T18:43:10Z }
           - event: OrderPaymentDeclined
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, declineReason: Insufficient funds }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, declineReason: Insufficient funds }
           - event: PaymentStarted
-            values: { orderId: $miasOrder, paymentId: pi_3QDrp1K7aQwBx9M4, amount: 329.99, currency: EUR, startedAt: 2026-11-02T18:50:02Z }
+            values: { orderId: $miasOrder, paymentId: $miasRetry, providerPaymentId: pi_3QDrp1K7aQwBx9M4, amount: 329.99, currency: EUR, startedAt: 2026-11-02T18:50:02Z }
           - event: OrderPaid
-            values: { orderId: $miasOrder, paymentId: pi_3QDrp1K7aQwBx9M4, amount: 329.99, paidAt: 2026-11-02T18:50:40Z }
+            values: { orderId: $miasOrder, paymentId: $miasRetry, amount: 329.99, paidAt: 2026-11-02T18:50:40Z }
           - event: PaymentStarted
-            values: { orderId: $leosOrder, paymentId: pi_3QE1aa9Xc2RtYu7P, amount: 329.99, currency: EUR, startedAt: 2026-11-03T08:11:05Z }
+            values: { orderId: $leosOrder, paymentId: $leosPayment, providerPaymentId: pi_3QE1aa9Xc2RtYu7P, amount: 329.99, currency: EUR, startedAt: 2026-11-03T08:11:05Z }
         then:
           - view: Payments
             rows:
-              - { paymentId: pi_3QDrn8F2eZvKYlo2, orderId: $miasOrder, amount: 329.99, currency: EUR, startedAt: 2026-11-02T18:43:10Z, status: declined, amountMismatch: false }
-              - { paymentId: pi_3QDrp1K7aQwBx9M4, orderId: $miasOrder, amount: 329.99, currency: EUR, startedAt: 2026-11-02T18:50:02Z, status: captured, amountMismatch: false }
-              - { paymentId: pi_3QE1aa9Xc2RtYu7P, orderId: $leosOrder, amount: 329.99, currency: EUR, startedAt: 2026-11-03T08:11:05Z, status: started, amountMismatch: false }
+              - { paymentId: $miasPayment, orderId: $miasOrder, providerPaymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, currency: EUR, startedAt: 2026-11-02T18:43:10Z, status: declined, amountMismatch: false }
+              - { paymentId: $miasRetry, orderId: $miasOrder, providerPaymentId: pi_3QDrp1K7aQwBx9M4, amount: 329.99, currency: EUR, startedAt: 2026-11-02T18:50:02Z, status: captured, amountMismatch: false }
+              - { paymentId: $leosPayment, orderId: $leosOrder, providerPaymentId: pi_3QE1aa9Xc2RtYu7P, amount: 329.99, currency: EUR, startedAt: 2026-11-03T08:11:05Z, status: started, amountMismatch: false }
       MarksAPaymentWhoseAmountDiffers:
         given:
           - event: PaymentStarted
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 659.98, currency: EUR, startedAt: 2026-11-02T18:43:10Z }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, providerPaymentId: pi_3QDrn8F2eZvKYlo2, amount: 659.98, currency: EUR, startedAt: 2026-11-02T18:43:10Z }
           - event: OrderPaid
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, paidAt: 2026-11-02T18:43:55Z }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, amount: 329.99, paidAt: 2026-11-02T18:43:55Z }
           - event: PaymentAmountMismatched
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, orderTotal: 659.98, capturedAmount: 329.99, currency: EUR, difference: -329.99, capturedAt: 2026-11-02T18:43:55Z }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, orderTotal: 659.98, capturedAmount: 329.99, currency: EUR, difference: -329.99, capturedAt: 2026-11-02T18:43:55Z }
         then:
           - view: Payments
             rows:
-              - { paymentId: pi_3QDrn8F2eZvKYlo2, orderId: $miasOrder, amount: 659.98, currency: EUR, startedAt: 2026-11-02T18:43:10Z, status: captured, amountMismatch: true }
+              - { paymentId: $miasPayment, orderId: $miasOrder, providerPaymentId: pi_3QDrn8F2eZvKYlo2, amount: 659.98, currency: EUR, startedAt: 2026-11-02T18:43:10Z, status: captured, amountMismatch: true }
 
   ViewPayment:
     pattern: query
@@ -1123,7 +1131,8 @@ slices:
             OrderPaymentDeclined: update
             PaymentAmountMismatched: update
           fields:
-            paymentId: { type: string, source: system, from: PaymentStarted.paymentId, example: pi_3QDrn8F2eZvKYlo2 }
+            paymentId: { type: uuid, source: system, from: PaymentStarted.paymentId, example: 5d2a8f41-93c7-4b6e-a1f0-2e8c7d9b3a64 }
+            providerPaymentId: { type: string, source: system, from: PaymentStarted.providerPaymentId, example: pi_3QDrn8F2eZvKYlo2 }
             orderId: { type: uuid, source: system, from: PaymentStarted.orderId, example: 7c9e6679-7425-40de-944b-e07fc1f90ae7 }
             amount: { type: decimal, source: system, from: PaymentStarted.amount }
             currency: { type: string, source: system, from: PaymentStarted.currency }
@@ -1141,38 +1150,38 @@ slices:
       ShowsAPaymentThatWentThrough:
         given:
           - event: PaymentStarted
-            values: { orderId: $miasOrder, paymentId: pi_3QDrp1K7aQwBx9M4, amount: 329.99, currency: EUR, startedAt: 2026-11-02T18:50:02Z }
+            values: { orderId: $miasOrder, paymentId: $miasRetry, providerPaymentId: pi_3QDrp1K7aQwBx9M4, amount: 329.99, currency: EUR, startedAt: 2026-11-02T18:50:02Z }
           - event: OrderPaid
-            values: { orderId: $miasOrder, paymentId: pi_3QDrp1K7aQwBx9M4, amount: 329.99, paidAt: 2026-11-02T18:50:40Z }
+            values: { orderId: $miasOrder, paymentId: $miasRetry, amount: 329.99, paidAt: 2026-11-02T18:50:40Z }
         then:
           - view: PaymentDetails
-            keyed: { paymentId: pi_3QDrp1K7aQwBx9M4 }
+            keyed: { paymentId: $miasRetry }
             rows:
-              - { paymentId: pi_3QDrp1K7aQwBx9M4, orderId: $miasOrder, amount: 329.99, currency: EUR, startedAt: 2026-11-02T18:50:02Z, status: captured, capturedAmount: 329.99, paidAt: 2026-11-02T18:50:40Z, declineReason: null, difference: null }
+              - { paymentId: $miasRetry, orderId: $miasOrder, providerPaymentId: pi_3QDrp1K7aQwBx9M4, amount: 329.99, currency: EUR, startedAt: 2026-11-02T18:50:02Z, status: captured, capturedAmount: 329.99, paidAt: 2026-11-02T18:50:40Z, declineReason: null, difference: null }
       ShowsWhyACardWasDeclined:
         given:
           - event: PaymentStarted
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, currency: EUR, startedAt: 2026-11-02T18:43:10Z }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, providerPaymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, currency: EUR, startedAt: 2026-11-02T18:43:10Z }
           - event: OrderPaymentDeclined
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, declineReason: Insufficient funds }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, declineReason: Insufficient funds }
         then:
           - view: PaymentDetails
-            keyed: { paymentId: pi_3QDrn8F2eZvKYlo2 }
+            keyed: { paymentId: $miasPayment }
             rows:
-              - { paymentId: pi_3QDrn8F2eZvKYlo2, orderId: $miasOrder, amount: 329.99, currency: EUR, startedAt: 2026-11-02T18:43:10Z, status: declined, capturedAmount: null, paidAt: null, declineReason: Insufficient funds, difference: null }
+              - { paymentId: $miasPayment, orderId: $miasOrder, providerPaymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, currency: EUR, startedAt: 2026-11-02T18:43:10Z, status: declined, capturedAmount: null, paidAt: null, declineReason: Insufficient funds, difference: null }
       ShowsTheDifferenceToCheck:
         given:
           - event: PaymentStarted
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 659.98, currency: EUR, startedAt: 2026-11-02T18:43:10Z }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, providerPaymentId: pi_3QDrn8F2eZvKYlo2, amount: 659.98, currency: EUR, startedAt: 2026-11-02T18:43:10Z }
           - event: OrderPaid
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, paidAt: 2026-11-02T18:43:55Z }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, amount: 329.99, paidAt: 2026-11-02T18:43:55Z }
           - event: PaymentAmountMismatched
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, orderTotal: 659.98, capturedAmount: 329.99, currency: EUR, difference: -329.99, capturedAt: 2026-11-02T18:43:55Z }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, orderTotal: 659.98, capturedAmount: 329.99, currency: EUR, difference: -329.99, capturedAt: 2026-11-02T18:43:55Z }
         then:
           - view: PaymentDetails
-            keyed: { paymentId: pi_3QDrn8F2eZvKYlo2 }
+            keyed: { paymentId: $miasPayment }
             rows:
-              - { paymentId: pi_3QDrn8F2eZvKYlo2, orderId: $miasOrder, amount: 659.98, currency: EUR, startedAt: 2026-11-02T18:43:10Z, status: captured, capturedAmount: 329.99, paidAt: 2026-11-02T18:43:55Z, declineReason: null, difference: -329.99 }
+              - { paymentId: $miasPayment, orderId: $miasOrder, providerPaymentId: pi_3QDrn8F2eZvKYlo2, amount: 659.98, currency: EUR, startedAt: 2026-11-02T18:43:10Z, status: captured, capturedAmount: 329.99, paidAt: 2026-11-02T18:43:55Z, declineReason: null, difference: -329.99 }
 
   ListMyOrders:
     pattern: query
@@ -1214,7 +1223,7 @@ slices:
           - event: OrderPlaced
             values: { orderId: $miasSpare, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF, quantity: 1, total: 329.99, currency: EUR, placedAt: 2026-11-02T19:30:00Z }
           - event: OrderPaid
-            values: { orderId: $miasNazgul, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99 }
+            values: { orderId: $miasNazgul, paymentId: $miasPayment, amount: 329.99 }
           - event: OrderPaymentDeclined
             values: { orderId: $miasX500, paymentId: pi_3QDs02Lm4TnVc8Hk, declineReason: Insufficient funds }
         then:
@@ -1230,9 +1239,9 @@ slices:
           - event: OrderPlaced
             values: { orderId: $leosNazgul, customerId: $leo, productName: iFlight Nazgul5 V3 6S BNF, quantity: 1, total: 329.99, currency: EUR, placedAt: 2026-11-03T08:10:00Z }
           - event: OrderPaid
-            values: { orderId: $miasNazgul, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99 }
+            values: { orderId: $miasNazgul, paymentId: $miasPayment, amount: 329.99 }
           - event: OrderPaid
-            values: { orderId: $leosNazgul, paymentId: pi_3QE1aa9Xc2RtYu7P, amount: 329.99 }
+            values: { orderId: $leosNazgul, paymentId: $leosPayment, amount: 329.99 }
           - event: OrderShipped
             values: { orderId: $miasNazgul, carrier: UPS, trackingNumber: 1Z999AA10123456784 }
           - event: OrderShipped
@@ -1294,7 +1303,7 @@ slices:
           - event: OrderPlaced
             values: { orderId: $miasOrder, productId: $nazgul, quantity: 1, total: 329.99, currency: EUR, deliveryAddress: "Kaiserstrasse 12, 60311 Frankfurt am Main, Germany" }
           - event: OrderPaid
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, paidAt: 2026-11-02T18:43:55Z }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, amount: 329.99, paidAt: 2026-11-02T18:43:55Z }
         then:
           - event: OrderReleasedToWarehouse
             values: { orderId: $miasOrder, productId: $nazgul, quantity: 1, deliveryAddress: "Kaiserstrasse 12, 60311 Frankfurt am Main, Germany" }
@@ -1304,7 +1313,7 @@ slices:
           - event: OrderPlaced
             values: { orderId: $miasOrder, productId: $nazgul, quantity: 2, total: 659.98, currency: EUR, deliveryAddress: "Kaiserstrasse 12, 60311 Frankfurt am Main, Germany" }
           - event: OrderPaid
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, paidAt: 2026-11-02T18:43:55Z }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, amount: 329.99, paidAt: 2026-11-02T18:43:55Z }
         then: []
       ShipsAnOverpaidOrder:
         rules: [ORD-007]
@@ -1312,7 +1321,7 @@ slices:
           - event: OrderPlaced
             values: { orderId: $leosOrder, productId: $nazgul, quantity: 1, total: 329.99, currency: EUR, deliveryAddress: "Keizersgracht 123, 1015 CJ Amsterdam, Netherlands" }
           - event: OrderPaid
-            values: { orderId: $leosOrder, paymentId: pi_3QE1aa9Xc2RtYu7P, amount: 330.00, paidAt: 2026-11-03T08:11:30Z }
+            values: { orderId: $leosOrder, paymentId: $leosPayment, amount: 330.00, paidAt: 2026-11-03T08:11:30Z }
         then:
           - event: OrderReleasedToWarehouse
             values: { orderId: $leosOrder, productId: $nazgul, quantity: 1, deliveryAddress: "Keizersgracht 123, 1015 CJ Amsterdam, Netherlands" }
@@ -1321,7 +1330,7 @@ slices:
           - event: OrderPlaced
             values: { orderId: $miasOrder, productId: $nazgul, quantity: 1, total: 329.99, currency: EUR }
           - event: OrderPaid
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99 }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, amount: 329.99 }
           - event: OrderReleasedToWarehouse
             values: { orderId: $miasOrder, productId: $nazgul, quantity: 1 }
         then: []
@@ -1364,7 +1373,7 @@ slices:
           - event: OrderPlaced
             values: { orderId: $miasOrder, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF }
           - event: OrderPaid
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99 }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, amount: 329.99 }
           - event: OrderReleasedToWarehouse
             values: { orderId: $miasOrder, productId: $nazgul, quantity: 1 }
         when:
@@ -1387,7 +1396,7 @@ slices:
           - event: OrderPlaced
             values: { orderId: $miasOrder, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF }
           - event: OrderPaymentDeclined
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, declineReason: Insufficient funds }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, declineReason: Insufficient funds }
         when:
           values: { orderId: $miasOrder, carrier: UPS, trackingNumber: 1Z999AA10123456784, dispatchedAt: 2026-11-04T09:15:00Z }
         then:
@@ -1398,7 +1407,7 @@ slices:
           - event: OrderPlaced
             values: { orderId: $miasOrder, customerId: $mia, productName: iFlight Nazgul5 V3 6S BNF, quantity: 2, total: 659.98, currency: EUR }
           - event: OrderPaid
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99 }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, amount: 329.99 }
         when:
           values: { orderId: $miasOrder, carrier: UPS, trackingNumber: 1Z999AA10123456784, dispatchedAt: 2026-11-04T09:15:00Z }
         then:
@@ -1408,7 +1417,7 @@ slices:
           - event: OrderPlaced
             values: { orderId: $miasOrder, customerId: $mia }
           - event: OrderPaid
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99 }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, amount: 329.99 }
           - event: OrderReleasedToWarehouse
             values: { orderId: $miasOrder, productId: $nazgul, quantity: 1 }
           - event: OrderShipped
@@ -1583,7 +1592,7 @@ slices:
           - event: OrderPlaced
             values: { orderId: $miasOrder, productName: iFlight Nazgul5 V3 6S BNF, total: 329.99, currency: EUR }
           - event: OrderPaid
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, paidAt: 2026-11-02T18:43:55Z }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, amount: 329.99, paidAt: 2026-11-02T18:43:55Z }
         then:
           - view: OrderStatus
             keyed: { orderId: $miasOrder }
@@ -1594,7 +1603,7 @@ slices:
           - event: OrderPlaced
             values: { orderId: $miasOrder, productName: iFlight Nazgul5 V3 6S BNF, total: 329.99, currency: EUR }
           - event: OrderPaid
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, paidAt: 2026-11-02T18:43:55Z }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, amount: 329.99, paidAt: 2026-11-02T18:43:55Z }
           - event: OrderShipped
             values: { orderId: $miasOrder, carrier: UPS, trackingNumber: 1Z999AA10123456784, shippedAt: 2026-11-04T09:15:00Z }
         then:
@@ -1607,7 +1616,7 @@ slices:
           - event: OrderPlaced
             values: { orderId: $miasOrder, productName: iFlight Nazgul5 V3 6S BNF, total: 329.99, currency: EUR }
           - event: OrderPaid
-            values: { orderId: $miasOrder, paymentId: pi_3QDrn8F2eZvKYlo2, amount: 329.99, paidAt: 2026-11-02T18:43:55Z }
+            values: { orderId: $miasOrder, paymentId: $miasPayment, amount: 329.99, paidAt: 2026-11-02T18:43:55Z }
           - event: OrderShipped
             values: { orderId: $miasOrder, carrier: UPS, trackingNumber: 1Z999AA10123456784, shippedAt: 2026-11-04T09:15:00Z }
           - event: OrderDelivered
