@@ -1,11 +1,10 @@
 # DRAFT: NO ADDR YET. No ADDR run covers ordering: the storefront ADDR covers the read flows and
 # stops at "[to cart/checkout]". This model came before its ADDR work. Keep it as a draft until an
-# ADDR run for ordering exists; the showcase model is a catalog-management-v2 flow
-# (galaxitech-website-498).
+# ADDR run for ordering exists; the showcase model is a catalog-management-v2 flow.
 #
 # Drone Web: a customer orders a drone on a phone and follows the delivery.
-# Written with the kairos-author skill of event-model-factory (bead galaxitech-website-5yv).
-# CJ's answers to the open questions applied 2026-10-28 (bead galaxitech-website-ocj).
+# Written with the kairos-author skill of event-model-factory.
+# CJ's answers to the open questions applied 2026-10-28.
 #
 # The flow in words (chosen by CJ, 2026-10-28):
 #
@@ -29,7 +28,7 @@
 #   - Ordering refuses a shipment for an order that is not paid. Since 2026-10-29 (C2c) this
 #     means not released to the warehouse, so a held, underpaid order is refused as well.
 #   - Rule ORD-003 (one to five drones per app order) is dropped; its id is not reused. Realistic
-#     order rules are researched in galaxitech-website-9x0.
+#     order rules are researched separately (design/ordering/research/).
 #
 # CJ's answers (2026-10-29):
 #
@@ -37,11 +36,11 @@
 #     order total. An underpaid order is held; an overpaid order ships. How the surplus is
 #     refunded is an open question. Rule ORD-007 on RecordCapturedPayment, proposed.
 #   - Whether a row ever leaves the staff list PaymentMismatches stays open until ordering has ADDR.
-#   - PayForOrder stays as it is. Its 3 F6 warnings stay until galaxitech-website-nzd is done
-#     (reminder bead galaxitech-website-8za).
+#   - PayForOrder stays as it is. Its 3 F6 warnings stay until the factory lets a port request
+#     take values from the events the decision loads; then CJ revisits this choice.
 #   - PaymentStarted mints Drone Web's own paymentId (uuid). The provider's id is the ordinary
 #     field providerPaymentId, never a tag (K29). StartPayment sends paymentId as metadata, so the
-#     webhooks name the payment by Drone Web's id (galaxitech-website-bqq, 2026-10-30).
+#     webhooks name the payment by Drone Web's id (2026-10-30).
 #
 # Where the pieces come from in drone-web:
 #
@@ -51,7 +50,7 @@
 #     (ProductRecordChanged), prices on `effective-prices` (EffectivePriceChanged); see
 #     design/contracts/ and decision D-037. Ordering keeps its own copy (strategy P3: no
 #     synchronous calls between boundaries). `product-records` carries no drafts (CJ D5a,
-#     2026-10-29, galaxitech-website-498): a product appears on it only when it goes live, so
+#     2026-10-29): a product appears on it only when it goes live, so
 #     Ordering sees only active and discontinued products.
 #   - Payment is bought, and card data never reaches Drone Web (strategy P1, "Payment and
 #     checkout"). The provider is reached through a port and answers through webhooks.
@@ -457,8 +456,8 @@ slices:
       Phone screen: a scrolling list of drones with name and price; a drone that cannot be ordered
       is greyed out. The two streams do not arrive in a fixed order. A price that arrives before
       the product record is kept and matched to the drone when the record arrives (CJ,
-      2026-10-28). Kairos v0 ignores an update for a row the view does not have yet
-      (emf-m9a.67), so it cannot say this in the reads yet; KeepsAPriceThatArrivedBeforeTheDrone
+      2026-10-28). Kairos v0 ignores an update for a row the view does not have yet,
+      so it cannot say this in the reads yet; KeepsAPriceThatArrivedBeforeTheDrone
       states the wanted outcome.
     screen:
       name: DroneList
@@ -535,7 +534,7 @@ slices:
       the SKU, the price and whether the drone can be ordered; an "Order" button opens the order
       form for this drone. It is the detail view of the drone (CJ's rule of 2026-10-29: every
       entity gets a list view and a detail view). Like DronesForSale, it should keep a price that
-      arrives before the product record (emf-m9a.67).
+      arrives before the product record (Kairos v0 cannot say this yet).
     screen:
       name: DroneDetailsScreen
       actor: Customer
@@ -650,7 +649,7 @@ slices:
       ORD-002:
         title: A customer can order only a drone that has a price
       # ORD-003 (one to five drones per app order) was dropped by CJ on 2026-10-28. The id is not
-      # reused. Realistic order rules: galaxitech-website-9x0.
+      # reused. Realistic order rules: design/ordering/research/.
     errors:
       DroneUnknown: { description: Ordering has never heard of this product. A draft is unknown here because product-records carries no drafts. }
       DroneNotForSale: { description: The drone is discontinued., rule: ORD-001 }

@@ -3,7 +3,7 @@
 > **Draft: no ADDR yet.** No ADDR run covers ordering. The storefront ADDR covers the read flows
 > and stops at "[to cart/checkout]", so this model came before its ADDR work. It stays in the repo
 > as a draft. The showcase event model moves to a catalog-management-v2 state-change flow that is
-> grounded in its ADDR work (galaxitech-website-498).
+> grounded in its ADDR work.
 
 An event model of one mobile flow: a customer orders a drone on a phone, pays for it, follows the
 order, and gets a push notification when the payment is declined, when the order ships and when it
@@ -78,19 +78,20 @@ The intention sidecar sets the target `prototype`. The validator reports 0 error
 reports 0 warnings. All ten warnings are factory limits, not modelling errors:
 
 - 7 × F30: the prototype factory cannot yet generate a translation that listens to a foreign
-  context's broker messages (emf-bzu.14).
+  context's broker messages.
 - 3 × F6: the factory fills a port request from command fields only. `PayForOrder` takes the total
   and currency from the order's own events, and `PaymentStarted` mints the `paymentId` that
   `StartPayment` sends to the provider, so the command does not carry them. CJ keeps
-  `PayForOrder` as it is (2026-10-29). The F6 warnings stay until the event-model-factory bead
-  galaxitech-website-nzd is done. The reminder bead is galaxitech-website-8za.
+  `PayForOrder` as it is (2026-10-29). The F6 warnings stay until event-model-factory lets a port
+  request take values from the events the decision loads. Then CJ revisits where `PayForOrder`
+  takes its amount.
 
 **Payment ids (K29).** `PaymentStarted` mints Drone Web's own `paymentId` (a uuid). The
 provider's id is the ordinary field `providerPaymentId`, never a tag: a foreign id is never our
 key. `StartPayment` sends `paymentId` to the provider as payment metadata, so the webhooks
 (`PaymentCaptured`, `PaymentDeclined`) name the payment by Drone Web's id. The staff views
 `Payments` and `PaymentDetails` show `providerPaymentId`, so the order desk can find a payment
-in the provider's dashboard (galaxitech-website-bqq, 2026-10-30).
+in the provider's dashboard (2026-10-30).
 
 ## Open questions
 
@@ -119,10 +120,10 @@ in EUR.
 
 ## What Kairos cannot say yet
 
-- Commands made offline and sent later (emf-a17). Noted in `PlaceOrder`'s description.
-- The signed-in customer as the source of `customerId`, and "my orders" filtering (emf-a9t, emf-bzu.31).
-- A view that keeps an update for a row it does not have yet (emf-m9a.67: such an update is
-  ignored). `BrowseDrones` states the wanted outcome in a test and its description; `ViewDrone`
+- Commands made offline and sent later. Noted in `PlaceOrder`'s description.
+- The signed-in customer as the source of `customerId`, and "my orders" filtering.
+- A view that keeps an update for a row it does not have yet (Kairos v0 ignores such an
+  update). `BrowseDrones` states the wanted outcome in a test and its description; `ViewDrone`
   has the same need.
 - A single view opened from two lists. `keyed-by` names one list, so the board links
   `PaymentDetails` to `Payments` only, not to `PaymentMismatches`. `ViewPayment` says so in its
