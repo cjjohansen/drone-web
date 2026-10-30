@@ -1,6 +1,6 @@
 # Order rules for selling drones and drone parts to EU buyers
 
-Bead: Probe, realistic order rules for selling drones in the EU (`galaxitech-website-9x0`). Date: 2026-10-29.
+Research: realistic order rules for selling drones in the EU. Date: 2026-10-29.
 Research, not legal advice. A lawyer must review before launch.
 
 ## Recommendation
