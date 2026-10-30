@@ -35,6 +35,7 @@ Using the Align v2 boundary map, job stories, and activity steps, the following 
   - Product must have required identity and baseline attributes before activation.
   - Lifecycle transitions must follow an allowed state machine.
   - Discontinued products cannot transition back to active without explicit reactivation policy.
+  - A change request carries its values as typed fields: a lifecycle change its target state, a specification change all its new specification values, a details change the new name and short description. A request without all its new values is refused. The product makes the text the reviewer reads from these values, and after the release it applies only these values (drone-web D-039, rule PLC-012 in the JS1 event model).
 - **Why separate:** Product lifecycle invariants are distinct from documentation, pricing, and inventory invariants.
 - **Expected API responsibilities:** Create/update product master data, lifecycle state changes, replacement linkage.
 
@@ -101,8 +102,13 @@ Using the Align v2 boundary map, job stories, and activity steps, the following 
   - High-risk changes must be approved before publication.
   - Approval decisions are immutable audit events.
   - Gate state must be explicit (pending, approved, rejected, released, expired). A case that nobody decides within the review period expires.
+  - Governance approves the text of a change (`requestedChange`), not the field values. The owning boundary keeps the typed values the text was made from.
+  - Any person who holds the reviewer role for the case's risk level may approve or reject it, not only the assigned reviewer. The person who asked for the change never decides it (four eyes). There is one reviewer role per risk level, and a person may hold several (GOV-012).
+  - The review agent's approval of a low-risk change releases the publication gate by itself, and the reviewers are told (GOV-013). A released change is not taken back.
+  - Each release, by a reviewer or by an agent approval, is announced once to the owning boundary.
+- **External dependencies:** a reviewer directory (who holds which reviewer role), the review agent (an LLM that assesses low- and medium-risk cases) and a notice sender to the reviewers. All three are outside this boundary (drone-web D-039).
 - **Why separate:** Governance language and policy lifecycle cut across multiple admin domains.
-- **Expected API responsibilities:** Submit changes for review, assign reviewers, approve/reject, expose case status.
+- **Expected API responsibilities:** Submit changes for review, assign reviewers, approve/reject by reviewer role, release gates, announce releases, expose case status.
 
 ### 8. Bulk Ingestion API
 

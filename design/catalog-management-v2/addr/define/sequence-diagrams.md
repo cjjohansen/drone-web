@@ -48,6 +48,47 @@ sequenceDiagram
     BulkApi-->>PLM: item-level results
 ```
 
+### JS1: Reviewed change with typed values (drone-web D-039)
+
+A change on an active product carries its new values as typed fields. Governance approves the text
+made from them, and Product Data applies only those values after the release. The JS1 event model
+(`../../eventmodel/`) holds the rules: PLC-012 (typed values), GOV-012 (decide by reviewer role) and
+GOV-013 (an agent approval releases the gate). The operation that requests a specification or details
+change on an active product is open (200 or 202 is still to be decided).
+
+```mermaid
+sequenceDiagram
+    actor PLM as ProductLifecycleManager
+    actor Reviewer as GovernanceReviewer
+    participant ProductApi as ProductLifecycleAPI
+    participant GovApi as CatalogGovernanceAPI
+    participant Agent as ReviewAgent
+    participant Directory as ReviewerDirectory
+
+    PLM->>ProductApi: request change(productId, specification-change, all new values, reason)
+    Note over ProductApi: refuses a request without all its new values (NewValuesMissing)
+    ProductApi->>GovApi: submitApprovalCase(changeType, sourceReferenceId, riskLevel, requestedChange)
+    GovApi-->>ProductApi: approvalCaseId, status=pending, reviewRoute
+
+    alt low risk
+        GovApi->>Agent: assess(requestedChange)
+        Agent-->>GovApi: verdict=approve
+        Note over GovApi: approval releases the gate (GOV-013)
+        GovApi->>Reviewer: notice of the agent approval
+    else medium (after the agent check), high or critical risk, or escalated by the agent
+        Reviewer->>GovApi: recordApprovalDecision(approvalCaseId, approve)
+        GovApi->>Directory: reviewer roles of the person
+        Directory-->>GovApi: risk levels
+        GovApi-->>Reviewer: status=approved (any holder of the role for the risk level, never the requester)
+        Reviewer->>GovApi: releasePublicationGate(approvalCaseId)
+        GovApi-->>Reviewer: gateState=released
+    end
+
+    GovApi-->>ProductApi: change released (once, both routes)
+    PLM->>ProductApi: updateProductSpecifications(productId, specs)
+    ProductApi-->>PLM: applied, or conflict when the values differ from the approved ones (ValuesDifferFromTheApprovedOnes)
+```
+
 ## JS2: Technical Documentation Management
 
 ```mermaid
