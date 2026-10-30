@@ -120,6 +120,26 @@ X-API-Key: <api-key>
 }
 ```
 
+Response. The person who decides need not be the assigned reviewer: any holder of the reviewer role
+for the case's risk level may decide. The roles come from the reviewer directory (drone-web D-039).
+
+```http
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{
+  "approvalCaseId": "03724352-c0cd-4fa7-ac65-bddf8df0474d",
+  "decisionId": "5b0e7c4a-2d1f-4e6b-9a3c-8f7d6e5c4b3a",
+  "status": "approved",
+  "decidedBy": "Omar Vik",
+  "deciderRiskLevels": ["high", "critical"],
+  "decidedAt": "2026-11-02T14:30:00Z"
+}
+```
+
+A person without the reviewer role for the risk level gets `403 Forbidden`
+(`application/problem+json`, no-reviewer-role-for-the-risk).
+
 ## 8) Bulk Ingestion — Replay Failed Items
 
 ```bash
