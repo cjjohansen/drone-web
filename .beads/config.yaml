@@ -73,3 +73,7 @@
 
 sync:
     remote: "git+https://github.com/cjjohansen/drone-web.git"
+export:
+    auto: true
+
+events-journal: true
