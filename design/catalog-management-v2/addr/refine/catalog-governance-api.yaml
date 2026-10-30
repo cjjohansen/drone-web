@@ -116,7 +116,7 @@ components:
         approvalCaseId: { type: string, format: uuid }
         changeType: { type: string }
         sourceReferenceId: { type: string }
-        riskLevel: { type: string, enum: [low, medium, high] }
+        riskLevel: { type: string, enum: [low, medium, high, critical] }
         status: { type: string, enum: [pending, approved, rejected, released, expired] }
     ApprovalCaseSubmission:
       type: object
@@ -125,7 +125,7 @@ components:
         changeType: { type: string }
         boundarySource: { type: string }
         sourceReferenceId: { type: string }
-        riskLevel: { type: string, enum: [low, medium, high] }
+        riskLevel: { type: string, enum: [low, medium, high, critical] }
         rationale: { type: string }
     ApprovalDecisionResult:
       type: object

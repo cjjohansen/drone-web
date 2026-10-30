@@ -1,9 +1,9 @@
 {
   "validator": "kairos-validate",
   "version": "0.1.0",
-  "checkedAt": "2026-10-30T21:49:06.421Z",
+  "checkedAt": "2026-10-30T22:16:00.812Z",
   "model": "order-and-track.kairos.yml",
-  "modelSha256": "d60fdf96b0da108bb894fbbd27aa49a320c5c043098e5fda500ecf38cc89847d",
+  "modelSha256": "9a740617dff36c0f886ba77205135bde710bc7325ac531a343b686a170f6b0d7",
   "intention": "to-be",
   "target": "prototype",
   "result": "fail",
