@@ -29,7 +29,7 @@ open questions of PR #26 (typed values, agent release, deciding by role) are dro
 
 ## The flow
 
-27 slices in five chapters, with 134 given/when/then scenarios (142 examples: five outlines run
+27 slices in five chapters, with 135 given/when/then scenarios (143 examples: five outlines run
 2, 5, 2, 2 and 2 times), in three contexts: Product Data (the Product Lifecycle Service, drone-web
 D-037), Catalog Governance (drone-web D-029) and the review agent (`ReviewAgent`, outside the
 model). They talk only through published messages: `ChangeForReview` from Product Data to
@@ -90,7 +90,7 @@ policy level, and raises it to the policy level when it is lower (GOV-004, CJ D2
 
 **Who decides.** A case gets an assigned reviewer before a person decides it (GOV-006). Any
 person who holds the reviewer role for the case's risk level may then approve or reject it, not
-only the assigned reviewer; the manager who asked never reviews or approves it (GOV-007, GOV-012, drone-web D-039).
+only the assigned reviewer; the manager who asked never reviews, approves or rejects it (GOV-007, GOV-012, drone-web D-039).
 Catalog Governance has one reviewer role per risk level, and a person may hold several. The roles
 come from the reviewer directory, a port to a system outside the model
 (`ReviewerDirectory.ReviewerRoles`); `ApproveChange` and `RejectChange` read the roles of the
@@ -177,7 +177,7 @@ Not in this flow: JS1 bulk ingestion (Bulk Ingestion API). It is a flow of its o
 | GOV-004 | The Governance policy sets the lowest risk level of a case; the requester cannot lower it | active (CJ D2a) |
 | GOV-005 | The policy levels: details-change low, specification-change medium, lifecycle-change high | proposed (the exact table) |
 | GOV-006 | A person decides a case only after a reviewer is assigned to it | active (CJ D1a) |
-| GOV-007 | The manager who asked for a change does not review or approve it | active (CJ D1a, four eyes) |
+| GOV-007 | The manager who asked for a change does not review, approve or reject it | active (CJ D1a, four eyes) |
 | GOV-008 | The agent alone approves only a low-risk change; a person confirms a medium-risk change and decides a high- or critical-risk change | active (CJ D2a, D3b) |
 | GOV-009 | An approval case that nobody decides within the review period expires | active (CJ D10b) |
 | GOV-010 | The review period is 14 days | proposed (the number N) |
@@ -248,10 +248,10 @@ node ../event-model-factory/dsl/kairos/tools/validate.mjs --receipt design/catal
 node ../event-model-factory/dsl/kairos/tools/render.mjs design/catalog-management-v2/eventmodel/product-lifecycle.kairos.yml
 ```
 
-At event-model-factory 0d92369 the validator reports 0 errors, 0 warnings and 9 info (27 slices,
-134 tests, 22 events, 9 views, target prototype). The factory warnings of earlier versions (F9 on
+At event-model-factory fd3a2ac the validator reports 0 errors, 0 warnings and 9 info (27 slices,
+135 tests, 22 events, 9 views, target prototype). The factory warnings of earlier versions (F9 on
 `RequestProductChange`, F30 on the three agent translations, at 7927a4e) are not reported at
-0d92369.
+0d92369 or fd3a2ac.
 
 The info findings are K33 (three pairs of events with almost the same fields; each pair is two
 different facts) and M5 on the six translations (a message from another context cannot prove
