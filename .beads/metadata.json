@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "drone_web",
+  "project_id": "ced3fb5e-4bca-4518-8828-d7d2114ad5fe"
+}
