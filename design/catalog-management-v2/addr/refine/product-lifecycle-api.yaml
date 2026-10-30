@@ -75,8 +75,8 @@ paths:
       description: >-
         On a draft the values apply at once. On an active product they apply only after Catalog
         Governance released a specification change for it, and only with the values of that
-        released request (PLC-012, drone-web D-039). The status code on an active product is open
-        (galaxitech-website-k93).
+        released request (PLC-012, drone-web D-039). The status code on an active product (200 or
+        202) is still open.
       tags: [ProductLifecycle]
       parameters:
         - $ref: '#/components/parameters/productId'
@@ -148,7 +148,7 @@ paths:
         On a draft the values apply at once. On an active product a change of name or short
         description applies only after Catalog Governance released a details change for it, and
         only with the values of that released request (PLC-012, drone-web D-039). The status code on
-        an active product is open (galaxitech-website-k93).
+        an active product (200 or 202) is still open.
       tags: [ProductLifecycle]
       parameters:
         - $ref: '#/components/parameters/productId'

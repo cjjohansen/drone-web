@@ -54,7 +54,7 @@ A change on an active product carries its new values as typed fields. Governance
 made from them, and Product Data applies only those values after the release. The JS1 event model
 (`../../eventmodel/`) holds the rules: PLC-012 (typed values), GOV-012 (decide by reviewer role) and
 GOV-013 (an agent approval releases the gate). The operation that requests a specification or details
-change on an active product is open (`galaxitech-website-k93`).
+change on an active product is open (200 or 202 is still to be decided).
 
 ```mermaid
 sequenceDiagram
