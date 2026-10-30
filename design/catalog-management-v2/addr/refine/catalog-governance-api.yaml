@@ -1,7 +1,17 @@
 openapi: 3.1.0
 info:
   title: Catalog Governance API
-  description: Approval cases, decisions, and publication gate release.
+  description: >-
+    Approval cases, decisions, and publication gate release. The owning boundary makes the text a
+    reviewer reads (`requestedChange`) from the typed values of its change request and keeps those
+    values; Governance approves the text. The risk level sets the review route: the review agent
+    approves a low-risk change, and its approval also releases the gate and tells the reviewers;
+    the agent checks a medium-risk change and a person confirms it; a person decides a high- or
+    critical-risk change. Any person who holds the reviewer role for the case's risk level may
+    decide, never the person who asked for the change. The reviewer roles come from a reviewer
+    directory outside this API. Each release, by a reviewer or by an agent approval, is announced
+    to the owning boundary once. Source: drone-web D-039 and the JS1 event model
+    (design/catalog-management-v2/eventmodel/).
   version: 1.0.0
   contact: { name: Drone Web API Team }
   license: { name: Proprietary, url: https://example.com/terms }
@@ -53,6 +63,14 @@ paths:
   /approval-cases/{approvalCaseId}/decisions:
     post:
       summary: Record approval decision
+      description: >-
+        A person approves or rejects the case. The case must have an assigned reviewer, but any
+        person who holds the reviewer role for the case's risk level may decide it (GOV-012). The
+        person who asked for the change may not decide it (GOV-007). The API reads the roles of the
+        signed-in person from the reviewer directory and records them on the decision. A low- or
+        medium-risk case waits for the review agent before a person approves it; a person may
+        reject it at any time before a decision. The review agent's own verdicts do not use this
+        operation: they arrive as messages from the agent.
       operationId: recordApprovalDecision
       tags: [Governance]
       parameters:
@@ -71,11 +89,25 @@ paths:
       responses:
         '201': { description: Decision recorded, content: { application/json: { schema: { $ref: '#/components/schemas/ApprovalDecisionResult' } } } }
         '400': { $ref: '#/components/responses/BadRequest' }
+        '403':
+          description: >-
+            The person may not decide this case: they do not hold the reviewer role for its risk
+            level (no-reviewer-role-for-the-risk), or they asked for the change
+            (requester-cannot-approve).
+          content: { application/problem+json: { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
         '404': { $ref: '#/components/responses/NotFound' }
-        '409': { $ref: '#/components/responses/Conflict' }
+        '409':
+          description: >-
+            The case is already decided, has no assigned reviewer, still waits for the review agent,
+            or expired.
+          content: { application/problem+json: { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
   /approval-cases/{approvalCaseId}/publication-gate-releases:
     post:
       summary: Release publication gate
+      description: >-
+        A reviewer releases the gate of a change that a person approved. A change the review agent
+        approved needs no release: the agent's approval released its gate (GOV-013), and this
+        operation answers 409 for it.
       operationId: releasePublicationGate
       tags: [Governance]
       parameters:
@@ -85,7 +117,11 @@ paths:
         '201': { description: Publication gate released, content: { application/json: { schema: { $ref: '#/components/schemas/PublicationGate' } } } }
         '400': { $ref: '#/components/responses/BadRequest' }
         '404': { $ref: '#/components/responses/NotFound' }
-        '409': { $ref: '#/components/responses/Conflict' }
+        '409':
+          description: >-
+            The case is not approved, or its gate is already released, by a reviewer or by the
+            agent's approval.
+          content: { application/problem+json: { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
 components:
   securitySchemes:
     apiKey: { type: apiKey, in: header, name: X-API-Key }
@@ -116,8 +152,33 @@ components:
         approvalCaseId: { type: string, format: uuid }
         changeType: { type: string }
         sourceReferenceId: { type: string }
-        riskLevel: { type: string, enum: [low, medium, high] }
+        riskLevel: { type: string, enum: [low, medium, high, critical] }
         status: { type: string, enum: [pending, approved, rejected, released, expired] }
+        requestedChange:
+          type: string
+          description: >-
+            What the reviewer reads, made by the owning boundary from the typed values of its
+            change request (for example "maxCurrent 41.5 A to 38.0 A"). Governance approves this
+            text; the owning boundary applies only the values it was made from.
+        reviewRoute:
+          type: string
+          enum: [agent, agent-then-person, person]
+          description: Who decides, from the risk level. low is agent, medium is agent-then-person, high and critical are person.
+        reviewerId:
+          type: string
+          format: uuid
+          description: The assigned reviewer. Any person with the reviewer role for the risk level may still decide.
+        decidedBy:
+          type: string
+          description: The person who decided, or review agent when the agent approved a low-risk change.
+        gate: { type: string, enum: [locked, released] }
+        releasedBy:
+          type: string
+          description: The reviewer who released the gate, or review agent when the agent's approval released it.
+        reviewersToldAt:
+          type: string
+          format: date-time
+          description: When the reviewers were told of an agent approval. Absent for any other case.
     ApprovalCaseSubmission:
       type: object
       required: [changeType, boundarySource, sourceReferenceId, riskLevel, rationale]
@@ -125,8 +186,14 @@ components:
         changeType: { type: string }
         boundarySource: { type: string }
         sourceReferenceId: { type: string }
-        riskLevel: { type: string, enum: [low, medium, high] }
+        riskLevel: { type: string, enum: [low, medium, high, critical] }
         rationale: { type: string }
+        requestedChange:
+          type: string
+          description: >-
+            The text the reviewer reads, made by the owning boundary from the typed values of its
+            change request. The owning boundary keeps the values and applies only those after the
+            release.
     ApprovalDecisionResult:
       type: object
       required: [approvalCaseId, decisionId, status]
@@ -134,12 +201,21 @@ components:
         approvalCaseId: { type: string, format: uuid }
         decisionId: { type: string, format: uuid }
         status: { type: string, enum: [approved, rejected] }
+        decidedBy: { type: string, description: The signed-in person who decided. }
+        deciderRiskLevels:
+          type: array
+          description: The risk levels whose reviewer role the person held when they decided, from the reviewer directory.
+          items: { type: string, enum: [low, medium, high, critical] }
+        decidedAt: { type: string, format: date-time }
     PublicationGate:
       type: object
       required: [publicationGateId, approvalCaseId, releasedAt]
       properties:
         publicationGateId: { type: string, format: uuid }
         approvalCaseId: { type: string, format: uuid }
+        releasedBy:
+          type: string
+          description: The reviewer who released the gate, or review agent when the agent's approval released it.
         releasedAt: { type: string, format: date-time }
     ProblemDetails:
       type: object

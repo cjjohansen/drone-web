@@ -301,7 +301,11 @@
 | boundarySource | Originating boundary |
 | sourceReferenceId | Identifier of proposed change entity |
 | riskLevel | low, medium, high, critical |
-| status | pending, approved, rejected, released, expired (expired: no decision within the review period) |
+| status | pending, approved, rejected, released, expired (expired: no decision within the review period). An agent approval of a low-risk case goes from pending to released at once |
+| requestedChange | The text the reviewer reads, made by the owning boundary from the typed values of its change request. Governance approves this text; the owning boundary applies only the values it was made from (drone-web D-039) |
+| reviewRoute | agent (low), agent-then-person (medium), person (high, critical) |
+| reviewerId | Assigned reviewer. Any person with the reviewer role for the risk level may still decide |
+| reviewersToldAt | Optional: when the reviewers were told of an agent approval |
 | submittedBy | Actor that submitted case |
 | submittedAt | Submission timestamp |
 | decidedAt | Optional decision timestamp |
@@ -315,11 +319,14 @@
 | decisionId | Unique decision identifier |
 | approvalCaseId | Case reference |
 | decision | approve, reject |
-| reviewerId | Reviewer reference |
+| decidedBy | The person who decided, or the review agent for an agent approval. Not necessarily the assigned reviewer; never the person who asked for the change |
+| deciderRiskLevels | The risk levels whose reviewer role the person held when deciding, from the reviewer directory (GOV-012) |
 | rationale | Decision rationale |
 | decidedAt | Decision timestamp |
 
 **Relationships:** belongs to one ApprovalCase
+
+**Reviewer roles:** Catalog Governance has one reviewer role per risk level (low, medium, high, critical), and a person may hold several. The roles live in a reviewer directory outside the API; a decision reads them and records them (drone-web D-039).
 
 ### PublicationGate
 
@@ -328,7 +335,7 @@
 | gateId | Unique gate identifier |
 | approvalCaseId | Case reference |
 | gateState | locked, released |
-| releasedBy | Optional releaser reference |
+| releasedBy | Optional releaser reference: the reviewer, or the review agent when its approval released the gate (GOV-013) |
 | releasedAt | Optional release timestamp |
 
 **Relationships:** belongs to one ApprovalCase
