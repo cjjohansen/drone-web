@@ -1,14 +1,14 @@
 {
   "validator": "kairos-validate",
   "version": "0.1.0",
-  "checkedAt": "2026-10-29T08:50:12.461Z",
+  "checkedAt": "2026-10-30T21:49:06.421Z",
   "model": "order-and-track.kairos.yml",
-  "modelSha256": "75f7ba6630b91aced04d6df301d7bb0a8377c8926e69c48167a017bb1a0cb03c",
+  "modelSha256": "d60fdf96b0da108bb894fbbd27aa49a320c5c043098e5fda500ecf38cc89847d",
   "intention": "to-be",
   "target": "prototype",
-  "result": "pass",
-  "errors": 0,
-  "warnings": 9,
+  "result": "fail",
+  "errors": 1,
+  "warnings": 0,
   "missing": 0,
   "checked": {
     "contexts": 6,
@@ -19,7 +19,7 @@
     "examples": 4
   },
   "rules": {
-    "run": 89,
+    "run": 58,
     "skipped": 0
   }
 }
