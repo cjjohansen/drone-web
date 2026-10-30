@@ -1,5 +1,5 @@
 # Drone Web catalog management: draft, review, publish, change and retire a product (JS1).
-# Written with the kairos-author skill of event-model-factory (bead galaxitech-website-498).
+# Written with the kairos-author skill of event-model-factory.
 #
 # The flow in words (chosen by CJ, 2026-10-28: "JS1 Product Lifecycle"; review rules from CJ's
 # answers of 2026-10-29, D1 to D10 in the README):
@@ -825,7 +825,7 @@ slices:
       PublishProductForm (PublishProduct), ProductDetailsForm (ReviseProductDetails),
       DiscontinueProductForm (DiscontinueProduct) and ReplacementForm (LinkReplacementProduct).
       Each task starts with the page's productId. No field on the page is edited directly
-      (emf-vrf, drone-web D-038). ADDR: align/activity-steps.md JS1 ("Search/details projections update", "Product detail replacement section updates"); design/api-design.md has no operation that reads one product (proposed).
+      (drone-web D-038). ADDR: align/activity-steps.md JS1 ("Search/details projections update", "Product detail replacement section updates"); design/api-design.md has no operation that reads one product (proposed).
     screen:
       name: ProductDetailPage
       actor: ProductLifecycleManager
@@ -1425,7 +1425,7 @@ slices:
       approvalCaseId, so the gate shows as the `gate` field of its case. The page is the case's
       task menu. Its tasks are AssignReviewerForm (AssignReviewer), ApproveForm (ApproveChange),
       RejectForm (RejectChange) and ReleaseForm (ReleaseChange). Each task starts with the page's
-      approvalCaseId. No field on the page is edited directly (emf-vrf, drone-web D-038).
+      approvalCaseId. No field on the page is edited directly (drone-web D-038).
       ADDR: Catalog Governance API ("expose case status"), ApprovalCase and PublicationGate resources; design/api-design.md has no operation that reads one case (proposed).
     screen:
       name: ApprovalCaseDetailPage
@@ -3085,8 +3085,8 @@ slices:
         title: The replacement product exists and is active
         description: >-
           CJ D8a (2026-10-29). Not checked yet: the decision would have to load the replacement
-          product under the field name replacementProductId, which Kairos check K27 does not allow
-          (galaxitech-website-k1x). The test LinksTheV3AsTheVeloxSuccessor names the rule but
+          product under the field name replacementProductId, which Kairos check K27 does not allow.
+          The test LinksTheV3AsTheVeloxSuccessor names the rule but
           cannot show the replacement's state.
         status: proposed
     errors:

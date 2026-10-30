@@ -23,8 +23,8 @@ replace them.
 **Decision numbers.** This repo (`.ralph/agent/decisions.md`) and the galaxitech-website repo
 (`DECISIONS.md`) number their decisions separately, and both have a D-037 and a D-038. This
 folder therefore always names the repo: "drone-web D-037", "galaxitech-website D-038". CJ's
-answers to the open questions of this model are "CJ D1a" to "CJ D10b" (2026-10-29, bead
-`galaxitech-website-498`); they are not entries in either decision log. CJ's later answers to the
+answers to the open questions of this model are "CJ D1a" to "CJ D10b" (2026-10-29); they are
+not entries in either decision log. CJ's later answers to the
 open questions of PR #26 (typed values, agent release, deciding by role) are drone-web D-039.
 
 ## The flow
@@ -225,7 +225,7 @@ Not in this flow: JS1 bulk ingestion (Bulk Ingestion API). It is a flow of its o
   or `ReviseProductDetails`, which accept only those values.
 - The request carries `targetState` and typed new values; ADDR's `setProductLifecycleState()`
   has only `targetState` and `reason`. The ADDR operations for a reviewed specification or details
-  change are open (`galaxitech-website-k93`).
+  change are open (the 202 question below).
 - An agent approval releases the gate without `releasePublicationGate()`, and the reviewer roles
   per risk level come from a reviewer directory that ADDR does not name (drone-web D-039).
 
@@ -234,9 +234,9 @@ Not in this flow: JS1 bulk ingestion (Bulk Ingestion API). It is a flow of its o
 Questions 1 and 2 of PR #26 are answered (drone-web D-039, above). Two remain:
 
 1. Do `updateProductSpecifications()` and `updateProductAttributes()` also answer `202 Accepted`
-   on an active product (CJ D3b)? The ADDR files still give `200 OK` (`galaxitech-website-k93`).
+   on an active product (CJ D3b)? The ADDR files still give `200 OK`; the question is still open.
 2. The OpenAPI `riskLevel` enum has no `critical`; `define/resources.md` has it
-   (`galaxitech-website-bhr`, in progress).
+   (the fix is in progress in PR #27).
 
 ## Validate and render
 
@@ -256,13 +256,13 @@ At event-model-factory fd3a2ac the validator reports 0 errors, 0 warnings and 9 
 The info findings are K33 (three pairs of events with almost the same fields; each pair is two
 different facts) and M5 on the six translations (a message from another context cannot prove
 that the row exists). Each translation has a test that ignores a message for an unknown product or
-case (emf-m9a.67: views ignore updates for rows they do not have).
+case (Kairos v0 views ignore updates for rows they do not have).
 
 ## What Kairos cannot say yet
 
 - A decision cannot load a second thing of the same kind under another field name. The replacement
   in `LinkReplacementProduct` is a product, but the command names it `replacementProductId`. K27
-  rejects a `given` event for it, so the model does not check PLC-011 (`galaxitech-website-k1x`).
+  rejects a `given` event for it, so the model does not check PLC-011.
 - One slice, one command. CJ's example of a typed command, "ApproveChange or EscalateChange", is
   one choice between commands. Kairos gives each slice one command, so the agent's answer goes to
   three translation slices on the same message, each with its own command and a test that it
@@ -282,8 +282,8 @@ case (emf-m9a.67: views ignore updates for rows they do not have).
 - A task menu. Kairos has no link from a detail view or its screen to the command screens that
   start from it. A `lookup` points only at a list view (K7). The model names the tasks in the
   description of `ShowProductDetails` and `ShowApprovalCaseDetails`, and each command screen says
-  that its id comes from the detail page. The menu belongs in a Tessera file
-  (`galaxitech-website-sa8`).
-- The signed-in user as the source of a value (emf-bzu.31). `requestedBy`, `decidedBy` and
+  that its id comes from the detail page. The menu belongs in a Tessera file,
+  which does not exist yet.
+- The signed-in user as the source of a value. `requestedBy`, `decidedBy` and
   `releasedBy` are screen fields with a description. The reviewer roles of the signed-in person
   come from the reviewer directory port, not from the sign-in.

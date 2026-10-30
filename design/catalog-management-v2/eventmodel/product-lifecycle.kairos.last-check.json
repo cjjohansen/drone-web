@@ -1,9 +1,9 @@
 {
   "validator": "kairos-validate",
   "version": "0.1.0",
-  "checkedAt": "2026-10-30T06:52:14.906Z",
+  "checkedAt": "2026-10-30T21:51:21.586Z",
   "model": "product-lifecycle.kairos.yml",
-  "modelSha256": "faa0300d74e7c7e48d14f82070505e1005c2cf7492fd2a80d28f2eeb111afc2d",
+  "modelSha256": "2ceb76554810761bbe25e3fde94e79c00b2b6e836330d362859573daf585128a",
   "intention": "to-be",
   "target": "prototype",
   "result": "pass",
