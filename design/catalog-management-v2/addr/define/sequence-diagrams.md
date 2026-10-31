@@ -23,8 +23,8 @@ sequenceDiagram
     PLM->>ProductApi: updateProductSpecifications(productId, specs)
     ProductApi-->>PLM: updated specification summary
 
-    PLM->>GovApi: submitApprovalCase(changeType=lifecycle-change, sourceReferenceId=productId)
-    GovApi-->>PLM: approvalCaseId, status=pending
+    PLM->>ProductApi: setProductLifecycleState(productId, targetState=active, reason)
+    ProductApi-->>PLM: 202 Accepted, approvalCaseId, status=pending
 
     PLM->>GovApi: recordApprovalDecision(approvalCaseId, approve)
     GovApi-->>PLM: status=approved
@@ -32,8 +32,8 @@ sequenceDiagram
     PLM->>GovApi: releasePublicationGate(approvalCaseId)
     GovApi-->>PLM: gateState=released
 
-    PLM->>ProductApi: setProductLifecycleState(productId, targetState=active)
-    ProductApi-->>PLM: lifecycle transition result
+    PLM->>ProductApi: publishProduct(productId)
+    ProductApi-->>PLM: lifecycleState=active
 
     PLM->>ProductApi: discontinueProduct(productId, reason)
     ProductApi-->>PLM: lifecycleState=discontinued
@@ -53,8 +53,10 @@ sequenceDiagram
 A change on an active product carries its new values as typed fields. Governance approves the text
 made from them, and Product Data applies only those values after the release. The JS1 event model
 (`../../eventmodel/`) holds the rules: PLC-012 (typed values), GOV-012 (decide by reviewer role) and
-GOV-013 (an agent approval releases the gate). The operation that requests a specification or details
-change on an active product is open (200 or 202 is still to be decided).
+GOV-013 (an agent approval releases the gate). On an active product, updateProductSpecifications()
+and updateProductAttributes() are the requests: they answer `202 Accepted` with a `Location` to the
+approval case, and the client reads the case until it is released, rejected or expired (drone-web
+D-041). Which step applies the released values is open.
 
 ```mermaid
 sequenceDiagram
@@ -65,10 +67,11 @@ sequenceDiagram
     participant Agent as ReviewAgent
     participant Directory as ReviewerDirectory
 
-    PLM->>ProductApi: request change(productId, specification-change, all new values, reason)
+    PLM->>ProductApi: updateProductSpecifications(productId, new values, reason, riskLevel)
     Note over ProductApi: refuses a request without all its new values (NewValuesMissing)
     ProductApi->>GovApi: submitApprovalCase(changeType, sourceReferenceId, riskLevel, requestedChange)
     GovApi-->>ProductApi: approvalCaseId, status=pending, reviewRoute
+    ProductApi-->>PLM: 202 Accepted, Location: approval case, product unchanged
 
     alt low risk
         GovApi->>Agent: assess(requestedChange)
@@ -84,9 +87,10 @@ sequenceDiagram
         GovApi-->>Reviewer: gateState=released
     end
 
+    PLM->>GovApi: getApprovalCase(approvalCaseId) (until released, rejected or expired)
+    GovApi-->>PLM: status
     GovApi-->>ProductApi: change released (once, both routes)
-    PLM->>ProductApi: updateProductSpecifications(productId, specs)
-    ProductApi-->>PLM: applied, or conflict when the values differ from the approved ones (ValuesDifferFromTheApprovedOnes)
+    Note over ProductApi: only the values of the request apply (PLC-012); the applying step is open
 ```
 
 ## JS2: Technical Documentation Management

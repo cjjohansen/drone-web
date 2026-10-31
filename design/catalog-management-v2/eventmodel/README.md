@@ -224,8 +224,9 @@ Not in this flow: JS1 bulk ingestion (Bulk Ingestion API). It is a flow of its o
   of the request (PLC-012); after the release the manager applies them in `RecordSpecifications`
   or `ReviseProductDetails`, which accept only those values.
 - The request carries `targetState` and typed new values; ADDR's `setProductLifecycleState()`
-  has only `targetState` and `reason`. The ADDR operations for a reviewed specification or details
-  change are open (the 202 question below).
+  has only `targetState` and `reason`. For a reviewed specification or details change, the
+  requests are `updateProductSpecifications()` and `updateProductAttributes()` on an active
+  product (drone-web D-041).
 - An agent approval releases the gate without `releasePublicationGate()`, and the reviewer roles
   per risk level come from a reviewer directory that ADDR does not name (drone-web D-039).
 
@@ -233,8 +234,10 @@ Not in this flow: JS1 bulk ingestion (Bulk Ingestion API). It is a flow of its o
 
 Questions 1 and 2 of PR #26 are answered (drone-web D-039, above). Two remain:
 
-1. Do `updateProductSpecifications()` and `updateProductAttributes()` also answer `202 Accepted`
-   on an active product (CJ D3b)? The ADDR files still give `200 OK`; the question is still open.
+1. Answered: `updateProductSpecifications()` and `updateProductAttributes()` answer `202 Accepted`
+   on an active product, with a `Location` to the approval case (CJ D3b, drone-web D-041). Still
+   open: which step applies the released values, Product Data on `ChangeReleased` or the manager
+   through a separate operation (today `RecordSpecifications` and `ReviseProductDetails`).
 2. The OpenAPI `riskLevel` enum has no `critical`; `define/resources.md` has it
    (the fix is in progress in PR #27).
 

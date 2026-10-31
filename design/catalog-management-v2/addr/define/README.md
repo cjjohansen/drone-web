@@ -6,7 +6,7 @@
 
 ## Summary
 
-8 admin API boundaries identified, 42 operations profiled, and 24 resources modeled for write-side catalog management.
+8 admin API boundaries identified, 44 operations profiled, and 24 resources modeled for write-side catalog management.
 
 ### API Boundaries
 

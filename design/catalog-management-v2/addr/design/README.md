@@ -12,7 +12,7 @@ The Design phase translates the Define phase API profiles into high-level HTTP A
 | File | Description |
 |------|-------------|
 | [style-guide.md](../../../style-guide.md) | Shared style guidance extended with write-side conventions (idempotency keys, optimistic concurrency, async command handling) |
-| [api-design.md](api-design.md) | High-level API design tables for all 8 write-side boundaries (42 operations) |
+| [api-design.md](api-design.md) | High-level API design tables for all 8 write-side boundaries (44 operations) |
 | [validation.md](validation.md) | Validation report cross-referencing Define API profiles to Design HTTP mappings |
 
 ## Summary
