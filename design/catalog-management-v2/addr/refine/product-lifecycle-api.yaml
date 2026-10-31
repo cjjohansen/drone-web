@@ -73,10 +73,15 @@ paths:
       operationId: updateProductSpecifications
       summary: Update technical specifications
       description: >-
-        On a draft the values apply at once. On an active product they apply only after Catalog
-        Governance released a specification change for it, and only with the values of that
-        released request (PLC-012, drone-web D-039). The status code on an active product (200 or
-        202) is still open.
+        On a draft the values apply at once (200). On an active product every change goes through
+        Catalog Governance review (CJ D3b, drone-web D-041): the request becomes a specification
+        change request with all five new values (the values not in the patch keep their recorded
+        value), Governance opens an approval case for it, and the operation answers 202 Accepted.
+        The `Location` header and the `approvalCase` link point to that approval case; the client
+        reads it (getApprovalCase) until its status is `released`, `rejected` or `expired`. The
+        product keeps its values until the release, and only the values of the request take
+        effect (PLC-009, PLC-012, drone-web D-039). On a discontinued product the specifications
+        are frozen (PLC-010).
       tags: [ProductLifecycle]
       parameters:
         - $ref: '#/components/parameters/productId'
@@ -89,20 +94,28 @@ paths:
               $ref: '#/components/schemas/SpecificationPatch'
       responses:
         '200':
-          description: Product updated
+          description: The product is a draft; the values apply at once
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Product'
+        '202':
+          $ref: '#/components/responses/ChangeAccepted'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          description: >-
+            Invalid values, or the product is active and the request has no `reason` or
+            `riskLevel`.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
         '404':
           $ref: '#/components/responses/NotFound'
         '409':
           description: >-
-            The product is active and no released change of this kind waits for it
-            (change-not-released), or the values differ from the new values in the released
-            request (values-differ-from-the-approved-ones).
+            Another change request for the product is still in review
+            (request-already-in-review, PLC-006), or the product is discontinued
+            (specifications-frozen, PLC-010).
           content:
             application/problem+json:
               schema:
@@ -115,8 +128,9 @@ paths:
       summary: Request a lifecycle transition for Governance review
       description: >-
         The transition is a change request. Catalog Governance opens an approval case for it, and
-        the product keeps its state until Governance releases the change. A released
-        discontinuation takes effect through discontinueProduct.
+        the product keeps its state until Governance releases the change. A released activation
+        takes effect through publishProduct, a released discontinuation through
+        discontinueProduct.
       tags: [ProductLifecycle]
       parameters:
         - $ref: '#/components/parameters/productId'
@@ -145,10 +159,15 @@ paths:
       operationId: updateProductAttributes
       summary: Update non-spec product attributes
       description: >-
-        On a draft the values apply at once. On an active product a change of name or short
-        description applies only after Catalog Governance released a details change for it, and
-        only with the values of that released request (PLC-012, drone-web D-039). The status code on
-        an active product (200 or 202) is still open.
+        On a draft or a discontinued product the values apply at once (200; PLC-010, CJ D4a). On
+        an active product every change goes through Catalog Governance review (CJ D3b, drone-web
+        D-041): the request becomes a details change request with the new name and short
+        description (a value not in the patch keeps its current value), Governance opens an
+        approval case for it, and the operation answers 202 Accepted. The `Location` header and
+        the `approvalCase` link point to that approval case; the client reads it (getApprovalCase)
+        until its status is `released`, `rejected` or `expired`. The product keeps its details
+        until the release, and only the values of the request take effect (PLC-009, PLC-012,
+        drone-web D-039).
       tags: [ProductLifecycle]
       parameters:
         - $ref: '#/components/parameters/productId'
@@ -161,26 +180,60 @@ paths:
               $ref: '#/components/schemas/ProductAttributesPatch'
       responses:
         '200':
-          description: Product updated
+          description: The product is a draft or discontinued; the values apply at once
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Product'
+        '202':
+          $ref: '#/components/responses/ChangeAccepted'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          description: >-
+            Invalid values, or the product is active and the request has no `reason` or
+            `riskLevel`.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
         '404':
           $ref: '#/components/responses/NotFound'
         '409':
           description: >-
-            The product is active and no released change of this kind waits for it
-            (change-not-released), or the values differ from the new values in the released
-            request (values-differ-from-the-approved-ones).
+            Another change request for the product is still in review
+            (request-already-in-review, PLC-006).
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         '412':
           $ref: '#/components/responses/PreconditionFailed'
+  /products/{productId}/publications:
+    post:
+      operationId: publishProduct
+      summary: Apply a released activation
+      description: >-
+        The effect of a setProductLifecycleState request for `active`, after Catalog Governance
+        released it: the product becomes active and the product-records stream carries it to the
+        shop (PublishProduct in the JS1 event model, CJ D6a). Answers 409 when no released
+        activation waits for the product (not-cleared-for-release, PLC-007). One release allows
+        one activation.
+      tags: [ProductLifecycle]
+      parameters:
+        - $ref: '#/components/parameters/productId'
+        - $ref: '#/components/parameters/idempotencyKey'
+      responses:
+        '201':
+          description: Product active
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LifecycleTransitionResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
   /products/{productId}/discontinuations:
     post:
       operationId: discontinueProduct
@@ -322,6 +375,35 @@ components:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetails'
+    ChangeAccepted:
+      description: >-
+        The product is active, so the change is a change request in Catalog Governance review
+        (drone-web D-041). The product is unchanged. Read the approval case at `Location` to learn
+        the outcome.
+      headers:
+        Location:
+          description: >-
+            The approval case of the change request in the Catalog Governance API
+            (getApprovalCase). The client reads it until its status is `released`, `rejected` or
+            `expired`.
+          required: true
+          schema:
+            type: string
+            format: uri
+            example: https://api.example.com/catalog-governance/v1/approval-cases/03724352-c0cd-4fa7-ac65-bddf8df0474d
+        Retry-After:
+          description: >-
+            Optional. Seconds the client waits before it reads the approval case for the first
+            time. The server may send it when it can estimate the review time, for example for a
+            low-risk change that the review agent decides.
+          schema:
+            type: integer
+            minimum: 1
+            example: 30
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProductChangeAccepted'
   schemas:
     Product:
       type: object
@@ -356,12 +438,75 @@ components:
           additionalProperties: true
     SpecificationPatch:
       type: object
-      description: Partial specification attributes
+      description: >-
+        Partial specification attributes. On an active product the request also carries `reason`
+        and `riskLevel`, because it becomes a change request (drone-web D-041).
+      properties:
+        reason:
+          type: string
+          description: Why the change is asked for. Required on an active product.
+        riskLevel:
+          $ref: '#/components/schemas/RiskLevel'
       additionalProperties: true
     ProductAttributesPatch:
       type: object
-      description: Partial product attribute update
+      description: >-
+        Partial product attribute update. On an active product the request also carries `reason`
+        and `riskLevel`, because it becomes a change request (drone-web D-041).
+      properties:
+        reason:
+          type: string
+          description: Why the change is asked for. Required on an active product.
+        riskLevel:
+          $ref: '#/components/schemas/RiskLevel'
       additionalProperties: true
+    RiskLevel:
+      type: string
+      enum: [low, medium, high, critical]
+      description: >-
+        The risk level the manager sees. Required on an active product. Catalog Governance may
+        raise it to its policy level, never lower it.
+    ProductChangeAccepted:
+      type: object
+      description: >-
+        The status of a change request on an active product. The values apply only after the
+        release, and only these values (PLC-012).
+      required: [approvalCaseId, changeType, status, requestedChange, product, links]
+      properties:
+        approvalCaseId:
+          type: string
+          format: uuid
+        changeType:
+          type: string
+          enum: [specification-change, details-change]
+        status:
+          type: string
+          enum: [pending]
+          description: The approval case status when the request was accepted.
+        requestedChange:
+          type: string
+          description: The text the reviewer reads, made from the typed new values.
+          example: maxCurrent 41.5 A to 38.0 A
+        product:
+          $ref: '#/components/schemas/Product'
+        links:
+          type: object
+          required: [approvalCase]
+          properties:
+            approvalCase:
+              $ref: '#/components/schemas/Link'
+            product:
+              $ref: '#/components/schemas/Link'
+    Link:
+      type: object
+      required: [href]
+      properties:
+        href:
+          type: string
+          format: uri
+        method:
+          type: string
+          example: GET
     LifecycleTransitionRequest:
       type: object
       required: [targetState, reason]

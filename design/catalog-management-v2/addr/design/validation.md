@@ -15,19 +15,19 @@ Cross-referenced the high-level API design (`api-design.md`) against:
 
 ## Operation Coverage
 
-All 42 Define operations are mapped to HTTP designs.
+All 44 Define operations are mapped to HTTP designs.
 
 | Boundary | Define Operations | Covered in Design |
 |----------|-------------------|-------------------|
-| Product Lifecycle API | 7 | 7 |
+| Product Lifecycle API | 8 | 8 |
 | Technical Documentation API | 5 | 5 |
 | Pricing and Promotions API | 5 | 5 |
 | Inventory and Availability API | 6 | 6 |
 | Category and Faceting API | 7 | 7 |
 | Compatibility Rules API | 5 | 5 |
-| Catalog Governance API | 4 | 4 |
+| Catalog Governance API | 5 | 5 |
 | Bulk Ingestion API | 3 | 3 |
-| **Total** | **42** | **42** |
+| **Total** | **44** | **44** |
 
 ## Style Guide Compliance
 

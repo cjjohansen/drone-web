@@ -15,6 +15,8 @@
 
 All 8 OpenAPI 3.1 files pass Redocly lint.
 
+Re-run on 2026-10-31 for `product-lifecycle-api.yaml` and `catalog-governance-api.yaml` (drone-web D-041: `publishProduct()`, `getApprovalCase()`, 202 Accepted on an active product) with `@redocly/cli` 2.72.1: both valid. Each shows one warning, `no-server-example.com`, a rule of this Redocly version; the files on main show the same warning.
+
 | Spec | Result |
 |------|--------|
 | `product-lifecycle-api.yaml` | Valid |
@@ -36,16 +38,16 @@ All 8 OpenAPI 3.1 files pass Redocly lint.
 
 The Refine OpenAPI specs cover all Design operations:
 
-- Product Lifecycle API: 7/7
+- Product Lifecycle API: 8/8
 - Technical Documentation API: 5/5
 - Pricing and Promotions API: 5/5
 - Inventory and Availability API: 6/6
 - Category and Faceting API: 7/7
 - Compatibility Rules API: 5/5
-- Catalog Governance API: 4/4
+- Catalog Governance API: 5/5
 - Bulk Ingestion API: 3/3
 
-**Total:** 42/42 operations mapped and specified.
+**Total:** 44/44 operations mapped and specified.
 
 ## Artifact Packaging Check
 
