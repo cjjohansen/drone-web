@@ -35,7 +35,7 @@ Using the Align v2 boundary map, job stories, and activity steps, the following 
   - Product must have required identity and baseline attributes before activation.
   - Lifecycle transitions must follow an allowed state machine.
   - Discontinued products cannot transition back to active without explicit reactivation policy.
-  - A change request carries its values as typed fields: a lifecycle change its target state, a specification change all its new specification values, a details change the new name and short description. A request without all its new values is refused. The product makes the text the reviewer reads from these values, and after the release it applies only these values (drone-web D-039, rule PLC-012 in the JS1 event model).
+  - A change request carries its values as typed fields: a lifecycle change its target state, a specification change all its new specification values, a details change the new name and short description. A request without all its new values is refused. The product makes the text the reviewer reads from these values, and after the release it applies only these values, by itself: the manager does not send them again (drone-web D-039, D-042, rule PLC-012 in the JS1 event model).
 - **Why separate:** Product lifecycle invariants are distinct from documentation, pricing, and inventory invariants.
 - **Expected API responsibilities:** Create/update product master data, lifecycle state changes, replacement linkage.
 

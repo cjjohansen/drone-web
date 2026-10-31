@@ -12,13 +12,13 @@
 
 | Boundary | Description | Job Stories | Operations |
 |----------|-------------|-------------|------------|
-| **Product Lifecycle API** | Product master data and lifecycle transitions | JS1 | 7 |
+| **Product Lifecycle API** | Product master data and lifecycle transitions | JS1 | 8 |
 | **Technical Documentation API** | Document upload, association, versioning, retirement | JS2 | 5 |
 | **Pricing and Promotions API** | Base pricing, discount tiers, promotions, repricing | JS3 | 5 |
 | **Inventory and Availability API** | Quantity, restock, lead-time, backorder, suspension | JS4 | 6 |
 | **Category and Faceting API** | Taxonomy hierarchy, assignment, and facet controls | JS5 | 7 |
 | **Compatibility Rules API** | Compatibility rule and component group lifecycle | JS6 | 5 |
-| **Catalog Governance API** | Approval workflow and publication gates for high-risk writes | JS1, JS3, JS6 | 4 |
+| **Catalog Governance API** | Approval workflow and publication gates for high-risk writes | JS1, JS3, JS6 | 5 |
 | **Bulk Ingestion API** | Asynchronous import batches with replay support | JS1 | 3 |
 
 ### Integration Model

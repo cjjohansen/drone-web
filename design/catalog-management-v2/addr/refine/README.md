@@ -11,13 +11,13 @@ Refine converts the write-side design into implementation-ready artifacts for 8 
 
 | File | API | Operations |
 |------|-----|------------|
-| [product-lifecycle-api.yaml](product-lifecycle-api.yaml) | Product Lifecycle API | 7 |
+| [product-lifecycle-api.yaml](product-lifecycle-api.yaml) | Product Lifecycle API | 8 |
 | [technical-docs-api.yaml](technical-docs-api.yaml) | Technical Documentation API | 5 |
 | [pricing-promotions-api.yaml](pricing-promotions-api.yaml) | Pricing and Promotions API | 5 |
 | [inventory-availability-api.yaml](inventory-availability-api.yaml) | Inventory and Availability API | 6 |
 | [taxonomy-api.yaml](taxonomy-api.yaml) | Category and Faceting API | 7 |
 | [compatibility-rules-api.yaml](compatibility-rules-api.yaml) | Compatibility Rules API | 5 |
-| [catalog-governance-api.yaml](catalog-governance-api.yaml) | Catalog Governance API | 4 |
+| [catalog-governance-api.yaml](catalog-governance-api.yaml) | Catalog Governance API | 5 |
 | [bulk-ingestion-api.yaml](bulk-ingestion-api.yaml) | Bulk Ingestion API | 3 |
 
 ## AsyncAPI 3.0 Specification

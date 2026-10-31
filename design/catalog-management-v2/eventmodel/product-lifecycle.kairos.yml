@@ -14,16 +14,19 @@
 #   the agent and confirmed by a person. A high-risk change is decided by a person. A case gets
 #   an assigned reviewer, but any person who holds the reviewer role for the case's risk level may
 #   decide it, never the manager who asked (four eyes). A specification or details change carries
-#   its new values, and the manager can later apply only those values. A person releases an
-#   approved change through its publication gate; an agent approval opens the gate by itself, and
-#   the reviewers are told. A case that nobody decides expires after the review period. Product
-#   Data learns of the release, the rejection or the expiry; after a release the manager applies
-#   the change. To retire the product, the manager asks for its discontinuation, and after the
-#   release discontinues it and links the product that replaces it. A discontinued product keeps
-#   its specifications; its details may still change.
+#   its new values. A person releases an approved change through its publication gate; an agent
+#   approval opens the gate by itself, and the reviewers are told. A case that nobody decides
+#   expires after the review period. Product Data learns of the release, the rejection or the
+#   expiry. After the release of a specification or details change, Product Data applies the
+#   values of the request itself; the manager does not send them again. After the release of a
+#   lifecycle change, the manager publishes the product. To retire the product, the manager asks
+#   for its discontinuation, and after the release discontinues it and links the product that
+#   replaces it. A discontinued product keeps its specifications; its details may still change.
 #
 #   CJ's answers of 2026-10-29 to the open questions of PR #26 (typed values, agent release with a
-#   notice, deciding by role) are drone-web D-039.
+#   notice, deciding by role) are drone-web D-039. CJ's answer of 2026-10-31 on who applies a
+#   released specification or details change (Product Data, with the values of the request) is
+#   drone-web D-042.
 #
 # Where the pieces come from (design/catalog-management-v2/addr/):
 #
@@ -70,6 +73,8 @@ automations:
     description: Expires approval cases that nobody decided in time.
   Announcer:
     description: Tells the owning context of a release, and the reviewers of an agent approval.
+  ChangeApplier:
+    description: Applies the values of a released specification or details change to the product.
 
 actors:
   ProductLifecycleManager:
@@ -209,7 +214,9 @@ events:
 
   ProductSpecificationsRecorded:
     context: ProductData
-    description: A manager recorded the technical specifications that the compatibility rules read.
+    description: >-
+      A manager recorded the technical specifications of a draft, which the compatibility rules
+      read. A change on an active product is ReleasedSpecificationsApplied.
     tags: [productId]
     fields:
       productId: { type: uuid, source: system }
@@ -218,7 +225,6 @@ events:
       maxCurrent: { type: decimal, source: system, description: Highest continuous current in amperes., example: 41.5 }
       mounting: { type: string, source: system, description: Mounting pattern., example: 16x16-m3 }
       weight: { type: decimal, source: system, description: Weight in grams., example: 33.6 }
-      approvalCaseId: { type: uuid, source: system, from: ProductChangeCleared.approvalCaseId, optional: true, description: The released case for a change to an active product; null for a draft. }
       recordedAt: { type: datetime, source: generated, example: 2026-11-02T09:25:00Z }
 
   ProductChangeRequested:
@@ -251,7 +257,10 @@ events:
 
   ProductChangeCleared:
     context: ProductData
-    description: Governance released the requested change. The manager may now apply it.
+    description: >-
+      Governance released the requested change. Product Data applies a specification or details
+      change itself (ApplyReleasedSpecifications, ApplyReleasedDetails); the manager publishes or
+      discontinues the product after a lifecycle change.
     tags: [productId]
     fields:
       productId: { type: uuid, source: system }
@@ -291,21 +300,51 @@ events:
       name:
         type: string
         source: generated
-        description: The name from the draft, or from the latest revision of the details.
+        description: The name from the draft, or from the latest revision or applied change of the details.
         example: T-Motor Velox V2306 1750KV
       approvalCaseId: { type: uuid, source: system, from: ProductChangeCleared.approvalCaseId }
       publishedAt: { type: datetime, source: generated, example: 2026-11-03T08:00:00Z }
 
   ProductDetailsRevised:
     context: ProductData
-    description: A manager changed the name or the short description of a product.
+    description: >-
+      A manager changed the name or the short description of a draft or a discontinued product. A
+      change on an active product is ReleasedDetailsApplied.
     tags: [productId]
     fields:
       productId: { type: uuid, source: system }
       name: { type: string, source: system }
       shortDescription: { type: string, source: system, example: 2306 motor for 6S 5-inch freestyle builds }
-      approvalCaseId: { type: uuid, source: system, from: ProductChangeCleared.approvalCaseId, optional: true, description: The released case for a change to an active product; null for a draft or a discontinued product. }
       revisedAt: { type: datetime, source: generated, example: 2026-12-01T10:00:00Z }
+
+  ReleasedSpecificationsApplied:
+    context: ProductData
+    description: >-
+      Product Data applied a released specification change to an active product, with the values
+      of the request that Governance approved (PLC-012, drone-web D-042).
+    tags: [productId]
+    fields:
+      productId: { type: uuid, source: system }
+      approvalCaseId: { type: uuid, source: system, description: The released case., example: 5c0e8b4a-2d1f-4a3b-9c6d-7e8f9a0b1c22 }
+      minVoltage: { type: decimal, source: system, from: ProductChangeRequested.newMinVoltage, example: 11.1 }
+      maxVoltage: { type: decimal, source: system, from: ProductChangeRequested.newMaxVoltage, example: 25.2 }
+      maxCurrent: { type: decimal, source: system, from: ProductChangeRequested.newMaxCurrent, example: 38.0 }
+      mounting: { type: string, source: system, from: ProductChangeRequested.newMounting, example: 16x16-m3 }
+      weight: { type: decimal, source: system, from: ProductChangeRequested.newWeight, example: 33.6 }
+      appliedAt: { type: datetime, source: generated, example: 2026-12-01T09:32:00Z }
+
+  ReleasedDetailsApplied:
+    context: ProductData
+    description: >-
+      Product Data applied a released details change to an active product, with the name and short
+      description of the request that Governance approved (PLC-012, drone-web D-042).
+    tags: [productId]
+    fields:
+      productId: { type: uuid, source: system }
+      approvalCaseId: { type: uuid, source: system, description: The released case., example: 8d3f1a6c-5e2b-4c7d-a9f0-1b2c3d4e5f66 }
+      name: { type: string, source: system, from: ProductChangeRequested.newName, example: T-Motor Velox V2306 V2 1750KV }
+      shortDescription: { type: string, source: system, from: ProductChangeRequested.newShortDescription, example: 2306 motor for 6S 5-inch freestyle builds }
+      appliedAt: { type: datetime, source: generated, example: 2026-12-01T09:32:00Z }
 
   ProductDiscontinued:
     context: ProductData
@@ -530,11 +569,12 @@ slices:
     chapter: Draft
     description: >-
       The manager records the specifications the compatibility rules read: voltage range, current,
-      mounting and weight (the Core spec model of drone-web D-037). On a draft the values apply at
-      once. On an active product they apply only after Governance released a specification change
-      (CJ D3b), and only with the values of that released request (PLC-012, drone-web D-039). On a
-      discontinued product they are frozen (CJ D4a).
-      ADDR: JS1 "Add technical specifications"; updateProductSpecifications().
+      mounting and weight (the Core spec model of drone-web D-037). Only on a draft: there the
+      values apply at once. On an active product the manager asks for a specification change
+      (RequestProductChange), and after the release Product Data applies the values of the request
+      (ApplyReleasedSpecifications, drone-web D-042); this form refuses it, even after a release.
+      On a discontinued product they are frozen (CJ D4a).
+      ADDR: JS1 "Add technical specifications"; updateProductSpecifications() on a draft (200 OK).
     screen:
       name: SpecificationsForm
       actor: ProductLifecycleManager
@@ -569,16 +609,17 @@ slices:
         title: A change of specifications or details on an active product takes effect only after Governance released it
         description: >-
           CJ D3b (2026-10-29): every change on an active product goes through Governance review.
-          One release allows one change of its type. A draft is not sold and changes without
-          review; it is reviewed as a whole when it goes live.
+          One release allows one change of its type, and Product Data applies it with the values
+          of the request (drone-web D-042); the manager's forms do not change an active product.
+          A draft is not sold and changes without review; it is reviewed as a whole when it goes
+          live.
       PLC-010:
         title: A discontinued product keeps its specifications; its details may still change
         description: CJ D4a (2026-10-29).
     errors:
       ProductUnknown: { description: No product was drafted under this id. }
       VoltageRangeReversed: { description: The lowest voltage is above the highest., rule: PLC-002 }
-      ChangeNotReleased: { description: The product is active and no released specification change waits for it., rule: PLC-009 }
-      ValuesDifferFromTheApprovedOnes: { description: "The product is active and the specifications differ from the new values in the released request.", rule: PLC-012 }
+      ReviewRequired: { description: "The product is active: ask for a specification change; Product Data applies it after the release.", rule: PLC-009 }
       SpecificationsFrozen: { description: The product is discontinued., rule: PLC-010 }
     tests:
       RecordsTheVeloxSpecifications:
@@ -589,46 +630,19 @@ slices:
           values: { productId: $velox, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 41.5, mounting: 16x16-m3, weight: 33.6 }
         then:
           - event: ProductSpecificationsRecorded
-            values: { productId: $velox, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 41.5, mounting: 16x16-m3, weight: 33.6, approvalCaseId: null }
-      CorrectsTheCurrentOfAnActiveProduct:
-        rules: [PLC-009, PLC-012]
+            values: { productId: $velox, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 41.5, mounting: 16x16-m3, weight: 33.6 }
+      CorrectsTheVeloxDraftAgain:
         given:
           - event: ProductDrafted
             values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV }
           - event: ProductSpecificationsRecorded
             values: { productId: $velox, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 41.5, mounting: 16x16-m3, weight: 33.6 }
-          - event: ProductPublished
-            values: { productId: $velox }
-          - event: ProductChangeRequested
-            values: { productId: $velox, changeType: specification-change, newMinVoltage: 11.1, newMaxVoltage: 25.2, newMaxCurrent: 38.0, newMounting: 16x16-m3, newWeight: 33.6, requestedChange: "maxCurrent 41.5 A to 38.0 A" }
-          - event: ProductChangeCleared
-            values: { productId: $velox, changeType: specification-change, requestedChange: "maxCurrent 41.5 A to 38.0 A", approvalCaseId: $specCase }
         when:
           values: { productId: $velox, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 38.0, mounting: 16x16-m3, weight: 33.6 }
         then:
           - event: ProductSpecificationsRecorded
-            values: { productId: $velox, maxCurrent: 38.0, approvalCaseId: $specCase }
-      RejectsACurrentOtherThanTheApprovedOne:
-        rules: [PLC-012]
-        given:
-          - event: ProductDrafted
-            values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV }
-          - event: ProductSpecificationsRecorded
-            values: { productId: $velox, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 41.5, mounting: 16x16-m3, weight: 33.6 }
-          - event: ProductPublished
-            values: { productId: $velox }
-          - event: ProductChangeRequested
-            values: { productId: $velox, changeType: specification-change, newMinVoltage: 11.1, newMaxVoltage: 25.2, newMaxCurrent: 38.0, newMounting: 16x16-m3, newWeight: 33.6, requestedChange: "maxCurrent 41.5 A to 38.0 A" }
-          - event: ProductChangeCleared
-            values: { productId: $velox, changeType: specification-change, requestedChange: "maxCurrent 41.5 A to 38.0 A", approvalCaseId: $specCase }
-        when:
-          values: { productId: $velox, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: <current>, mounting: <mounting>, weight: 33.6 }
-        then:
-          - error: ValuesDifferFromTheApprovedOnes
-        examples:
-          - { current: 36.0, mounting: 16x16-m3 }
-          - { current: 38.0, mounting: 19x19-m3 }
-      RejectsChangingAnActiveProductWithoutARelease:
+            values: { productId: $velox, maxCurrent: 38.0 }
+      RejectsChangingAnActiveProduct:
         rules: [PLC-009]
         given:
           - event: ProductDrafted
@@ -640,22 +654,24 @@ slices:
         when:
           values: { productId: $velox, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 38.0, mounting: 16x16-m3, weight: 33.6 }
         then:
-          - error: ChangeNotReleased
-      RejectsUsingOneReleaseTwice:
-        rules: [PLC-009]
+          - error: ReviewRequired
+      RejectsTheFormEvenAfterARelease:
+        rules: [PLC-009, PLC-012]
         given:
           - event: ProductDrafted
             values: { productId: $velox }
+          - event: ProductSpecificationsRecorded
+            values: { productId: $velox, maxCurrent: 41.5 }
           - event: ProductPublished
             values: { productId: $velox }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: specification-change, newMinVoltage: 11.1, newMaxVoltage: 25.2, newMaxCurrent: 38.0, newMounting: 16x16-m3, newWeight: 33.6, requestedChange: "maxCurrent 41.5 A to 38.0 A" }
           - event: ProductChangeCleared
-            values: { productId: $velox, changeType: specification-change, approvalCaseId: $specCase }
-          - event: ProductSpecificationsRecorded
-            values: { productId: $velox, maxCurrent: 38.0, approvalCaseId: $specCase }
+            values: { productId: $velox, changeType: specification-change, requestedChange: "maxCurrent 41.5 A to 38.0 A", approvalCaseId: $specCase }
         when:
-          values: { productId: $velox, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 36.0, mounting: 16x16-m3, weight: 33.6 }
+          values: { productId: $velox, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 38.0, mounting: 16x16-m3, weight: 33.6 }
         then:
-          - error: ChangeNotReleased
+          - error: ReviewRequired
       RejectsSpecificationsForADiscontinuedProduct:
         rules: [PLC-010]
         given:
@@ -711,6 +727,8 @@ slices:
             ProductChangeExpired: update
             ProductPublished: update
             ProductDetailsRevised: update
+            ReleasedSpecificationsApplied: update
+            ReleasedDetailsApplied: update
             ProductDiscontinued: update
             ReplacementProductLinked: update
           fields:
@@ -720,7 +738,7 @@ slices:
             name:
               type: string
               source: generated
-              description: The name from the draft, or from the latest revision of the details.
+              description: The name from the draft, or from the latest revision or applied change of the details.
               example: T-Motor Velox V2306 1750KV
             lifecycleState:
               type: string
@@ -730,7 +748,7 @@ slices:
             specified:
               type: bool
               source: generated
-              description: The specifications are recorded.
+              description: The specifications are recorded (a draft) or applied (an active product).
               example: true
             review:
               type: string
@@ -738,7 +756,8 @@ slices:
               description: >-
                 Where the latest change request stands: none, in review, cleared, refused or
                 expired, with the state asked for (a lifecycle change) or the change type. A cleared
-                change goes back to none when the manager applies it.
+                change goes back to none when it takes effect: Product Data applies a specification
+                or details change, and the manager publishes or discontinues the product.
               example: "in review: active"
             replacementProductId: { type: uuid, source: system, from: ReplacementProductLinked.replacementProductId, optional: true }
     tests:
@@ -796,7 +815,7 @@ slices:
             values: { productId: $velox, changeType: details-change, requestedChange: "Name: add V2" }
           - event: ProductChangeCleared
             values: { productId: $velox, changeType: details-change, requestedChange: "Name: add V2" }
-          - event: ProductDetailsRevised
+          - event: ReleasedDetailsApplied
             values: { productId: $velox, name: T-Motor Velox V2306 V2 1750KV }
           - event: ProductDrafted
             values: { productId: $velox3, sku: TMOTOR-VELOX-V2306V3-1950KV, name: T-Motor Velox V2306 V3 1950KV, brand: T-Motor }
@@ -843,6 +862,8 @@ slices:
             ProductChangeExpired: update
             ProductPublished: update
             ProductDetailsRevised: update
+            ReleasedSpecificationsApplied: update
+            ReleasedDetailsApplied: update
             ProductDiscontinued: update
             ReplacementProductLinked: update
           fields:
@@ -853,14 +874,44 @@ slices:
             name:
               type: string
               source: generated
-              description: The name from the draft, or from the latest revision of the details.
+              description: The name from the draft, or from the latest revision or applied change of the details.
               example: T-Motor Velox V2306 1750KV
-            shortDescription: { type: string, source: system, from: ProductDetailsRevised.shortDescription, optional: true }
-            minVoltage: { type: decimal, source: system, from: ProductSpecificationsRecorded.minVoltage, optional: true }
-            maxVoltage: { type: decimal, source: system, from: ProductSpecificationsRecorded.maxVoltage, optional: true }
-            maxCurrent: { type: decimal, source: system, from: ProductSpecificationsRecorded.maxCurrent, optional: true }
-            mounting: { type: string, source: system, from: ProductSpecificationsRecorded.mounting, optional: true }
-            weight: { type: decimal, source: system, from: ProductSpecificationsRecorded.weight, optional: true }
+            shortDescription:
+              type: string
+              source: generated
+              optional: true
+              example: 2306 motor for 6S 5-inch freestyle builds
+              description: From the latest ProductDetailsRevised or ReleasedDetailsApplied; null until one of them.
+            minVoltage:
+              type: decimal
+              source: generated
+              optional: true
+              example: 11.1
+              description: From the latest ProductSpecificationsRecorded or ReleasedSpecificationsApplied; null until one of them.
+            maxVoltage:
+              type: decimal
+              source: generated
+              optional: true
+              example: 25.2
+              description: From the latest ProductSpecificationsRecorded or ReleasedSpecificationsApplied; null until one of them.
+            maxCurrent:
+              type: decimal
+              source: generated
+              optional: true
+              example: 41.5
+              description: From the latest ProductSpecificationsRecorded or ReleasedSpecificationsApplied; null until one of them.
+            mounting:
+              type: string
+              source: generated
+              optional: true
+              example: 16x16-m3
+              description: From the latest ProductSpecificationsRecorded or ReleasedSpecificationsApplied; null until one of them.
+            weight:
+              type: decimal
+              source: generated
+              optional: true
+              example: 33.6
+              description: From the latest ProductSpecificationsRecorded or ReleasedSpecificationsApplied; null until one of them.
             lifecycleState:
               type: string
               source: generated
@@ -937,13 +988,13 @@ slices:
             values: { productId: $velox, changeType: specification-change, requestedChange: "maxCurrent 41.5 A to 38.0 A (datasheet rev C)" }
           - event: ProductChangeCleared
             values: { productId: $velox, changeType: specification-change, requestedChange: "maxCurrent 41.5 A to 38.0 A (datasheet rev C)" }
-          - event: ProductSpecificationsRecorded
+          - event: ReleasedSpecificationsApplied
             values: { productId: $velox, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 38.0, mounting: 16x16-m3, weight: 33.6 }
           - event: ProductChangeRequested
             values: { productId: $velox, changeType: details-change, requestedChange: "Name: add V2; new short description" }
           - event: ProductChangeCleared
             values: { productId: $velox, changeType: details-change, requestedChange: "Name: add V2; new short description" }
-          - event: ProductDetailsRevised
+          - event: ReleasedDetailsApplied
             values: { productId: $velox, name: T-Motor Velox V2306 V2 1750KV, shortDescription: 2306 motor for 6S 5-inch freestyle builds }
           - event: ProductDrafted
             values: { productId: $velox3, sku: TMOTOR-VELOX-V2306V3-1950KV, name: T-Motor Velox V2306 V3 1950KV, brand: T-Motor, draftedAt: 2027-05-10T08:00:00Z }
@@ -970,11 +1021,13 @@ slices:
       The manager asks for a change to a product, with a reason and the risk level they see: a
       lifecycle change (go live, or retire), or a change of the specifications or details of an
       active product (CJ D3b). A specification or details change carries its new values as typed
-      fields; Product Data writes from them the requestedChange that the reviewer reads, and later
-      lets the manager apply only those values (PLC-012, drone-web D-039). Product Data checks the
-      product rules and publishes the request to Catalog Governance. ADDR: JS1 "Set initial
-      lifecycle state" and "Mark product as discontinued"; setProductLifecycleState(targetState,
-      reason), which answers 202 Accepted with the approval case (CJ D7a); the approval case of
+      fields; Product Data writes from them the requestedChange that the reviewer reads, and after
+      the release applies those values itself (PLC-012, drone-web D-039, D-042): the manager sends
+      them once. Product Data checks the product rules and publishes the request to Catalog
+      Governance. ADDR: JS1 "Set initial lifecycle state" and "Mark product as discontinued";
+      setProductLifecycleState(targetState, reason), which answers 202 Accepted with the approval
+      case (CJ D7a); updateProductSpecifications() and updateProductAttributes() on an active
+      product, which answer 202 Accepted in the same way (drone-web D-041); the approval case of
       submitApprovalCase(). Asking Product Data rather than Governance is proposed (see the header).
     screen:
       name: ProductChangeForm
@@ -1042,8 +1095,9 @@ slices:
         description: >-
           CJ 2026-10-29, drone-web D-039. A specification change carries all five specification
           values and a details change the name and the short description, as they are to be after
-          the change. The reviewer approves the requestedChange made from those values, so the
-          applied values equal the approved ones (RecordSpecifications, ReviseProductDetails).
+          the change. The reviewer approves the requestedChange made from those values, and after
+          the release Product Data applies exactly those values (ApplyReleasedSpecifications,
+          ApplyReleasedDetails, drone-web D-042), so the applied values equal the approved ones.
     errors:
       ProductUnknown: { description: No product was drafted under this id. }
       SpecificationsMissing: { description: The product has no specifications yet., rule: PLC-003 }
@@ -2824,6 +2878,7 @@ slices:
           reads:
             ProductPublished: create
             ProductDetailsRevised: update
+            ReleasedDetailsApplied: update
             ProductDiscontinued: update
             ReplacementProductLinked: update
           fields:
@@ -2833,7 +2888,7 @@ slices:
             name:
               type: string
               source: generated
-              description: The name at publication, or from the latest revision of the details.
+              description: The name at publication, or from the latest revision or applied change of the details.
               example: T-Motor Velox V2306 1750KV
             lifecycleState:
               type: string
@@ -2856,7 +2911,7 @@ slices:
         given:
           - event: ProductPublished
             values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV, name: T-Motor Velox V2306 1750KV, brand: T-Motor }
-          - event: ProductDetailsRevised
+          - event: ReleasedDetailsApplied
             values: { productId: $velox, name: T-Motor Velox V2306 V2 1750KV }
           - event: ProductDiscontinued
             values: { productId: $velox }
@@ -2873,11 +2928,13 @@ slices:
     pattern: command
     chapter: Change
     description: >-
-      The manager changes the name or the short description of a product. On a draft or a
-      discontinued product (CJ D4a) the change applies at once. On an active product it applies only
-      after Governance released a details change (CJ D3b), and only with the name and short
-      description of that released request (PLC-012, drone-web D-039). Specifications change
-      through RecordSpecifications. ADDR: JS1 "Update product core attributes"; updateProductAttributes().
+      The manager changes the name or the short description of a draft or a discontinued product
+      (CJ D4a); the change applies at once. On an active product the manager asks for a details
+      change (RequestProductChange), and after the release Product Data applies the name and short
+      description of the request (ApplyReleasedDetails, drone-web D-042); this form refuses it,
+      even after a release. Specifications change through RecordSpecifications.
+      ADDR: JS1 "Update product core attributes"; updateProductAttributes() on a draft or a
+      discontinued product (200 OK).
     screen:
       name: ProductDetailsForm
       actor: ProductLifecycleManager
@@ -2899,8 +2956,7 @@ slices:
       - event: ProductDetailsRevised
     errors:
       ProductUnknown: { description: No product was drafted under this id. }
-      ChangeNotReleased: { description: The product is active and no released details change waits for it., rule: PLC-009 }
-      ValuesDifferFromTheApprovedOnes: { description: "The product is active and the details differ from the new values in the released request.", rule: PLC-012 }
+      ReviewRequired: { description: "The product is active: ask for a details change; Product Data applies it after the release.", rule: PLC-009 }
     tests:
       RenamesTheVeloxDraft:
         given:
@@ -2910,25 +2966,20 @@ slices:
           values: { productId: $velox, name: T-Motor Velox V2306 1750KV Freestyle, shortDescription: 2306 motor for 6S 5-inch freestyle builds }
         then:
           - event: ProductDetailsRevised
-            values: { productId: $velox, name: T-Motor Velox V2306 1750KV Freestyle, approvalCaseId: null }
-      RenamesTheActiveVeloxAfterTheRelease:
-        rules: [PLC-009, PLC-012]
+            values: { productId: $velox, name: T-Motor Velox V2306 1750KV Freestyle, shortDescription: 2306 motor for 6S 5-inch freestyle builds }
+      RejectsRenamingAnActiveProduct:
+        rules: [PLC-009]
         given:
           - event: ProductDrafted
             values: { productId: $velox, name: T-Motor Velox V2306 1750KV }
           - event: ProductPublished
             values: { productId: $velox }
-          - event: ProductChangeRequested
-            values: { productId: $velox, changeType: details-change, newName: T-Motor Velox V2306 V2 1750KV, newShortDescription: 2306 motor for 6S 5-inch freestyle builds, requestedChange: "Name T-Motor Velox V2306 1750KV to T-Motor Velox V2306 V2 1750KV; short description (none) to 2306 motor for 6S 5-inch freestyle builds" }
-          - event: ProductChangeCleared
-            values: { productId: $velox, changeType: details-change, requestedChange: "Name T-Motor Velox V2306 1750KV to T-Motor Velox V2306 V2 1750KV; short description (none) to 2306 motor for 6S 5-inch freestyle builds", approvalCaseId: $detailsCase }
         when:
-          values: { productId: $velox, name: T-Motor Velox V2306 V2 1750KV, shortDescription: 2306 motor for 6S 5-inch freestyle builds }
+          values: { productId: $velox, name: T-Motor Velox V2306 V2 1750KV }
         then:
-          - event: ProductDetailsRevised
-            values: { productId: $velox, name: T-Motor Velox V2306 V2 1750KV, shortDescription: 2306 motor for 6S 5-inch freestyle builds, approvalCaseId: $detailsCase }
-      RejectsANameOtherThanTheApprovedOne:
-        rules: [PLC-012]
+          - error: ReviewRequired
+      RejectsTheFormEvenAfterARelease:
+        rules: [PLC-009, PLC-012]
         given:
           - event: ProductDrafted
             values: { productId: $velox, name: T-Motor Velox V2306 1750KV }
@@ -2939,20 +2990,9 @@ slices:
           - event: ProductChangeCleared
             values: { productId: $velox, changeType: details-change, approvalCaseId: $detailsCase }
         when:
-          values: { productId: $velox, name: T-Motor Velox V2306 V2 1750KV 8S, shortDescription: 2306 motor for 6S 5-inch freestyle builds }
+          values: { productId: $velox, name: T-Motor Velox V2306 V2 1750KV, shortDescription: 2306 motor for 6S 5-inch freestyle builds }
         then:
-          - error: ValuesDifferFromTheApprovedOnes
-      RejectsRenamingAnActiveProductWithoutARelease:
-        rules: [PLC-009]
-        given:
-          - event: ProductDrafted
-            values: { productId: $velox, name: T-Motor Velox V2306 1750KV }
-          - event: ProductPublished
-            values: { productId: $velox }
-        when:
-          values: { productId: $velox, name: T-Motor Velox V2306 V2 1750KV }
-        then:
-          - error: ChangeNotReleased
+          - error: ReviewRequired
       CorrectsTheDescriptionOfADiscontinuedProduct:
         rules: [PLC-010]
         given:
@@ -2966,12 +3006,209 @@ slices:
           values: { productId: $velox, name: T-Motor Velox V2306 V2 1750KV, shortDescription: Discontinued; see the V3 1950KV }
         then:
           - event: ProductDetailsRevised
-            values: { productId: $velox, shortDescription: Discontinued; see the V3 1950KV, approvalCaseId: null }
+            values: { productId: $velox, shortDescription: Discontinued; see the V3 1950KV }
       RejectsRevisingAnUnknownProduct:
         when:
           values: { productId: $nobody, name: Ghost motor }
         then:
           - error: ProductUnknown
+
+  ApplyReleasedSpecifications:
+    pattern: automation
+    chapter: Change
+    description: >-
+      After Governance released a specification change to an active product, Product Data applies
+      the five values of the request itself (drone-web D-042, option a). The manager sent them
+      once, with the request (updateProductSpecifications() answered 202 Accepted, drone-web
+      D-041), and does not send them again. The values come from ProductChangeRequested, never
+      from the to-do row or a person, so the applied values equal the approved ones (PLC-012). The
+      to-do list holds every released change of the product, because a view row cannot be made
+      for one change type only (see the README, "What Kairos cannot say yet"); this automation
+      leaves a lifecycle or details change alone, and the step that makes that change take effect
+      removes its row. Why an event of its own and not ProductSpecificationsRecorded: Kairos lets
+      one slice record an event (K13), and the two facts have different preconditions (a draft
+      without review; an active product after a release) and different fields (the released
+      case). After this event the product-specifications stream carries the new values
+      (ProductSpecificationChanged, design/contracts/product-lifecycle.yaml, drone-web D-037); the
+      HTTP client reads the outcome through the Location link of its 202 answer (drone-web D-042).
+    views:
+      - list-view:
+          name: SpecificationChangesToApply
+          identity: approvalCaseId
+          reads:
+            ProductChangeCleared: create
+            ReleasedSpecificationsApplied: remove
+            ReleasedDetailsApplied: remove
+            ProductPublished: remove
+            ProductDiscontinued: remove
+          fields:
+            approvalCaseId: { type: uuid, source: system, from: ProductChangeCleared.approvalCaseId, example: 5c0e8b4a-2d1f-4a3b-9c6d-7e8f9a0b1c22 }
+            productId: { type: uuid, source: system, from: ProductChangeCleared.productId, example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
+            changeType: { type: string, source: system, from: ProductChangeCleared.changeType, example: specification-change }
+    processor:
+      name: SpecificationApplier
+      lane: ChangeApplier
+    command:
+      name: ApplyReleasedSpecifications
+      fields:
+        approvalCaseId: { type: uuid, source: system, from: SpecificationChangesToApply.approvalCaseId }
+        productId: { type: uuid, source: system, from: SpecificationChangesToApply.productId }
+    emits:
+      - event: ReleasedSpecificationsApplied
+    errors:
+      ProductNotActive: { description: "The product is not active: a draft changes without review, and a discontinued product cannot have this release.", rule: PLC-009 }
+    tests:
+      RejectsAReleaseForAProductThatIsNotActive:
+        rules: [PLC-009]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: specification-change }
+          - event: ProductChangeCleared
+            values: { productId: $velox, changeType: specification-change, approvalCaseId: $case }
+        then:
+          - error: ProductNotActive
+      AppliesTheCorrectedCurrentOfTheActiveVelox:
+        rules: [PLC-009, PLC-012]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox, sku: TMOTOR-VELOX-V2306-1750KV }
+          - event: ProductSpecificationsRecorded
+            values: { productId: $velox, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 41.5, mounting: 16x16-m3, weight: 33.6 }
+          - event: ProductPublished
+            values: { productId: $velox }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: specification-change, newMinVoltage: 11.1, newMaxVoltage: 25.2, newMaxCurrent: 38.0, newMounting: 16x16-m3, newWeight: 33.6, requestedChange: "maxCurrent 41.5 A to 38.0 A" }
+          - event: ProductChangeCleared
+            values: { productId: $velox, changeType: specification-change, requestedChange: "maxCurrent 41.5 A to 38.0 A", approvalCaseId: $specCase }
+        then:
+          - event: ReleasedSpecificationsApplied
+            values: { productId: $velox, approvalCaseId: $specCase, minVoltage: 11.1, maxVoltage: 25.2, maxCurrent: 38.0, mounting: 16x16-m3, weight: 33.6 }
+      LeavesALifecycleOrDetailsReleaseAlone:
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox }
+          - event: ProductPublished
+            values: { productId: $velox }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: <type>, requestedChange: <change> }
+          - event: ProductChangeCleared
+            values: { productId: $velox, changeType: <type>, requestedChange: <change>, approvalCaseId: $case }
+        then: []
+        examples:
+          - { type: lifecycle-change, change: discontinued }
+          - { type: details-change, change: "Short description (none) to 6S 5-inch freestyle" }
+      AppliesOnce:
+        rules: [PLC-009]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox }
+          - event: ProductPublished
+            values: { productId: $velox }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: specification-change, newMaxCurrent: 38.0 }
+          - event: ProductChangeCleared
+            values: { productId: $velox, changeType: specification-change, approvalCaseId: $specCase }
+          - event: ReleasedSpecificationsApplied
+            values: { productId: $velox, approvalCaseId: $specCase, maxCurrent: 38.0 }
+        then: []
+
+  ApplyReleasedDetails:
+    pattern: automation
+    chapter: Change
+    description: >-
+      After Governance released a details change to an active product, Product Data applies the
+      name and short description of the request itself (drone-web D-042, option a). The manager
+      sent them once, with the request (updateProductAttributes() answered 202 Accepted,
+      drone-web D-041). The values come from ProductChangeRequested, so the applied values equal
+      the approved ones (PLC-012). The to-do list holds every released change of the product, as
+      in ApplyReleasedSpecifications; this automation leaves the other change types alone. Why an
+      event of its own and not ProductDetailsRevised: one slice records an event (K13), and the
+      manager's form still revises a draft or a discontinued product without review. After this
+      event the product-records stream carries the new name (ProductRecordChanged,
+      FeedProductRecords); the HTTP client reads the outcome through the Location link of its 202
+      answer (drone-web D-042).
+    views:
+      - list-view:
+          name: DetailsChangesToApply
+          identity: approvalCaseId
+          reads:
+            ProductChangeCleared: create
+            ReleasedDetailsApplied: remove
+            ReleasedSpecificationsApplied: remove
+            ProductPublished: remove
+            ProductDiscontinued: remove
+          fields:
+            approvalCaseId: { type: uuid, source: system, from: ProductChangeCleared.approvalCaseId, example: 8d3f1a6c-5e2b-4c7d-a9f0-1b2c3d4e5f66 }
+            productId: { type: uuid, source: system, from: ProductChangeCleared.productId, example: 6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61 }
+            changeType: { type: string, source: system, from: ProductChangeCleared.changeType, example: details-change }
+    processor:
+      name: DetailsApplier
+      lane: ChangeApplier
+    command:
+      name: ApplyReleasedDetails
+      fields:
+        approvalCaseId: { type: uuid, source: system, from: DetailsChangesToApply.approvalCaseId }
+        productId: { type: uuid, source: system, from: DetailsChangesToApply.productId }
+    emits:
+      - event: ReleasedDetailsApplied
+    errors:
+      ProductNotActive: { description: "The product is not active: a draft changes without review, and a discontinued product cannot have this release.", rule: PLC-009 }
+    tests:
+      RejectsAReleaseForAProductThatIsNotActive:
+        rules: [PLC-009]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: details-change }
+          - event: ProductChangeCleared
+            values: { productId: $velox, changeType: details-change, approvalCaseId: $case }
+        then:
+          - error: ProductNotActive
+      RenamesTheActiveVeloxAfterTheRelease:
+        rules: [PLC-009, PLC-012]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox, name: T-Motor Velox V2306 1750KV }
+          - event: ProductPublished
+            values: { productId: $velox }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: details-change, newName: T-Motor Velox V2306 V2 1750KV, newShortDescription: 2306 motor for 6S 5-inch freestyle builds, requestedChange: "Name T-Motor Velox V2306 1750KV to T-Motor Velox V2306 V2 1750KV; short description (none) to 2306 motor for 6S 5-inch freestyle builds" }
+          - event: ProductChangeCleared
+            values: { productId: $velox, changeType: details-change, requestedChange: "Name T-Motor Velox V2306 1750KV to T-Motor Velox V2306 V2 1750KV; short description (none) to 2306 motor for 6S 5-inch freestyle builds", approvalCaseId: $detailsCase }
+        then:
+          - event: ReleasedDetailsApplied
+            values: { productId: $velox, approvalCaseId: $detailsCase, name: T-Motor Velox V2306 V2 1750KV, shortDescription: 2306 motor for 6S 5-inch freestyle builds }
+      LeavesALifecycleOrSpecificationReleaseAlone:
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox }
+          - event: ProductPublished
+            values: { productId: $velox }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: <type>, requestedChange: <change> }
+          - event: ProductChangeCleared
+            values: { productId: $velox, changeType: <type>, requestedChange: <change>, approvalCaseId: $case }
+        then: []
+        examples:
+          - { type: lifecycle-change, change: discontinued }
+          - { type: specification-change, change: "maxCurrent 41.5 A to 38.0 A" }
+      AppliesOnce:
+        rules: [PLC-009]
+        given:
+          - event: ProductDrafted
+            values: { productId: $velox }
+          - event: ProductPublished
+            values: { productId: $velox }
+          - event: ProductChangeRequested
+            values: { productId: $velox, changeType: details-change, newName: T-Motor Velox V2306 V2 1750KV }
+          - event: ProductChangeCleared
+            values: { productId: $velox, changeType: details-change, approvalCaseId: $detailsCase }
+          - event: ReleasedDetailsApplied
+            values: { productId: $velox, approvalCaseId: $detailsCase, name: T-Motor Velox V2306 V2 1750KV }
+        then: []
 
   # ================================================================== Retire
 

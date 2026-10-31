@@ -19,6 +19,145 @@ X-API-Key: <api-key>
 }
 ```
 
+## 1b) Product Lifecycle — Change the Specifications of an Active Product (202 Accepted)
+
+On an active product every change goes through Catalog Governance review (drone-web D-041). The
+manager sends the new values once, with a `reason` and a `riskLevel`.
+
+```http
+PATCH /product-lifecycle/v1/products/6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61/specifications HTTP/1.1
+Host: api.example.com
+Content-Type: application/json
+If-Match: "7"
+X-API-Key: <api-key>
+
+{
+  "maxCurrent": 38.0,
+  "reason": "Supplier corrected the datasheet (rev C)",
+  "riskLevel": "medium"
+}
+```
+
+```http
+HTTP/1.1 202 Accepted
+Location: https://api.example.com/catalog-governance/v1/approval-cases/5c0e8b4a-2d1f-4a3b-9c6d-7e8f9a0b1c22
+Retry-After: 30
+Content-Type: application/json
+
+{
+  "approvalCaseId": "5c0e8b4a-2d1f-4a3b-9c6d-7e8f9a0b1c22",
+  "changeType": "specification-change",
+  "status": "pending",
+  "requestedChange": "maxCurrent 41.5 A to 38.0 A",
+  "product": {
+    "productId": "6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61",
+    "sku": "TMOTOR-VELOX-V2306-1750KV",
+    "name": "T-Motor Velox V2306 1750KV",
+    "brand": "T-Motor",
+    "lifecycleState": "active"
+  },
+  "links": {
+    "approvalCase": { "href": "https://api.example.com/catalog-governance/v1/approval-cases/5c0e8b4a-2d1f-4a3b-9c6d-7e8f9a0b1c22", "method": "GET" },
+    "product": { "href": "https://api.example.com/product-lifecycle/v1/products/6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61", "method": "GET" }
+  }
+}
+```
+
+The client reads the approval case at `Location` (`getApprovalCase()`) until its status is
+`released`, `rejected` or `expired`:
+
+```http
+GET /catalog-governance/v1/approval-cases/5c0e8b4a-2d1f-4a3b-9c6d-7e8f9a0b1c22 HTTP/1.1
+Host: api.example.com
+X-API-Key: <api-key>
+```
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "approvalCaseId": "5c0e8b4a-2d1f-4a3b-9c6d-7e8f9a0b1c22",
+  "changeType": "specification-change",
+  "sourceReferenceId": "6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61",
+  "riskLevel": "medium",
+  "status": "released",
+  "requestedChange": "maxCurrent 41.5 A to 38.0 A",
+  "reviewRoute": "agent-then-person",
+  "decidedBy": "Lena Holm",
+  "gate": "released",
+  "releasedBy": "Lena Holm"
+}
+```
+
+There is no second call. After the release Product Data applies the values of the request itself
+(drone-web D-042): the product then shows `maxCurrent` 38.0, and the product-specifications stream
+carries `ProductSpecificationChanged` (drone-web D-037). `PATCH /product-lifecycle/v1/products/{productId}`
+(`updateProductAttributes()`) works in the same way for the name and short description.
+
+## 1c) Product Lifecycle — Request Activation, Then Publish
+
+```http
+POST /product-lifecycle/v1/products/6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61/lifecycle-transitions HTTP/1.1
+Host: api.example.com
+Content-Type: application/json
+Idempotency-Key: lifecycle-20261102-001
+X-API-Key: <api-key>
+
+{
+  "targetState": "active",
+  "reason": "Launch with the 5-inch freestyle range"
+}
+```
+
+```http
+HTTP/1.1 202 Accepted
+Location: https://api.example.com/catalog-governance/v1/approval-cases/03724352-c0cd-4fa7-ac65-bddf8df0474d
+Content-Type: application/json
+
+{
+  "approvalCaseId": "03724352-c0cd-4fa7-ac65-bddf8df0474d",
+  "status": "pending",
+  "product": {
+    "productId": "6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61",
+    "sku": "TMOTOR-VELOX-V2306-1750KV",
+    "name": "T-Motor Velox V2306 1750KV",
+    "brand": "T-Motor",
+    "lifecycleState": "draft"
+  },
+  "links": {
+    "approvalCase": { "href": "https://api.example.com/catalog-governance/v1/approval-cases/03724352-c0cd-4fa7-ac65-bddf8df0474d", "method": "GET" }
+  }
+}
+```
+
+When the approval case is `released`, the manager publishes the product (`publishProduct()`, CJ D6a):
+
+```http
+POST /product-lifecycle/v1/products/6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61/publications HTTP/1.1
+Host: api.example.com
+Idempotency-Key: publish-20261103-001
+X-API-Key: <api-key>
+```
+
+```http
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{
+  "transitionId": "1e2d3c4b-5a69-4788-9a0b-c1d2e3f4a5b6",
+  "product": {
+    "productId": "6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61",
+    "sku": "TMOTOR-VELOX-V2306-1750KV",
+    "name": "T-Motor Velox V2306 1750KV",
+    "brand": "T-Motor",
+    "lifecycleState": "active"
+  }
+}
+```
+
+Without a released activation the answer is `409 Conflict` (not-cleared-for-release, PLC-007).
+
 ## 2) Technical Docs — Publish Document Version
 
 ```bash

@@ -7,7 +7,8 @@ releases it. The manager publishes the product. While the product is sold, every
 the risk: a review agent (an LLM) for low risk, the agent and a person for medium risk, a person
 alone for high risk. Any person with the reviewer role for that risk may decide. An agent approval
 releases the change by itself, and the reviewers are told. A change of specifications or details
-carries its new values, and only those values can be applied. A case that nobody decides expires.
+carries its new values, and after the release Product Data applies exactly those values; the
+manager does not send them again. A case that nobody decides expires.
 
 | File | What it is |
 | --- | --- |
@@ -26,11 +27,13 @@ folder therefore always names the repo: "drone-web D-037", "galaxitech-website D
 answers to the open questions of this model are "CJ D1a" to "CJ D10b" (2026-10-29); they are
 not entries in either decision log. CJ's later answers to the
 open questions of PR #26 (typed values, agent release, deciding by role) are drone-web D-039.
+The 202 answer on an active product is drone-web D-041, and who applies a released specification
+or details change (Product Data, with the values of the request) is drone-web D-042.
 
 ## The flow
 
-27 slices in five chapters, with 135 given/when/then scenarios (143 examples: five outlines run
-2, 5, 2, 2 and 2 times), in three contexts: Product Data (the Product Lifecycle Service, drone-web
+29 slices in five chapters, with 141 given/when/then scenarios (150 examples: six outlines run
+2, 2, 5, 2, 2 and 2 times), in three contexts: Product Data (the Product Lifecycle Service, drone-web
 D-037), Catalog Governance (drone-web D-029) and the review agent (`ReviewAgent`, outside the
 model). They talk only through published messages: `ChangeForReview` from Product Data to
 Governance; `ChangeReleased`, `ChangeRejected` and `ChangeExpired` back; `ChangeAssessed` from the
@@ -41,7 +44,7 @@ and the notice sender (`ReviewerNotifier`).
 | Chapter | Slice | Pattern | ADDR source (`../addr/`) | config.json slice |
 | --- | --- | --- | --- | --- |
 | Draft | `DraftProduct` | command | JS1 "Submit new product"; `createProduct()` | 1 |
-| Draft | `RecordSpecifications` | command | JS1 "Add technical specifications"; `updateProductSpecifications()` | 3 |
+| Draft | `RecordSpecifications` | command | JS1 "Add technical specifications"; `updateProductSpecifications()` on a draft (`200 OK`) | 3 |
 | Draft | `FindProductsToManage` | query | JS1 "Search products for management"; `searchProductsForManagement()` | 2, 4, 6, 8, 10, 12 |
 | Draft | `ShowProductDetails` | query | JS1 activity steps "Search/details projections update" and "Product detail replacement section updates"; no read operation in `api-design.md` (drone-web D-038) | (none) |
 | Review | `RequestProductChange` | command | JS1 "Set initial lifecycle state", "Mark product as discontinued"; `setProductLifecycleState()` (`202 Accepted`) | 5 |
@@ -64,7 +67,9 @@ and the notice sender (`ReviewerNotifier`).
 | Publish | `RecordExpiredProductChange` | translation | ApprovalCase status `expired` | (none) |
 | Publish | `PublishProduct` | command | sequence diagram JS1: the effect of `setProductLifecycleState(active)` | 5 |
 | Publish | `FeedProductRecords` | query | `design/contracts/product-lifecycle.yaml`, `product-records` | (none) |
-| Change | `ReviseProductDetails` | command | JS1 "Update product core attributes"; `updateProductAttributes()` | 7 |
+| Change | `ReviseProductDetails` | command | JS1 "Update product core attributes"; `updateProductAttributes()` on a draft or a discontinued product (`200 OK`) | 7 |
+| Change | `ApplyReleasedSpecifications` | automation | drone-web D-042: the effect of `updateProductSpecifications()` (`202 Accepted`) on an active product after the release | (none) |
+| Change | `ApplyReleasedDetails` | automation | drone-web D-042: the effect of `updateProductAttributes()` (`202 Accepted`) on an active product after the release | (none) |
 | Retire | `DiscontinueProduct` | command | JS1 "Mark product as discontinued"; `discontinueProduct()`, the effect after the release | 9 |
 | Retire | `LinkReplacementProduct` | command | JS1 "Link replacement product"; `linkReplacementProduct()` | 11 |
 
@@ -115,10 +120,36 @@ which Catalog Governance publishes `ChangeReleased`. Kairos lets only one slice 
 `ProductChangeRequested`: `newMinVoltage`, `newMaxVoltage`, `newMaxCurrent`, `newMounting` and
 `newWeight`, or `newName` and `newShortDescription`. A lifecycle change carries `targetState`.
 Product Data writes `requestedChange`, the text the reviewer and the agent read, from those values
-(old to new). After the release, `RecordSpecifications` and `ReviseProductDetails` accept only the
-values of the released request (`ValuesDifferFromTheApprovedOnes`, PLC-012). Catalog Governance
-stays the same for every change type: it approves the text, and Product Data holds the values the
-text was made from.
+(old to new). Catalog Governance stays the same for every change type: it approves the text, and
+Product Data holds the values the text was made from.
+
+**Who applies a released change (drone-web D-042).** The manager sends the new values once, in the
+request (`updateProductSpecifications()` or `updateProductAttributes()` on an active product, which
+answers `202 Accepted`). After the release, Product Data applies them itself: the automations
+`ApplyReleasedSpecifications` and `ApplyReleasedDetails` work through a to-do list of released,
+not yet applied changes (`SpecificationChangesToApply`, `DetailsChangesToApply`), take the values
+from `ProductChangeRequested` and record `ReleasedSpecificationsApplied` or
+`ReleasedDetailsApplied` (PLC-012: the applied values equal the approved ones). The manager's forms
+`RecordSpecifications` and `ReviseProductDetails` stay for a draft (and the details of a
+discontinued product), where a change applies at once without review; on an active product they
+refuse with `ReviewRequired` (PLC-009), even after a release. A lifecycle change still takes effect
+through the manager (`PublishProduct`, `DiscontinueProduct`).
+
+Why two new events, not `ProductSpecificationsRecorded` and `ProductDetailsRevised` again: Kairos
+lets one slice record an event (K13). Kairos's rule for one fact reached through two doors is one
+event, unless the preconditions or the fields differ; here they differ (a draft without review, an
+active product after a release; the applied events carry the released `approvalCaseId`). The
+`approvalCaseId` field therefore moved from the form events to the applied events. The views read
+both events of each pair alike, so the product list, the detail page and `product-records` show the
+same values whichever way they came.
+
+**How others learn the result (drone-web D-042).** No new push mechanism. Other services read the
+published streams of drone-web D-037: the new specifications on `product-specifications`
+(`ProductSpecificationChanged`, `design/contracts/product-lifecycle.yaml`) and the new name on
+`product-records` (`ProductRecordChanged`), published only after the values are applied. The HTTP
+client follows the `Location` link of its `202` answer to the approval case. Webhooks for partners
+stay open question OQ-005. This model does not show the `product-specifications` stream yet; only
+`product-records` is a published message here.
 
 **The LLM decision.** `AskAgentForReview` sends each low- and medium-risk case to the review agent
 once, through the one-way port `ChangeReviewAgent.AssessChange`. The agent answers later with the
@@ -142,8 +173,8 @@ screens that act on the entity start from it, and no field on the page is edited
 | Approval case (`approvalCaseId`) | `ApprovalCases` (`ApprovalCaseList`) | `ApprovalCaseDetails` (`ApprovalCaseDetailPage`) | `AssignReviewerForm`, `ApproveForm`, `RejectForm`, `ReleaseForm` |
 
 Two more list views are not shown to a person: `ProductRecords` (the `product-records` stream)
-and the to-do lists of the four automations (`CasesForTheAgent`, `AgentApprovalsToReport`,
-`ReleasesToAnnounce`, `UndecidedCases`).
+and the to-do lists of the six automations (`CasesForTheAgent`, `AgentApprovalsToReport`,
+`ReleasesToAnnounce`, `UndecidedCases`, `SpecificationChangesToApply`, `DetailsChangesToApply`).
 
 The events carry three more tags. None of them is an entity of its own:
 
@@ -167,10 +198,10 @@ Not in this flow: JS1 bulk ingestion (Bulk Ingestion API). It is a flow of its o
 | PLC-006 | A product has at most one change request in review | proposed |
 | PLC-007 | A lifecycle change takes effect only after Governance released it | active (Governance invariant 1, drone-web D-037, galaxitech-website D-038) |
 | PLC-008 | Only a discontinued product gets a replacement | active (`linkReplacementProduct()`) |
-| PLC-009 | A change of specifications or details on an active product takes effect only after Governance released it | active (CJ D3b) |
+| PLC-009 | A change of specifications or details on an active product takes effect only after Governance released it | active (CJ D3b; Product Data applies it, drone-web D-042) |
 | PLC-010 | A discontinued product keeps its specifications; its details may still change | active (CJ D4a) |
 | PLC-011 | The replacement product exists and is active | proposed (CJ D8a; not checked, see below) |
-| PLC-012 | A specification or details change carries its new values, and only those values are applied | active (drone-web D-039) |
+| PLC-012 | A specification or details change carries its new values, and only those values are applied | active (drone-web D-039, D-042) |
 | GOV-001 | An approval case is decided once | active (Governance invariant 2) |
 | GOV-002 | A change is released only after it is approved | active (Governance invariant 1) |
 | GOV-003 | A publication gate is released once | proposed |
@@ -204,7 +235,7 @@ Not in this flow: JS1 bulk ingestion (Bulk Ingestion API). It is a flow of its o
 
 | Question | Answer | Where in the model |
 | --- | --- | --- |
-| Typed values on the request | Yes: the request carries the typed values, and the applied values must equal the approved ones. | `ProductChangeRequested` (`targetState`, `new...` fields), PLC-012, `RequestProductChange`, `RecordSpecifications`, `ReviseProductDetails` |
+| Typed values on the request | Yes: the request carries the typed values, and the applied values must equal the approved ones. Product Data applies them after the release (drone-web D-042). | `ProductChangeRequested` (`targetState`, `new...` fields), PLC-012, `RequestProductChange`, `ApplyReleasedSpecifications`, `ApplyReleasedDetails` |
 | Agent approval and the gate | Yes: an agent approval releases the gate by itself, and a person is told. | GOV-013, `ApproveAsAgent`, `TellReviewersOfAgentApproval`, `AnnounceRelease`, `ReleaseChange` |
 | GOV-012 | Only the assigned reviewer is too rigid: any person with the reviewer role for the case's risk level may decide. Fall back to the assigned reviewer only if this is too complex. | GOV-012, `ReviewerDirectory`, `ApproveChange`, `RejectChange`; no fallback needed |
 
@@ -221,8 +252,8 @@ Not in this flow: JS1 bulk ingestion (Bulk Ingestion API). It is a flow of its o
 - One request event (`ProductChangeRequested`) carries all three change types. Kairos lets only
   one event create the approval case's rows (K14), and one event comes from one slice (K13), so
   one request slice serves the three types. The specification or detail values are typed fields
-  of the request (PLC-012); after the release the manager applies them in `RecordSpecifications`
-  or `ReviseProductDetails`, which accept only those values.
+  of the request (PLC-012); after the release Product Data applies them in
+  `ApplyReleasedSpecifications` or `ApplyReleasedDetails` (drone-web D-042).
 - The request carries `targetState` and typed new values; ADDR's `setProductLifecycleState()`
   has only `targetState` and `reason`. For a reviewed specification or details change, the
   requests are `updateProductSpecifications()` and `updateProductAttributes()` on an active
@@ -232,12 +263,12 @@ Not in this flow: JS1 bulk ingestion (Bulk Ingestion API). It is a flow of its o
 
 ## Open questions for CJ
 
-Questions 1 and 2 of PR #26 are answered (drone-web D-039, above). Two remain:
+Questions 1 and 2 of PR #26 are answered (drone-web D-039, above). Of the two after them:
 
 1. Answered: `updateProductSpecifications()` and `updateProductAttributes()` answer `202 Accepted`
-   on an active product, with a `Location` to the approval case (CJ D3b, drone-web D-041). Still
-   open: which step applies the released values, Product Data on `ChangeReleased` or the manager
-   through a separate operation (today `RecordSpecifications` and `ReviseProductDetails`).
+   on an active product, with a `Location` to the approval case (CJ D3b, drone-web D-041). After
+   the release Product Data applies the values of the request; the manager makes no second call
+   (drone-web D-042, above).
 2. The OpenAPI `riskLevel` enum has no `critical`; `define/resources.md` has it
    (the fix is in progress in PR #27).
 
@@ -251,13 +282,15 @@ node ../event-model-factory/dsl/kairos/tools/validate.mjs --receipt design/catal
 node ../event-model-factory/dsl/kairos/tools/render.mjs design/catalog-management-v2/eventmodel/product-lifecycle.kairos.yml
 ```
 
-At event-model-factory fd3a2ac the validator reports 0 errors, 0 warnings and 9 info (27 slices,
-135 tests, 22 events, 9 views, target prototype). The factory warnings of earlier versions (F9 on
+At event-model-factory c43050a the validator reports 0 errors, 0 warnings and 7 info (29 slices,
+141 tests, 24 events, 11 views, target prototype). The factory warnings of earlier versions (F9 on
 `RequestProductChange`, F30 on the three agent translations, at 7927a4e) are not reported at
-0d92369 or fd3a2ac.
+0d92369, fd3a2ac or c43050a.
 
-The info findings are K33 (three pairs of events with almost the same fields; each pair is two
-different facts) and M5 on the six translations (a message from another context cannot prove
+The info findings are K33 (one pair of events with the same fields, `ChangeRecommendedByAgent` and
+`ChangeEscalatedByAgent`, which are two different facts) and M5 on the six translations. The two
+K33 pairs of earlier runs (`ProductChangeRefused` and `ProductChangeExpired` against
+`ProductChangeCleared`) are gone, because the new to-do lists read `ProductChangeCleared` alone (a message from another context cannot prove
 that the row exists). Each translation has a test that ignores a message for an unknown product or
 case (Kairos v0 views ignore updates for rows they do not have).
 
@@ -274,7 +307,11 @@ case (Kairos v0 views ignore updates for rows they do not have).
   to-do list (`CasesForTheAgent`) therefore also holds high-risk cases; the automation leaves them
   alone (test `LeavesAHighRiskCaseToAPerson`) until a decision or the expiry removes them. In the
   same way `ReleasesToAnnounce` holds every case from its submission, and `AnnounceRelease`
-  leaves a case alone while its gate is locked (test `LeavesALockedGateAlone`).
+  leaves a case alone while its gate is locked (test `LeavesALockedGateAlone`). The to-do lists
+  `SpecificationChangesToApply` and `DetailsChangesToApply` hold every released change of a
+  product; each automation leaves the other change types alone, and the step that makes a change
+  take effect (`ReleasedSpecificationsApplied`, `ReleasedDetailsApplied`, `ProductPublished`,
+  `ProductDiscontinued`) removes its row from both lists.
 - Two facts that lead to one message. A published message comes from one event, and each event
   from one slice (K13). A release by a reviewer and a release by the agent's approval are two
   facts from two decisions, so the model needs the extra automation `AnnounceRelease` to give

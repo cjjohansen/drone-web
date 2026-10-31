@@ -45,9 +45,12 @@ paths:
       summary: Get approval case
       description: >-
         The current status of one approval case. A client that got 202 Accepted for a change on an
-        active product (updateProductSpecifications, updateProductAttributes) reads this resource at the `Location` it got, until the status
-        is `released`, `rejected` or `expired` (drone-web D-041). The answer may carry
-        `Retry-After` while the case is `pending` or `approved`.
+        active product (updateProductSpecifications, updateProductAttributes) or for a lifecycle
+        change (setProductLifecycleState) reads this resource at the `Location` it got, until the
+        status is `released`, `rejected` or `expired` (drone-web D-041). The answer may carry
+        `Retry-After` while the case is `pending` or `approved`. After the release of a
+        specification or details change, Product Data applies the values of the request itself;
+        the client makes no second call (drone-web D-042).
       operationId: getApprovalCase
       tags: [Governance]
       parameters: [ { $ref: '#/components/parameters/approvalCaseId' } ]
