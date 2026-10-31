@@ -7,7 +7,9 @@
   },
   "variable": [
     { "key": "baseUrl", "value": "https://api.example.com" },
-    { "key": "apiKey", "value": "<api-key>" }
+    { "key": "apiKey", "value": "<api-key>" },
+    { "key": "productId", "value": "6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61" },
+    { "key": "approvalCaseId", "value": "5c0e8b4a-2d1f-4a3b-9c6d-7e8f9a0b1c22" }
   ],
   "item": [
     {
@@ -26,6 +28,73 @@
               "raw": "{\n  \"sku\": \"TMOTOR-VELOX-V2306-1750KV\",\n  \"name\": \"T-Motor Velox V2306 1750KV\",\n  \"brand\": \"T-Motor\"\n}"
             },
             "url": { "raw": "{{baseUrl}}/product-lifecycle/v1/products", "host": ["{{baseUrl}}"], "path": ["product-lifecycle", "v1", "products"] }
+          }
+        },
+        {
+          "name": "Update Specifications of an Active Product (202 Accepted)",
+          "request": {
+            "method": "PATCH",
+            "description": "On an active product the change goes to Catalog Governance review (drone-web D-041). The answer is 202 Accepted with Location to the approval case. After the release Product Data applies the values of the request; there is no second call (drone-web D-042).",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-API-Key", "value": "{{apiKey}}" },
+              { "key": "If-Match", "value": "\"7\"" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"maxCurrent\": 38.0,\n  \"reason\": \"Supplier corrected the datasheet (rev C)\",\n  \"riskLevel\": \"medium\"\n}" },
+            "url": { "raw": "{{baseUrl}}/product-lifecycle/v1/products/{{productId}}/specifications", "host": ["{{baseUrl}}"], "path": ["product-lifecycle", "v1", "products", "{{productId}}", "specifications"] }
+          },
+          "response": [
+            {
+              "name": "202 Accepted (approval case pending)",
+              "status": "Accepted",
+              "code": 202,
+              "header": [
+                { "key": "Location", "value": "https://api.example.com/catalog-governance/v1/approval-cases/5c0e8b4a-2d1f-4a3b-9c6d-7e8f9a0b1c22" },
+                { "key": "Retry-After", "value": "30" },
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"approvalCaseId\": \"5c0e8b4a-2d1f-4a3b-9c6d-7e8f9a0b1c22\",\n  \"changeType\": \"specification-change\",\n  \"status\": \"pending\",\n  \"requestedChange\": \"maxCurrent 41.5 A to 38.0 A\",\n  \"product\": { \"productId\": \"6a1f3c2e-4b5d-4e8f-9a0b-1c2d3e4f5a61\", \"sku\": \"TMOTOR-VELOX-V2306-1750KV\", \"name\": \"T-Motor Velox V2306 1750KV\", \"lifecycleState\": \"active\" },\n  \"links\": { \"approvalCase\": { \"href\": \"https://api.example.com/catalog-governance/v1/approval-cases/5c0e8b4a-2d1f-4a3b-9c6d-7e8f9a0b1c22\", \"method\": \"GET\" } }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Attributes of an Active Product (202 Accepted)",
+          "request": {
+            "method": "PATCH",
+            "description": "On an active product the details change goes to Catalog Governance review (drone-web D-041): 202 Accepted with Location to the approval case. After the release Product Data applies the name and short description of the request (drone-web D-042).",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-API-Key", "value": "{{apiKey}}" },
+              { "key": "If-Match", "value": "\"8\"" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"T-Motor Velox V2306 V2 1750KV\",\n  \"shortDescription\": \"2306 motor for 6S 5-inch freestyle builds\",\n  \"reason\": \"Supplier renamed the motor\",\n  \"riskLevel\": \"low\"\n}" },
+            "url": { "raw": "{{baseUrl}}/product-lifecycle/v1/products/{{productId}}", "host": ["{{baseUrl}}"], "path": ["product-lifecycle", "v1", "products", "{{productId}}"] }
+          }
+        },
+        {
+          "name": "Request Lifecycle Transition (202 Accepted)",
+          "request": {
+            "method": "POST",
+            "description": "A lifecycle change request for Catalog Governance review: 202 Accepted with Location and links.approvalCase to the approval case.",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-API-Key", "value": "{{apiKey}}" },
+              { "key": "Idempotency-Key", "value": "lifecycle-20261102-001" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"targetState\": \"active\",\n  \"reason\": \"Launch with the 5-inch freestyle range\"\n}" },
+            "url": { "raw": "{{baseUrl}}/product-lifecycle/v1/products/{{productId}}/lifecycle-transitions", "host": ["{{baseUrl}}"], "path": ["product-lifecycle", "v1", "products", "{{productId}}", "lifecycle-transitions"] }
+          }
+        },
+        {
+          "name": "Publish Product",
+          "request": {
+            "method": "POST",
+            "description": "Applies a released activation (publishProduct). 409 when no released activation waits for the product.",
+            "header": [
+              { "key": "X-API-Key", "value": "{{apiKey}}" },
+              { "key": "Idempotency-Key", "value": "publish-20261103-001" }
+            ],
+            "url": { "raw": "{{baseUrl}}/product-lifecycle/v1/products/{{productId}}/publications", "host": ["{{baseUrl}}"], "path": ["product-lifecycle", "v1", "products", "{{productId}}", "publications"] }
           }
         }
       ]
@@ -140,6 +209,17 @@
             ],
             "body": { "mode": "raw", "raw": "{\n  \"changeType\": \"price-adjustment\",\n  \"boundarySource\": \"pricing\",\n  \"sourceReferenceId\": \"9a78f8ea-5fd3-4fe9-b5e4-9adf8c96e115\",\n  \"riskLevel\": \"high\",\n  \"rationale\": \"Large catalog-wide markdown\"\n}" },
             "url": { "raw": "{{baseUrl}}/catalog-governance/v1/approval-cases", "host": ["{{baseUrl}}"], "path": ["catalog-governance", "v1", "approval-cases"] }
+          }
+        },
+        {
+          "name": "Get Approval Case",
+          "request": {
+            "method": "GET",
+            "description": "The Location of a 202 Accepted answer. Read until the status is released, rejected or expired (drone-web D-041).",
+            "header": [
+              { "key": "X-API-Key", "value": "{{apiKey}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/catalog-governance/v1/approval-cases/{{approvalCaseId}}", "host": ["{{baseUrl}}"], "path": ["catalog-governance", "v1", "approval-cases", "{{approvalCaseId}}"] }
           }
         }
       ]

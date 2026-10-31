@@ -19,13 +19,13 @@ The Design phase translates the Define phase API profiles into high-level HTTP A
 
 | Boundary | Base Path | Operations | HTTP Methods |
 |----------|-----------|------------|--------------|
-| Product Lifecycle API | `/product-lifecycle/v1` | 7 | POST (3), PATCH (2), PUT (1), GET (1) |
+| Product Lifecycle API | `/product-lifecycle/v1` | 8 | POST (4), PATCH (2), PUT (1), GET (1) |
 | Technical Documentation API | `/technical-docs/v1` | 5 | POST (3), PATCH (1), PUT (1) |
 | Pricing and Promotions API | `/pricing/v1` | 5 | POST (3), PUT (2) |
 | Inventory and Availability API | `/inventory/v1` | 6 | POST (2), PATCH (2), PUT (2) |
 | Category and Faceting API | `/taxonomy/v1` | 7 | POST (3), PATCH (1), PUT (2), DELETE (1) |
 | Compatibility Rules API | `/compatibility-rules/v1` | 5 | POST (3), PATCH (2) |
-| Catalog Governance API | `/catalog-governance/v1` | 4 | POST (3), PUT (1) |
+| Catalog Governance API | `/catalog-governance/v1` | 5 | POST (3), PUT (1), GET (1) |
 | Bulk Ingestion API | `/bulk-ingestion/v1` | 3 | POST (2), GET (1) |
 
 ## Input Artifacts (from Define)

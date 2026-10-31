@@ -24,7 +24,7 @@ sequenceDiagram
     ProductApi-->>PLM: updated specification summary
 
     PLM->>ProductApi: setProductLifecycleState(productId, targetState=active, reason)
-    ProductApi-->>PLM: 202 Accepted, approvalCaseId, status=pending
+    ProductApi-->>PLM: 202 Accepted, Location: approval case, status=pending
 
     PLM->>GovApi: recordApprovalDecision(approvalCaseId, approve)
     GovApi-->>PLM: status=approved
@@ -51,12 +51,16 @@ sequenceDiagram
 ### JS1: Reviewed change with typed values (drone-web D-039)
 
 A change on an active product carries its new values as typed fields. Governance approves the text
-made from them, and Product Data applies only those values after the release. The JS1 event model
+made from them, and after the release Product Data applies exactly those values itself. The JS1 event model
 (`../../eventmodel/`) holds the rules: PLC-012 (typed values), GOV-012 (decide by reviewer role) and
 GOV-013 (an agent approval releases the gate). On an active product, updateProductSpecifications()
 and updateProductAttributes() are the requests: they answer `202 Accepted` with a `Location` to the
 approval case, and the client reads the case until it is released, rejected or expired (drone-web
-D-041). Which step applies the released values is open.
+D-041). The manager sends the values once: there is no second call after the release (drone-web
+D-042, event model slices ApplyReleasedSpecifications and ApplyReleasedDetails). Other services
+learn the new values from the published streams of drone-web D-037 (`ProductSpecificationChanged`
+on `product-specifications`, `ProductRecordChanged` on `product-records`), published after the
+values are applied. Partner webhooks stay open question OQ-005.
 
 ```mermaid
 sequenceDiagram
@@ -66,6 +70,7 @@ sequenceDiagram
     participant GovApi as CatalogGovernanceAPI
     participant Agent as ReviewAgent
     participant Directory as ReviewerDirectory
+    participant Streams as Published streams
 
     PLM->>ProductApi: updateProductSpecifications(productId, new values, reason, riskLevel)
     Note over ProductApi: refuses a request without all its new values (NewValuesMissing)
@@ -87,10 +92,11 @@ sequenceDiagram
         GovApi-->>Reviewer: gateState=released
     end
 
-    PLM->>GovApi: getApprovalCase(approvalCaseId) (until released, rejected or expired)
-    GovApi-->>PLM: status
     GovApi-->>ProductApi: change released (once, both routes)
-    Note over ProductApi: only the values of the request apply (PLC-012); the applying step is open
+    Note over ProductApi: applies the values of the request itself (PLC-012, drone-web D-042)
+    ProductApi-)Streams: ProductSpecificationChanged on product-specifications (drone-web D-037)
+    PLM->>GovApi: getApprovalCase(approvalCaseId) (until released, rejected or expired)
+    GovApi-->>PLM: status=released (no second call to apply the values)
 ```
 
 ## JS2: Technical Documentation Management

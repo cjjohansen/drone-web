@@ -68,6 +68,33 @@ Any person who holds the reviewer role for the case's risk level may decide, not
 reviewer; the person who asked never decides. The release message is `ChangeReleased` in the JS1
 event model (`../../eventmodel/`); this file has no published contract for it yet (drone-web D-039).
 
+## JS1: Change an Active Product (202 Accepted, Applied on Release)
+
+```mermaid
+sequenceDiagram
+    participant Manager as Product Lifecycle Manager
+    participant PL as Product Lifecycle API
+    participant GOV as Catalog Governance API
+    participant EVT as Event Bus
+
+    Manager->>PL: PATCH /product-lifecycle/v1/products/{productId}/specifications (new values, reason, riskLevel)
+    PL->>GOV: open approval case (requestedChange made from the typed values)
+    PL-->>Manager: 202 Accepted (Location: approval case, ProductChangeAccepted)
+    Note over GOV: review by the agent or a person, then release (JS4)
+    GOV->>EVT: change released
+    EVT->>PL: change released
+    Note over PL: applies the values of the request (PLC-012, drone-web D-042)
+    PL->>EVT: ProductSpecificationChanged on product-specifications (drone-web D-037)
+    Manager->>GOV: GET /catalog-governance/v1/approval-cases/{approvalCaseId}
+    GOV-->>Manager: 200 OK (ApprovalCase: released)
+```
+
+The manager sends the new values once. After the release Product Data applies them itself; there
+is no second call (drone-web D-042). `PATCH /product-lifecycle/v1/products/{productId}` works in the
+same way for the name and short description, and the new name then reaches `product-records`. A
+lifecycle change (`POST .../lifecycle-transitions`, also `202 Accepted` with `Location`) takes
+effect through `POST .../publications` or `POST .../discontinuations` after the release.
+
 ## JS5: Taxonomy and Facet Management
 
 ```mermaid

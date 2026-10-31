@@ -79,9 +79,11 @@ paths:
         value), Governance opens an approval case for it, and the operation answers 202 Accepted.
         The `Location` header and the `approvalCase` link point to that approval case; the client
         reads it (getApprovalCase) until its status is `released`, `rejected` or `expired`. The
-        product keeps its values until the release, and only the values of the request take
-        effect (PLC-009, PLC-012, drone-web D-039). On a discontinued product the specifications
-        are frozen (PLC-010).
+        product keeps its values until the release. After the release Product Data applies the
+        values of the request itself, so the client makes no second call and does not send the
+        values again (PLC-009, PLC-012, drone-web D-039, D-042). The new values then show on the
+        product and on the product-specifications stream (ProductSpecificationChanged,
+        drone-web D-037). On a discontinued product the specifications are frozen (PLC-010).
       tags: [ProductLifecycle]
       parameters:
         - $ref: '#/components/parameters/productId'
@@ -128,8 +130,10 @@ paths:
       summary: Request a lifecycle transition for Governance review
       description: >-
         The transition is a change request. Catalog Governance opens an approval case for it, and
-        the product keeps its state until Governance releases the change. A released activation
-        takes effect through publishProduct, a released discontinuation through
+        the product keeps its state until Governance releases the change. The `Location` header
+        and the `approvalCase` link point to that approval case; the client reads it
+        (getApprovalCase) until its status is `released`, `rejected` or `expired`. A released
+        activation takes effect through publishProduct, a released discontinuation through
         discontinueProduct.
       tags: [ProductLifecycle]
       parameters:
@@ -144,6 +148,11 @@ paths:
       responses:
         '202':
           description: Change request accepted; the approval case is pending
+          headers:
+            Location:
+              $ref: '#/components/headers/ApprovalCaseLocation'
+            Retry-After:
+              $ref: '#/components/headers/RetryAfter'
           content:
             application/json:
               schema:
@@ -166,8 +175,10 @@ paths:
         approval case for it, and the operation answers 202 Accepted. The `Location` header and
         the `approvalCase` link point to that approval case; the client reads it (getApprovalCase)
         until its status is `released`, `rejected` or `expired`. The product keeps its details
-        until the release, and only the values of the request take effect (PLC-009, PLC-012,
-        drone-web D-039).
+        until the release. After the release Product Data applies the name and short description
+        of the request itself, so the client makes no second call (PLC-009, PLC-012, drone-web
+        D-039, D-042). The new name then shows on the product and on the product-records stream
+        (ProductRecordChanged, drone-web D-037).
       tags: [ProductLifecycle]
       parameters:
         - $ref: '#/components/parameters/productId'
@@ -379,31 +390,37 @@ components:
       description: >-
         The product is active, so the change is a change request in Catalog Governance review
         (drone-web D-041). The product is unchanged. Read the approval case at `Location` to learn
-        the outcome.
+        the outcome. After the release Product Data applies the values of the request; the client
+        makes no second call (drone-web D-042).
       headers:
         Location:
-          description: >-
-            The approval case of the change request in the Catalog Governance API
-            (getApprovalCase). The client reads it until its status is `released`, `rejected` or
-            `expired`.
-          required: true
-          schema:
-            type: string
-            format: uri
-            example: https://api.example.com/catalog-governance/v1/approval-cases/03724352-c0cd-4fa7-ac65-bddf8df0474d
+          $ref: '#/components/headers/ApprovalCaseLocation'
         Retry-After:
-          description: >-
-            Optional. Seconds the client waits before it reads the approval case for the first
-            time. The server may send it when it can estimate the review time, for example for a
-            low-risk change that the review agent decides.
-          schema:
-            type: integer
-            minimum: 1
-            example: 30
+          $ref: '#/components/headers/RetryAfter'
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ProductChangeAccepted'
+  headers:
+    ApprovalCaseLocation:
+      description: >-
+        The approval case of the change request in the Catalog Governance API
+        (getApprovalCase). The client reads it until its status is `released`, `rejected` or
+        `expired`.
+      required: true
+      schema:
+        type: string
+        format: uri
+        example: https://api.example.com/catalog-governance/v1/approval-cases/03724352-c0cd-4fa7-ac65-bddf8df0474d
+    RetryAfter:
+      description: >-
+        Optional. Seconds the client waits before it reads the approval case for the first
+        time. The server may send it when it can estimate the review time, for example for a
+        low-risk change that the review agent decides.
+      schema:
+        type: integer
+        minimum: 1
+        example: 30
   schemas:
     Product:
       type: object
@@ -470,7 +487,8 @@ components:
       type: object
       description: >-
         The status of a change request on an active product. The values apply only after the
-        release, and only these values (PLC-012).
+        release, and only these values (PLC-012). Product Data applies them by itself after the
+        release; the client makes no second call (drone-web D-042).
       required: [approvalCaseId, changeType, status, requestedChange, product, links]
       properties:
         approvalCaseId:
@@ -520,7 +538,10 @@ components:
         reason: { type: string }
     LifecycleChangeAccepted:
       type: object
-      required: [approvalCaseId, status, product]
+      description: >-
+        The status of a lifecycle change request. A released activation takes effect through
+        publishProduct, a released discontinuation through discontinueProduct.
+      required: [approvalCaseId, status, product, links]
       properties:
         approvalCaseId:
           type: string
@@ -530,6 +551,14 @@ components:
           enum: [pending]
         product:
           $ref: '#/components/schemas/Product'
+        links:
+          type: object
+          required: [approvalCase]
+          properties:
+            approvalCase:
+              $ref: '#/components/schemas/Link'
+            product:
+              $ref: '#/components/schemas/Link'
     LifecycleTransitionResult:
       type: object
       required: [transitionId, product]

@@ -17,6 +17,8 @@ All 8 OpenAPI 3.1 files pass Redocly lint.
 
 Re-run on 2026-10-31 for `product-lifecycle-api.yaml` and `catalog-governance-api.yaml` (drone-web D-041: `publishProduct()`, `getApprovalCase()`, 202 Accepted on an active product) with `@redocly/cli` 2.72.1: both valid. Each shows one warning, `no-server-example.com`, a rule of this Redocly version; the files on main show the same warning.
 
+Re-run on 2026-10-31 for the same two files (drone-web D-042: the values apply on release with no second call; `Location` and `links.approvalCase` on the `202` of `setProductLifecycleState()`; shared `Location` and `Retry-After` headers) with `@redocly/cli` 2.72.1: both valid, with the same one warning each.
+
 | Spec | Result |
 |------|--------|
 | `product-lifecycle-api.yaml` | Valid |
