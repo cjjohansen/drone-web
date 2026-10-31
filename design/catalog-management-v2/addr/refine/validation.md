@@ -8,7 +8,7 @@
 
 1. **OpenAPI linting** with `@redocly/cli lint` for all 8 write-side API specs.
 2. **AsyncAPI validation** with `@asyncapi/cli validate` for integration events.
-3. **Coverage check** against Design phase operation inventory (42 operations across 8 boundaries).
+3. **Coverage check** against Design phase operation inventory (44 operations across 8 boundaries).
 4. **Packaging check** for examples, diagrams, Postman collection, and EventModel outputs.
 
 ## OpenAPI Validation Results
