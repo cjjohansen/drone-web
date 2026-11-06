@@ -283,9 +283,12 @@ node ../event-model-factory/dsl/kairos/tools/render.mjs design/catalog-managemen
 ```
 
 At event-model-factory 413058b the validator reports 0 errors, 31 warnings (24 ED16, 7 K18) and 7 info (29 slices,
-141 tests, 24 events, 11 views, target prototype). The factory warnings of earlier versions (F9 on
-`RequestProductChange`, F30 on the three agent translations, at 7927a4e) are not reported at
-0d92369, fd3a2ac or c43050a.
+141 tests, 24 events, 11 views, target prototype). With the factory checks (`--checks
+factory/kairos-checks/factory-support.mjs`) it reports 36 warnings: the same 31 plus 3 F30 (the three
+agent translations on `ReviewAgent.ChangeAssessed`) and 2 F6 (`ApproveChange` and `RejectChange`: the
+reviewer directory call needs `person`, which the command does not carry). The factory warnings of
+earlier versions (F9 on `RequestProductChange`, F30 on the three agent translations, at 7927a4e) were
+not reported at 0d92369, fd3a2ac or c43050a.
 
 The info findings are K33 (one pair of events with the same fields, `ChangeRecommendedByAgent` and
 `ChangeEscalatedByAgent`, which are two different facts) and M5 on the six translations. The two
