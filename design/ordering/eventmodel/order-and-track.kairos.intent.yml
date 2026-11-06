@@ -4,4 +4,5 @@ intention: to-be
 # With the factory checks, the 7 F30 warnings (translations from foreign contexts need broker bindings) stay until
 # the factory has broker bindings. CJ chose prototype over information on 2026-10-28.
 validationTarget: prototype
+minLanguageVersion: "0.2.8"
 purpose: "Draft, no ADDR yet: a customer orders a drone on a phone, pays for it, and follows it until it is delivered."

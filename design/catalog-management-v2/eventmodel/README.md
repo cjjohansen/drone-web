@@ -282,7 +282,7 @@ node ../event-model-factory/dsl/kairos/tools/validate.mjs --receipt design/catal
 node ../event-model-factory/dsl/kairos/tools/render.mjs design/catalog-management-v2/eventmodel/product-lifecycle.kairos.yml
 ```
 
-At event-model-factory c43050a the validator reports 0 errors, 0 warnings and 7 info (29 slices,
+At event-model-factory 413058b the validator reports 0 errors, 31 warnings (24 ED16, 7 K18) and 7 info (29 slices,
 141 tests, 24 events, 11 views, target prototype). The factory warnings of earlier versions (F9 on
 `RequestProductChange`, F30 on the three agent translations, at 7927a4e) are not reported at
 0d92369, fd3a2ac or c43050a.
