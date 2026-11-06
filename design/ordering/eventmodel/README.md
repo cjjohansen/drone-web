@@ -73,9 +73,9 @@ node ../event-model-factory/dsl/kairos/tools/validate.mjs --receipt --checks ../
 node ../event-model-factory/dsl/kairos/tools/render.mjs design/ordering/eventmodel/order-and-track.kairos.yml
 ```
 
-The intention sidecar sets the target `prototype`. The validator reports 0 errors, 10 warnings and
+The intention sidecar sets the target `prototype`. The validator (event-model-factory 413058b) reports 0 errors, 30 warnings and
 7 M5 infos (a translation cannot prove that the row it updates exists). Without `--checks` it
-reports 0 warnings. All ten warnings are factory limits, not modelling errors:
+reports 20 warnings (13 ED16, 7 K18). The ten factory warnings are factory limits, not modelling errors:
 
 - 7 × F30: the prototype factory cannot yet generate a translation that listens to a foreign
   context's broker messages.

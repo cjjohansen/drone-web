@@ -113,11 +113,13 @@ contexts:
 
   ProductData:
     foreign: true
+    ownedIn: ProductLifecycle
     description: Product Lifecycle Management. Publishes product records on the product-records stream (design/contracts/product-lifecycle.yaml).
     publishes:
       ProductRecordChanged:
         version: 1
         description: The current record of a product. productId is the record key of the stream.
+        stableIds: [productId]
         fields:
           productId: uuid
           sku: string
@@ -126,11 +128,13 @@ contexts:
 
   Pricing:
     foreign: true
+    ownedIn: design/contracts/pricing.yaml
     description: Pricing and Promotions Management. Publishes effective prices on the effective-prices stream (design/contracts/pricing.yaml).
     publishes:
       EffectivePriceChanged:
         version: 1
         description: The price a product sells at now, after the active promotion. productId is the record key of the stream.
+        stableIds: [productId]
         fields:
           productId: uuid
           unitPrice: decimal
@@ -143,6 +147,9 @@ contexts:
       PaymentCaptured:
         version: 1
         description: The provider took the money for an order.
+        echoes:
+          orderId: PaymentApi.StartPayment.orderId
+          paymentId: PaymentApi.StartPayment.paymentId
         fields:
           paymentId: uuid
           orderId: uuid
@@ -151,6 +158,9 @@ contexts:
       PaymentDeclined:
         version: 1
         description: The provider could not take the money for an order.
+        echoes:
+          orderId: PaymentApi.StartPayment.orderId
+          paymentId: PaymentApi.StartPayment.paymentId
         fields:
           paymentId: uuid
           orderId: uuid
@@ -163,6 +173,8 @@ contexts:
       ParcelDispatched:
         version: 1
         description: The warehouse handed the parcel for an order to a carrier.
+        echoes:
+          orderId: Ordering.PaidOrder.orderId
         fields:
           orderId: uuid
           carrier: string

@@ -140,6 +140,7 @@ contexts:
           (design/contracts/product-lifecycle.yaml). Drafts are not on it (CJ D5a, galaxitech-website
           D-038). The ordering model reads it as ProductData.ProductRecordChanged.
         from: ProductRecords
+        stableIds: [productId]
         fields:
           productId: uuid
           sku: string
@@ -192,6 +193,8 @@ contexts:
       ChangeAssessed:
         version: 1
         description: The review agent's verdict on one approval case.
+        echoes:
+          approvalCaseId: ChangeReviewAgent.AssessChange.approvalCaseId
         fields:
           approvalCaseId: uuid
           verdict: string
